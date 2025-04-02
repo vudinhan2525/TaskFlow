@@ -88,6 +88,7 @@ export function useProject(projectId: string) {
       dispatch(setLoading(true));
       try {
         const { data } = await projects.getById(projectId);
+        console.log("Project data:", data);
         dispatch(setCurrentProject(data));
         return data;
       } catch (error) {

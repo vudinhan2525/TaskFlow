@@ -1,26 +1,62 @@
 import React, { ReactNode } from "react";
 
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "dark"
+  | "light"
+  | "primary-outline"
+  | "secondary-outline"
+  | "primary-light"
+  | "secondary-light";
+
 interface ButtonProps {
   onClick?: () => void;
   children?: ReactNode;
+  variant?: ButtonVariant;
+  className?: string;
+  disabled?: boolean;
 }
 
-const Button = ({ onClick, children }: ButtonProps) => {
+const variantStyles = {
+  primary: "border border-emerald-900 bg-emerald-600 text-white hover:bg-emerald-700 hover:border-emerald-700",
+  secondary: "border border-gray-600 bg-gray-600 text-white hover:bg-gray-700 hover:border-gray-700",
+  dark: "border border-gray-800 bg-gray-800 text-white hover:bg-gray-900 hover:border-gray-900",
+  light: "border border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-200",
+  "primary-outline": "border-2 border-emerald-400 text-emerald-600 hover:bg-emerald-100 hover:text-black",
+  "secondary-outline": "border-2 border-gray-500 text-gray-500 hover:bg-gray-500 hover:text-white",
+  "primary-light": "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
+  "secondary-light": "bg-gray-50 text-gray-700 hover:bg-gray-100",
+};
+
+const Button = ({
+  onClick,
+  children,
+  variant = "primary",
+  className = "",
+  disabled = false,
+}: ButtonProps): React.ReactElement => {
+  const baseStyles =
+    "px-4 py-2 rounded-md transition-all duration-200 font-medium text-sm outline-none ring-emerald-500 focus:ring-2 focus:ring-offset-2 select-none";
+  const variantStyle = variantStyles[variant];
+  const disabledStyles = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer";
+
   return (
-    <button
-      onClick={onClick}
-      style={{
-        backgroundColor: "#007bff",
-        color: "#fff",
-        border: "none",
-        padding: "10px 20px",
-        borderRadius: "4px",
-        cursor: "pointer",
-        fontSize: "16px",
+    <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      onClick={!disabled ? onClick : undefined}
+      aria-disabled={disabled}
+      className={`${baseStyles} ${variantStyle} ${disabledStyles} ${className}`}
+      onKeyDown={(e) => {
+        if (!disabled && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onClick?.();
+        }
       }}
     >
       {children}
-    </button>
+    </div>
   );
 };
 

@@ -1,12 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { authReducer } from "./slices/authSlice";
-import { projectReducer } from "./slices/projectSlice.ts";
-import { uiReducer } from "./slices/uiSlice.ts";
+import { projectReducer } from "./slices/projectSlice";
+import { sprintReducer } from "./slices/sprintSlice";
+import { uiReducer } from "./slices/uiSlice";
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     project: projectReducer,
+    sprint: sprintReducer,
     ui: uiReducer,
   },
   middleware: (getDefaultMiddleware) =>
