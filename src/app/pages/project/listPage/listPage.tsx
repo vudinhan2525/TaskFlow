@@ -1,5 +1,4 @@
-import List from "@libs/app/components/projects/list/List";
-import React from "react";
+import List from "@libs/app/components/projects/list/list";
 
 const ListPage = () => {
   return (

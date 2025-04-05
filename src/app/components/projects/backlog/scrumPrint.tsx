@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { setSelectedIssueId } from "../../../../store/slices/uiSlice";
 import { FaChevronDown, FaChevronRight, FaCheckCircle, FaCircle } from "react-icons/fa";
-import Button from "../../general-components/Button";
+import Button from "../../general-components/button";
 
 interface Issue {
   id: string;

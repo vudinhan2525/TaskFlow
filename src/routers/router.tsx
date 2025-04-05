@@ -1,10 +1,12 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
 // import { useAuth } from "../hooks/useAuth";
-import DefaultLayout from "../app/layouts/(user-layout)/layout";
-import ProjectLayout from "../app/layouts/(user-layout)/(project)/layout";
 import type { ReactNode } from "react";
-import ListPage from "@libs/app/layouts/(user-layout)/(project)/list/page";
+import ProjectLayout from "@libs/app/layouts/projectLayout";
+import BacklogPage from "@libs/app/pages/project/backLogPage/backLogPage";
+import ListPage from "@libs/app/pages/project/listPage/listPage";
+import DefaultLayout from "@libs/app/layouts/defaultLayout";
+import LoginPage from "@libs/app/pages/auth/loginPage";
 
 // Placeholder components until we implement the real ones
 const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement => (
@@ -12,10 +14,7 @@ const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement 
 );
 
 // Lazy load components
-// const Login = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Login" /> }));
-// const Register = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Register" /> }));
 const ProjectBoard = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Project Board" /> }));
-const BacklogPage = lazy(() => import("@libs/app/layouts/(user-layout)/(project)/backlog/page"));
 const Roadmap = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Roadmap" /> }));
 const ActiveSprints = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Active Sprints" /> }));
 const Reports = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Reports" /> }));
@@ -25,17 +24,6 @@ const ProjectSettings = lazy(() =>
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: ReactNode }) {
-  // const { user, isLoading } = useAuth();
-  // const location = useLocation();
-
-  // if (isLoading) {
-  //   return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  // }
-
-  // if (!user) {
-  //   return <Navigate to="/login" state={{ from: location }} replace />;
-  // }
-
   return <>{children}</>;
 }
 
@@ -45,8 +33,8 @@ const Router = (): React.ReactElement => {
       <Routes>
         {/* Public routes */}
 
-        {/* <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} /> */}
+        <Route path="/login" element={<LoginPage />} />
+        {/* <Route path="/register" element={<Register />} /> */}
 
         {/* Protected routes */}
         <Route

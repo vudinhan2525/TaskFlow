@@ -1,4 +1,4 @@
-import { type Issue, type Priority, type Status } from "../../../types";
+import { type Issue, type Priority, type Status } from "@libs/types";
 
 interface IssueCardProps {
   issue: Issue;

@@ -1,11 +1,11 @@
-import Button from "@libs/app/components/general-components/Button";
+import Button from "@libs/app/components/general-components/button";
 import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
-import Backlog from "@libs/app/components/projects/backlog/Backlog";
-import ScrumSprint from "@libs/app/components/projects/backlog/ScrumPrint";
+import ScrumSprint from "@libs/app/components/projects/backlog/scrumPrint";
 import React from "react";
 import { useSelector } from "react-redux";
-import { Issue } from "../../../../../types";
-import { RootState } from "../../../../../store/types";
+import { RootState } from "@libs/store";
+import { Issue } from "@libs/types";
+import Backlog from "@libs/app/components/projects/backlog/backlog";
 
 const BacklogPage: React.FC = () => {
   const selectedIssueId = useSelector((state: RootState) => state.ui.selectedIssueId);

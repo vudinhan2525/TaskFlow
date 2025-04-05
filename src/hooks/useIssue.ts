@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
-import { issues } from "../lib/api";
+import { issues } from "../apis/api";
 import { updateIssue as updateStoreIssue } from "../store/slices/projectSlice";
-import { queryClient } from "../lib/react-query";
+import { queryClient } from "../apis/react-query";
 import type { Issue } from "../types";
 
 export function useIssues(projectId: string) {

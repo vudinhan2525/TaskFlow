@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setSelectedIssueId } from "../../../store/slices/uiSlice";
-import { RootState } from "../../../store/types";
 import { FaChevronDown, FaChevronUp, FaCheckCircle, FaPlus, FaCog } from "react-icons/fa";
-import Button from "../general-components/Button";
+import Button from "../general-components/button";
+import { RootState } from "@libs/store";
+import { setSelectedIssueId } from "@libs/store/slices/uiSlice";
 
 interface ChildIssue {
   key: string;
@@ -95,7 +95,7 @@ const IssueSideBar: React.FC = () => {
           <h2 className="text-md text-left font-bold  text-gray-800">Child issues</h2>
           <div className="flex items-center space-x-2">
             <span className="text-green-500 text-sm">100% Done</span>
-            <Button className="text-gray-500 hover:text-gray-700">
+            <Button className="">
               <FaPlus />
             </Button>
           </div>

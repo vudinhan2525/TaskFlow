@@ -1,5 +1,5 @@
+import { Header } from "@libs/app/components/general-components/user/header";
 import { Outlet } from "react-router-dom";
-import { Header } from "../../components/general-components/User/Header";
 // import { Sidebar } from "../../components/general-components/User/Sidebar";
 
 const DefaultLayout = () => {

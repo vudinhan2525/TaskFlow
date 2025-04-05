@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "../../general-components/Button";
+import Button from "../../general-components/button";
 
 const Backlog: React.FC = () => {
   return (

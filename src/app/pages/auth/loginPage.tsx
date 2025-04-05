@@ -1,4 +1,5 @@
-// LoginForm.tsx
+import { issues } from "@libs/apis/issue";
+import { useAuth } from "@libs/hooks/useAuth";
 import React, { useState, FormEvent } from "react";
 
 interface LoginFormData {
@@ -6,12 +7,12 @@ interface LoginFormData {
   password: string;
 }
 
-const LoginForm: React.FC = () => {
+const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormData>({
     username: "",
     password: "",
   });
-
+  const { login } = useAuth();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -22,10 +23,16 @@ const LoginForm: React.FC = () => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Here you would typically handle the login logic
+
+    login.mutate({
+      email: formData.username,
+      password: formData.password,
+    });
     console.log("Form submitted:", formData);
   };
-
+  const testPrivateRoute = async () => {
+    await issues.test();
+  };
   return (
     <div className="w-full max-w-xs mx-auto mt-12 p-6 border border-gray-200 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
@@ -64,9 +71,16 @@ const LoginForm: React.FC = () => {
         >
           Login
         </button>
+
+        <button
+          onClick={() => testPrivateRoute()}
+          className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition duration-200"
+        >
+          Call private route
+        </button>
       </form>
     </div>
   );
 };
 
-export default LoginForm;
+export default LoginPage;

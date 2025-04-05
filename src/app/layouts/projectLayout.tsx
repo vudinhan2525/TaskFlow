@@ -1,4 +1,4 @@
-import ProjectNavbar from "@libs/app/components/projects/ProjectNavBar";
+import ProjectNavbar from "@libs/app/components/projects/projectNavBar";
 import React from "react";
 import { Outlet } from "react-router-dom";
 

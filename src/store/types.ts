@@ -1,5 +1,3 @@
-import { Issue } from "../types";
-
 export interface RootState {
   ui: {
     sidebarOpen: boolean;

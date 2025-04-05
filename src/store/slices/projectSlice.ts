@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Project, Board, Sprint, Issue } from "../../types";
+import { Project, Board, Sprint, Issue } from "@libs/types";
 
 interface ProjectState {
   currentProject: Project | null;

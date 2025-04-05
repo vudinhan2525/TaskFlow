@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
-import { auth } from "../lib/api";
 import { setUser, setError } from "../store/slices/authSlice";
-import { queryClient } from "../lib/react-query";
+import { queryClient } from "../apis/react-query";
+import { auth } from "@libs/apis/auth";
 
 export function useAuth() {
   const dispatch = useDispatch();
