@@ -1,8 +1,8 @@
+import { IUser } from "@libs/types/user";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "../../types";
 
 interface AuthState {
-  user: User | null;
+  user: IUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -19,7 +19,7 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<User | null>) => {
+    setUser: (state, action: PayloadAction<IUser | null>) => {
       state.user = action.payload;
       state.isAuthenticated = !!action.payload;
     },

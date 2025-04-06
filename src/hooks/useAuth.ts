@@ -3,10 +3,11 @@ import { useDispatch } from "react-redux";
 import { setUser, setError } from "../store/slices/authSlice";
 import { queryClient } from "../apis/react-query";
 import { auth } from "@libs/apis/auth";
+import { useNavigate } from "react-router-dom";
 
 export function useAuth() {
   const dispatch = useDispatch();
-
+  const navigate = useNavigate();
   const {
     data: currentUser,
     isLoading,
@@ -25,24 +26,26 @@ export function useAuth() {
   const login = useMutation({
     mutationFn: auth.login,
     onSuccess: ({ data }) => {
-      localStorage.setItem("token", data.token);
-      dispatch(setUser(data.user));
-      queryClient.setQueryData(["currentUser"], data.user);
+      dispatch(setUser(data.data));
+      queryClient.setQueryData(["currentUser"], data.data);
+      navigate("/");
     },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      dispatch(setError(error.response.data.message));
     },
   });
 
   const register = useMutation({
     mutationFn: auth.register,
     onSuccess: ({ data }) => {
-      localStorage.setItem("token", data.token);
-      dispatch(setUser(data.user));
-      queryClient.setQueryData(["currentUser"], data.user);
+      dispatch(setUser(data.data));
+      queryClient.setQueryData(["currentUser"], data.data);
+      navigate("/");
     },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      dispatch(setError(error.response.data.message));
     },
   });
 

@@ -29,5 +29,9 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
+export interface ResponseApi<T> {
+  status: string;
+  message: string;
+  data: T;
+}
 export default api;

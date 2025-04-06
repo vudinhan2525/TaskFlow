@@ -1,14 +1,17 @@
 import React from "react";
 import logo from "@libs/assets/taskflow.png";
 import Image from "@libs/app/components/general-components/image";
-import { LuLock } from "react-icons/lu";
 import Branding from "@libs/app/pages/auth/loginPage/branding";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import OrthersLogin from "@libs/app/components/general-components/orthersLogin";
 import { Link } from "react-router-dom";
-
+import { useAuth } from "@libs/hooks/useAuth";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@libs/store";
+import { setError } from "@libs/store/slices/authSlice";
+import Button from "@libs/app/components/general-components/button";
 // Schema definition with Zod
 const loginSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -19,10 +22,15 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginPage: React.FC = () => {
+  const { login } = useAuth();
+  const isLoading = login.isPending;
+  const dispatch = useDispatch();
+  const { error } = useSelector((state: RootState) => state.auth);
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    setValue,
+    formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -33,12 +41,10 @@ const LoginPage: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Login successful", data);
-    } catch (err) {
-      console.error("Login error", err);
-    }
+    login.mutate({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (
@@ -69,6 +75,7 @@ const LoginPage: React.FC = () => {
                   id="email-address"
                   type="email"
                   autoComplete="email"
+                  onChange={() => dispatch(setError(null))}
                   placeholder="Email"
                   className={`appearance-none relative block w-full px-3 py-2 border ${
                     errors.email ? "border-red-500" : "border-gray-300"
@@ -83,6 +90,10 @@ const LoginPage: React.FC = () => {
                   id="password"
                   type="password"
                   autoComplete="current-password"
+                  onChange={(e) => {
+                    setValue("password", e.target.value);
+                    dispatch(setError(null));
+                  }}
                   placeholder="Mật khẩu"
                   className={`appearance-none relative block w-full px-3 py-2 border ${
                     errors.password ? "border-red-500" : "border-gray-300"
@@ -90,8 +101,8 @@ const LoginPage: React.FC = () => {
                 />
                 {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
               </div>
+              {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
-
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -113,22 +124,9 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  isSubmitting ? "bg-green-400" : "bg-green-600 hover:bg-green-700"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer`}
-              >
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <LuLock
-                    className={`h-5 w-5 text-green-500 ${
-                      isSubmitting ? "text-green-300" : "text-green-400 group-hover:text-green-300"
-                    }`}
-                  />
-                </span>
-                {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}
-              </button>
+              <Button variant="primary" isLoading={isLoading} type="submit">
+                Đăng nhập
+              </Button>
             </div>
           </form>
 

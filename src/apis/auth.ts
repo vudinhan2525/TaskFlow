@@ -1,11 +1,11 @@
-import api from "@libs/apis/api";
+import api, { ResponseApi } from "@libs/apis/api";
+import { CreateUserRequest, IUser, LoginUserRequest } from "@libs/types/user";
 
 export const auth = {
-  login: (credentials: { email: string; password: string }) =>
-    api.post<{ token: string; user: User }>("/users/login", credentials, {
+  login: (credentials: LoginUserRequest) =>
+    api.post<ResponseApi<IUser>>("/users/login", credentials, {
       withCredentials: true,
     }),
-  register: (data: { email: string; password: string; name: string }) =>
-    api.post<{ token: string; user: User }>("/auth/register", data),
-  getCurrentUser: () => api.get<User>("/auth/me"),
+  register: (data: CreateUserRequest) => api.post<ResponseApi<IUser>>("/users/register", data),
+  getCurrentUser: () => api.get<IUser>("/auth/me"),
 };

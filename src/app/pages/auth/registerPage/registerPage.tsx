@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Branding from "@libs/app/pages/auth/registerPage/branding";
 import Image from "@libs/app/components/general-components/image";
 import logo from "@libs/assets/taskflow.png";
-import { LuLock } from "react-icons/lu";
 import OrthersLogin from "@libs/app/components/general-components/orthersLogin";
 import { Link } from "react-router-dom";
+import Button from "@libs/app/components/general-components/button";
+import { useAuth } from "@libs/hooks/useAuth";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@libs/store";
+import { setError } from "@libs/store/slices/authSlice";
 
 // Định nghĩa schema validation với Zod
 const registerSchema = z
@@ -39,15 +43,16 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 const RegisterPage: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<boolean>(false);
+  const { register: registerMut } = useAuth();
+  const isLoading = registerMut.isPending;
+  const isSuccess = registerMut.isSuccess;
+  const dispatch = useDispatch();
+  const { error } = useSelector((state: RootState) => state.auth);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -60,26 +65,8 @@ const RegisterPage: React.FC = () => {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Log form data (in real app, send to server)
-      console.log("Registration data:", data);
-
-      // Show success mess  age
-      setSuccess(true);
-      reset();
-    } catch (err) {
-      console.log(err);
-      setError("Đăng ký thất bại. Vui lòng thử lại sau.");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(setError(null));
+    registerMut.mutate(data);
   };
 
   return (
@@ -100,7 +87,7 @@ const RegisterPage: React.FC = () => {
             </p>
           </div>
 
-          {success && (
+          {isSuccess && (
             <div className="bg-green-50 border-l-4 border-green-400 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -243,22 +230,9 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                  loading ? "bg-green-400" : "bg-green-600 hover:bg-green-700"
-                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer`}
-              >
-                <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                  <LuLock
-                    className={`h-5 w-5 text-green-500 ${
-                      loading ? "text-green-300" : "text-green-400 group-hover:text-green-300"
-                    }`}
-                  />
-                </span>
-                {loading ? "Đang xử lý..." : "Đăng ký"}
-              </button>
+              <Button variant="primary" isLoading={isLoading} type="submit">
+                Đăng ký
+              </Button>
             </div>
           </form>
 

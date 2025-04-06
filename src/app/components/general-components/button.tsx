@@ -1,4 +1,5 @@
 import React, { ReactNode } from "react";
+import { LuLoader } from "react-icons/lu"; // optional spinner icon from lucide-react
 
 type ButtonVariant =
   | "primary"
@@ -16,6 +17,8 @@ interface ButtonProps {
   variant?: ButtonVariant;
   className?: string;
   disabled?: boolean;
+  isLoading?: boolean;
+  type?: "button" | "submit" | "reset";
 }
 
 const variantStyles = {
@@ -35,28 +38,33 @@ const Button = ({
   variant = "primary",
   className = "",
   disabled = false,
+  isLoading = false,
+  type = "button",
 }: ButtonProps): React.ReactElement => {
   const baseStyles =
-    "px-4 py-2 rounded-md transition-all duration-200 font-medium text-sm outline-none ring-emerald-500 focus:ring-2 focus:ring-offset-2 select-none";
+    "w-full px-4 py-2 rounded-md transition-all duration-200 font-medium text-sm outline-none ring-emerald-500 focus:ring-2 focus:ring-offset-2 select-none flex items-center justify-center gap-2";
+
   const variantStyle = variantStyles[variant];
-  const disabledStyles = disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer";
+  const disabledStyles = disabled || isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer";
 
   return (
-    <div
+    <button
       role="button"
-      tabIndex={disabled ? -1 : 0}
-      onClick={!disabled ? onClick : undefined}
-      aria-disabled={disabled}
+      type={type}
+      tabIndex={disabled || isLoading ? -1 : 0}
+      onClick={!(disabled || isLoading) ? onClick : undefined}
+      aria-disabled={disabled || isLoading}
       className={`${baseStyles} ${variantStyle} ${disabledStyles} ${className}`}
       onKeyDown={(e) => {
-        if (!disabled && (e.key === "Enter" || e.key === " ")) {
+        if (!(disabled || isLoading) && (e.key === "Enter" || e.key === " ")) {
           e.preventDefault();
           onClick?.();
         }
       }}
     >
-      {children}
-    </div>
+      {isLoading && <LuLoader className="animate-spin w-4 h-4" />}
+      {isLoading ? "Đang xử lý..." : children}
+    </button>
   );
 };
 
