@@ -7,5 +7,5 @@ export const auth = {
       withCredentials: true,
     }),
   register: (data: CreateUserRequest) => api.post<ResponseApi<IUser>>("/users/register", data),
-  getCurrentUser: () => api.get<IUser>("/auth/me"),
+  getCurrentUser: () => api.get<ResponseApi<IUser>>("/users/get-me", { withCredentials: true }),
 };

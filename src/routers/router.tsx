@@ -8,6 +8,7 @@ import ListPage from "@libs/app/pages/project/listPage/listPage";
 import DefaultLayout from "@libs/app/layouts/defaultLayout";
 import LoginPage from "@libs/app/pages/auth/loginPage/loginPage";
 import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
+import ProjectPage from "@libs/app/pages/project/projectPage/projectPage";
 
 // Placeholder components until we implement the real ones
 const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement => (
@@ -50,10 +51,7 @@ const Router = (): React.ReactElement => {
 
           {/* Projects routes */}
           <Route path="projects">
-            <Route
-              index
-              element={<div className="p-8 text-center text-gray-600">Select a project from the sidebar</div>}
-            />
+            <Route index element={<ProjectPage />} />
             <Route path=":projectKey" element={<ProjectLayout />}>
               <Route index element={<ProjectBoard />} />
               <Route path="board" element={<ProjectBoard />} />

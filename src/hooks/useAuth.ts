@@ -16,11 +16,11 @@ export function useAuth() {
     queryKey: ["currentUser"],
     queryFn: async () => {
       const { data } = await auth.getCurrentUser();
-      dispatch(setUser(data));
+      dispatch(setUser(data.data));
       return data;
     },
     retry: false,
-    enabled: !!localStorage.getItem("token"),
+    enabled: true,
   });
 
   const login = useMutation({
@@ -54,7 +54,6 @@ export function useAuth() {
     dispatch(setUser(null));
     queryClient.clear();
   };
-
   return {
     user: currentUser,
     isLoading,

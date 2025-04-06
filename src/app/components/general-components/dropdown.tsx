@@ -13,6 +13,7 @@ interface DropDownProps {
   onClickItem?: (option: Option) => void;
   menuClassName?: string;
   rowClassName?: string;
+  className?: string;
   value?: Option;
   placement?:
     | "top"
@@ -34,6 +35,7 @@ export default function DropdownAntd({
   onClickItem,
   value,
   menuClassName,
+  className,
   rowClassName,
   placement = "bottomRight",
 }: DropDownProps) {
@@ -68,7 +70,9 @@ export default function DropdownAntd({
         open={open}
         onOpenChange={(bool) => setOpen(bool)}
       >
-        <div className="border-[1px] flex items-center justify-between gap-2 border-gray-300 px-3 py-[6px] rounded-md cursor-pointer">
+        <div
+          className={`border-[1px] flex items-center justify-between gap-2 border-gray-300 px-3 py-[6px] rounded-md cursor-pointer ${className}`}
+        >
           <p className="text-gray-700 font-semibold">{parent}</p>
           <FaChevronDown className="text-gray-500" />
         </div>

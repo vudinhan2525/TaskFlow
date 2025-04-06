@@ -56,9 +56,11 @@ const LoginPage: React.FC = () => {
       <div className="w-full md:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div>
-            <Link to={"/"} className="flex cursor-pointer justify-center">
-              <Image src={logo} className="w-[200px] h-[40px]" />
-            </Link>
+            <div className="flex justify-center">
+              <Link to={"/"} className="cursor-pointer">
+                <Image src={logo} className="w-[200px] h-[40px]" />
+              </Link>
+            </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Đăng nhập vào TaskFlow</h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               Hoặc{" "}
@@ -124,7 +126,7 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <Button variant="primary" isLoading={isLoading} type="submit">
+              <Button variant="primary" isLoading={isLoading} type="submit" className="w-full">
                 Đăng nhập
               </Button>
             </div>
