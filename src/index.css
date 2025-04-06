@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+.ant-popover-inner {
+  @apply !p-2;
+}
