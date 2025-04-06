@@ -6,7 +6,8 @@ import ProjectLayout from "@libs/app/layouts/projectLayout";
 import BacklogPage from "@libs/app/pages/project/backLogPage/backLogPage";
 import ListPage from "@libs/app/pages/project/listPage/listPage";
 import DefaultLayout from "@libs/app/layouts/defaultLayout";
-import LoginPage from "@libs/app/pages/auth/loginPage";
+import LoginPage from "@libs/app/pages/auth/loginPage/loginPage";
+import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
 
 // Placeholder components until we implement the real ones
 const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement => (
@@ -34,7 +35,7 @@ const Router = (): React.ReactElement => {
         {/* Public routes */}
 
         <Route path="/login" element={<LoginPage />} />
-        {/* <Route path="/register" element={<Register />} /> */}
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* Protected routes */}
         <Route
