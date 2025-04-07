@@ -39,7 +39,6 @@ const columns: TableColumnsType<DataType> = [
     dataIndex: "name",
     width: "40%",
     sorter: (a, b) => a.name.length - b.name.length,
-    sortDirections: ["descend"],
   },
   {
     title: "Key",

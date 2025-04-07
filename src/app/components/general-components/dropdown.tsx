@@ -73,7 +73,7 @@ export default function DropdownAntd({
         <div
           className={`border-[1px] flex items-center justify-between gap-2 border-gray-300 px-3 py-[6px] rounded-md cursor-pointer ${className}`}
         >
-          <p className="text-gray-700 font-semibold">{parent}</p>
+          <div className="text-gray-700 font-semibold">{parent}</div>
           <FaChevronDown className="text-gray-500" />
         </div>
       </Popover>

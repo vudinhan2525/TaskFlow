@@ -1,0 +1,55 @@
+import Button from "@libs/app/components/general-components/button";
+import { ReactNode } from "react";
+import { LuX } from "react-icons/lu";
+
+interface BaseModalProps {
+  title: string;
+  buttonContent: string;
+  onClose: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubmit: any;
+  children: ReactNode;
+}
+
+export default function Modal({ title, buttonContent = "Accept", onClose, onSubmit, children }: BaseModalProps) {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return (
+    <div
+      onMouseDown={handleBackdropClick}
+      className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-fade-in">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold text-green-700">{title}</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 focus:outline-none">
+            <LuX className="w-7 h-7 cursor-pointer" />
+          </button>
+        </div>
+        {children}
+
+        <div className="flex justify-end space-x-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 cursor-pointer text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            Cancel
+          </button>
+          <Button
+            onClick={() => {
+              if (onSubmit) onSubmit();
+            }}
+            className="px-4 py-2 cursor-pointer text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            {buttonContent}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}

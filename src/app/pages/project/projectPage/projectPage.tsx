@@ -6,6 +6,7 @@ import ProjectStat from "@libs/app/components/projects/dashboard/projectStat";
 import ProjectTable from "@libs/app/components/projects/dashboard/projectTable";
 import ProjectDeadlines from "@libs/app/components/projects/dashboard/projectDeadlines";
 import ProjectActivity from "@libs/app/components/projects/dashboard/projectActivity";
+import CreateProjectModal from "@libs/app/components/projects/modals/createProjectModal";
 
 const filterOptions = [
   { value: "newest", label: "Newest" },
@@ -14,6 +15,7 @@ const filterOptions = [
 
 export default function ProjectPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(true);
   const [option, setOption] = useState(filterOptions[0]);
 
   return (
@@ -22,7 +24,7 @@ export default function ProjectPage() {
       <div className="basis-[70%]">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold">Projects</h1>
-          <Button>Create Project</Button>
+          <Button onClick={() => setShowCreateProjectModal(true)}>Create Project</Button>
         </div>
 
         <div className="flex mt-6 items-center gap-3">
@@ -62,6 +64,12 @@ export default function ProjectPage() {
         {/* Deadlines Card */}
         <ProjectDeadlines />
       </div>
+      <CreateProjectModal
+        isOpen={showCreateProjectModal}
+        onClose={() => {
+          setShowCreateProjectModal(false);
+        }}
+      />
     </div>
   );
 }
