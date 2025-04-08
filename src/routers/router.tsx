@@ -9,7 +9,6 @@ import DefaultLayout from "@libs/app/layouts/defaultLayout";
 import LoginPage from "@libs/app/pages/auth/loginPage/loginPage";
 import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
 import ProjectPage from "@libs/app/pages/project/projectPage/projectPage";
-import Dashboard from "@libs/app/components/projects/dashboard/dashboard";
 
 // Placeholder components until we implement the real ones
 const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement => (
@@ -17,12 +16,10 @@ const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement 
 );
 
 // Lazy load components
-
-const ProjectSummary = lazy(() => import("@libs/app/pages/project/summaryPage/summaryPage"));
+const ProjectReport = lazy(() => import("@libs/app/pages/project/reportPage/reportPage"));
 const ProjectBoard = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Project Board" /> }));
 const Roadmap = lazy(() => import("@libs/app/pages/project/roadmapPage/roadmapPage"));
 const ActiveSprints = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Active Sprints" /> }));
-const Reports = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Reports" /> }));
 const ProjectSettings = lazy(() =>
   Promise.resolve({ default: () => <PlaceholderComponent title="Project Settings" /> })
 );
@@ -56,14 +53,14 @@ const Router = (): React.ReactElement => {
           <Route path="projects">
             <Route index element={<ProjectPage />} />
             <Route path=":projectKey" element={<ProjectLayout />}>
-              <Route index element={<Dashboard />} />
+              <Route index element={<ProjectPage />} />
               <Route path="board" element={<ProjectBoard />} />
-              <Route path="summary" element={<ProjectSummary />} />
+              <Route path="summary" element={<ProjectPage />} />
               <Route path="backlog" element={<BacklogPage />} />
               <Route path="list" element={<ListPage />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="sprints" element={<ActiveSprints />} />
-              <Route path="reports" element={<Reports />} />
+              <Route path="reports" element={<ProjectReport />} />
               <Route path="settings" element={<ProjectSettings />} />
             </Route>
           </Route>

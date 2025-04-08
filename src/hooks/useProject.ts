@@ -1,9 +1,50 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setProjects, setCurrentProject, setLoading, setError } from "../store/slices/projectSlice";
 import { queryClient } from "../apis/react-query";
 import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
+import { RootState } from "@libs/store";
+
+export function useUserProjects() {
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const userId = user?.id;
+
+  const {
+    data: projectsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["userProjects", userId],
+    queryFn: async () => {
+      if (!userId) throw new Error("User ID is required");
+
+      dispatch(setLoading(true));
+      try {
+        const response = await projects.getUserProjects(userId);
+        const data = response.data;
+        return data;
+      } catch (error) {
+        console.error("Error fetching user projects:", error);
+        dispatch(setError((error as Error).message));
+        throw error;
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    enabled: isAuthenticated && !!userId,
+  });
+
+  console.log("User projects data:", projectsData); // Debug log
+
+  return {
+    projects: projectsData?.data || [],
+    pagination: projectsData?.pagination,
+    isLoading,
+    error,
+  };
+}
 
 export function useProjects() {
   const dispatch = useDispatch();

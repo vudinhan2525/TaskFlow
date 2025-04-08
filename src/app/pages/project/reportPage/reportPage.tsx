@@ -1,10 +1,10 @@
 import React from "react";
-import MetricCards from "./components/MetricCards";
-import StatusOverview from "./components/StatusOverview";
-import IssueAnalytics from "./components/IssueAnalytics";
+import MetricCards from "../../../components/projects/report/MetricCards";
+import StatusOverview from "../../../components/projects/report/StatusOverview";
+import IssueAnalytics from "../../../components/projects/report/IssueAnalytics";
 // import TeamOverview from "./components/TeamOverview";
 
-const SummaryPage: React.FC = () => {
+const ReportPage: React.FC = () => {
   return (
     <div className="w-full p-6 space-y-6">
       {/* Page Header */}
@@ -36,4 +36,4 @@ const SummaryPage: React.FC = () => {
   );
 };
 
-export default SummaryPage;
+export default ReportPage;

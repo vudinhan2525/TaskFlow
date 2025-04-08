@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { FaRocket, FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaPlus } from "react-icons/fa";
+import { FaRocket, FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaPlus, FaTasks, FaGlobe } from "react-icons/fa";
 
 interface NavItem {
   label: string;
@@ -13,8 +13,10 @@ const ProjectNavbar = (): React.ReactElement => {
   const location = useLocation();
 
   const navItems: NavItem[] = [
+    { label: "Summary", icon: <FaGlobe />, route: `/projects/${projectKey}/summary` },
     { label: "Board", icon: <FaTh />, route: `/projects/${projectKey}/board` },
-    { label: "Backlog", icon: <FaListAlt />, route: `/projects/${projectKey}/backlog` },
+    { label: "Backlog", icon: <FaTasks />, route: `/projects/${projectKey}/backlog` },
+    { label: "List", icon: <FaListAlt />, route: `/projects/${projectKey}/list` },
     { label: "Roadmap", icon: <FaChartBar />, route: `/projects/${projectKey}/roadmap` },
     { label: "Sprints", icon: <FaCalendarAlt />, route: `/projects/${projectKey}/sprints` },
     { label: "Reports", icon: <FaChartBar />, route: `/projects/${projectKey}/reports` },

@@ -15,7 +15,7 @@ const filterOptions = [
 
 export default function ProjectPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [showCreateProjectModal, setShowCreateProjectModal] = useState(true);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [option, setOption] = useState(filterOptions[0]);
 
   return (
