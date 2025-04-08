@@ -31,9 +31,6 @@ export const Header = () => {
   const { createIssue } = useIssues(selectedProject);
 
   const handleCreateIssue = () => {
-    if (!selectedProject) {
-      return;
-    }
     setIsCreateIssueModalOpen(true);
   };
 
@@ -107,7 +104,7 @@ export const Header = () => {
             <FaMagnifyingGlass className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
           </div>
           {isAuthenticated && (
-            <Button className="" onClick={handleCreateIssue} disabled={!selectedProject}>
+            <Button className="" onClick={handleCreateIssue}>
               <span className="text-base font-semibold">Create Issue</span>
             </Button>
           )}

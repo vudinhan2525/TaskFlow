@@ -17,7 +17,7 @@ const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement 
 
 // Lazy load components
 const ProjectReport = lazy(() => import("@libs/app/pages/project/reportPage/reportPage"));
-const ProjectBoard = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Project Board" /> }));
+const ProjectBoard = lazy(() => import("@libs/app/pages/project/boardPage/boardPage"));
 const Roadmap = lazy(() => import("@libs/app/pages/project/roadmapPage/roadmapPage"));
 const ActiveSprints = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Active Sprints" /> }));
 const ProjectSettings = lazy(() =>

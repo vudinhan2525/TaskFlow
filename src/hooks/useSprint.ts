@@ -1,80 +1,122 @@
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useDispatch } from "react-redux";
+import { queryClient } from "../apis/react-query";
+import type { Sprint } from "../types";
+import { sprints } from "@libs/apis/sprint";
 import {
   setSprints,
   setCurrentSprint,
   addSprint,
-  updateSprint,
-  deleteSprint,
-  addIssueToSprint,
-  removeIssueFromSprint,
-  moveIssue,
+  updateSprint as updateSprintAction,
+  deleteSprint as deleteSprintAction,
   setLoading,
   setError,
 } from "../store/slices/sprintSlice";
-import type { Sprint, Issue } from "../types";
 
-export const useSprint = () => {
+export function useSprints(projectId: string) {
   const dispatch = useDispatch();
-  const { sprints, currentSprint, isLoading, error } = useSelector((state: RootState) => state.sprint);
 
-  const handleSetSprints = (sprints: Sprint[]) => {
-    dispatch(setSprints(sprints));
-  };
-
-  const handleSetCurrentSprint = (sprint: Sprint | null) => {
-    dispatch(setCurrentSprint(sprint));
-  };
-
-  const handleAddSprint = (sprint: Sprint) => {
-    dispatch(addSprint(sprint));
-  };
-
-  const handleUpdateSprint = (sprint: Sprint) => {
-    dispatch(updateSprint(sprint));
-  };
-
-  const handleDeleteSprint = (sprintId: string) => {
-    dispatch(deleteSprint(sprintId));
-  };
-
-  const handleAddIssueToSprint = (sprintId: string, issue: Issue) => {
-    dispatch(addIssueToSprint({ sprintId, issue }));
-  };
-
-  const handleRemoveIssueFromSprint = (sprintId: string, issueId: string) => {
-    dispatch(removeIssueFromSprint({ sprintId, issueId }));
-  };
-
-  const handleMoveIssue = (fromSprintId: string, toSprintId: string, issueId: string) => {
-    dispatch(moveIssue({ fromSprintId, toSprintId, issueId }));
-  };
-
-  const handleSetLoading = (loading: boolean) => {
-    dispatch(setLoading(loading));
-  };
-
-  const handleSetError = (error: string | null) => {
-    dispatch(setError(error));
-  };
-
-  return {
-    // State
-    sprints,
-    currentSprint,
+  const {
+    data: sprintsList,
     isLoading,
     error,
+  } = useQuery({
+    queryKey: ["sprints", projectId],
+    queryFn: async () => {
+      dispatch(setLoading(true));
+      try {
+        const response = await sprints.list(projectId);
+        dispatch(setSprints(response.data.data));
+        return response.data;
+      } catch (error) {
+        dispatch(setError((error as Error).message));
+        throw error;
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    enabled: !!projectId,
+  });
 
-    // Actions
-    setSprints: handleSetSprints,
-    setCurrentSprint: handleSetCurrentSprint,
-    addSprint: handleAddSprint,
-    updateSprint: handleUpdateSprint,
-    deleteSprint: handleDeleteSprint,
-    addIssueToSprint: handleAddIssueToSprint,
-    removeIssueFromSprint: handleRemoveIssueFromSprint,
-    moveIssue: handleMoveIssue,
-    setLoading: handleSetLoading,
-    setError: handleSetError,
+  const createSprint = useMutation({
+    mutationFn: (data: Omit<Sprint, "id" | "issues" | "createdAt" | "updatedAt">) => sprints.create(projectId, data),
+    onSuccess: (response) => {
+      const newSprint = response.data;
+      dispatch(addSprint(newSprint));
+      queryClient.setQueryData<Sprint[]>(["sprints", projectId], (old = []) => [...old, newSprint]);
+    },
+    onError: (error: Error) => {
+      dispatch(setError(error.message));
+    },
+  });
+
+  const updateSprint = useMutation({
+    mutationFn: ({ sprintId, data }: { sprintId: string; data: Partial<Sprint> }) =>
+      sprints.update(projectId, sprintId, data),
+    onSuccess: (response) => {
+      const updatedSprint = response.data;
+      dispatch(updateSprintAction(updatedSprint));
+      queryClient.setQueryData<Sprint[]>(["sprints", projectId], (old = []) =>
+        old.map((sprint) => (sprint.id === updatedSprint.id ? updatedSprint : sprint))
+      );
+    },
+    onError: (error: Error) => {
+      dispatch(setError(error.message));
+    },
+  });
+
+  const deleteSprint = useMutation({
+    mutationFn: (sprintId: string) => sprints.delete(projectId, sprintId),
+    onSuccess: (_, deletedId) => {
+      dispatch(deleteSprintAction(deletedId));
+      queryClient.setQueryData<Sprint[]>(["sprints", projectId], (old = []) =>
+        old.filter((sprint) => sprint.id !== deletedId)
+      );
+    },
+    onError: (error: Error) => {
+      dispatch(setError(error.message));
+    },
+  });
+
+  return {
+    sprints: sprintsList?.data || [],
+    pagination: sprintsList?.pagination,
+    isLoading,
+    error,
+    createSprint,
+    updateSprint,
+    deleteSprint,
   };
-};
+}
+
+export function useSprint(projectId: string, sprintId: string) {
+  const dispatch = useDispatch();
+
+  const {
+    data: sprint,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["sprint", projectId, sprintId],
+    queryFn: async () => {
+      dispatch(setLoading(true));
+      try {
+        const { data } = await sprints.getById(projectId, sprintId);
+        dispatch(setCurrentSprint(data));
+        return data;
+      } catch (error) {
+        dispatch(setError((error as Error).message));
+        throw error;
+      } finally {
+        dispatch(setLoading(false));
+      }
+    },
+    enabled: !!projectId && !!sprintId,
+  });
+
+  return {
+    sprint,
+    isLoading,
+    error,
+  };
+}

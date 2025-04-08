@@ -41,11 +41,11 @@ export interface Sprint {
   id: string;
   name: string;
   projectId: string;
-  startDate?: Date;
-  endDate?: Date;
-  status: "Planning" | "Active" | "Completed";
+  dateStarted: string;
+  dateEnded: string;
+  duration: number;
   goal?: string;
   issues: Issue[];
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: string;
+  updatedAt: string;
 }
