@@ -1,18 +1,23 @@
+import { useState } from "react";
 import Button from "@libs/app/components/general-components/button";
 import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
 import ScrumSprint from "@libs/app/components/projects/backlog/scrumPrint";
-import React from "react";
+import CreateIssueModal from "@libs/app/components/projects/modals/createIssueModal";
+import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import { useSelector } from "react-redux";
 import { RootState } from "@libs/store";
-import { Issue } from "@libs/types";
 import Backlog from "@libs/app/components/projects/backlog/backlog";
+import { useSprint } from "@libs/hooks/useSprint";
+import { useParams } from "react-router-dom";
+import { useIssues } from "@libs/hooks/useIssue";
 
 const BacklogPage: React.FC = () => {
+  const { projectKey: projectId = "" } = useParams();
+  const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
+  const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
   const selectedIssueId = useSelector((state: RootState) => state.ui.selectedIssueId);
-  const sprint1Issues: Issue[] = [
-    { id: "SCRUM-4", title: "Build landing page", status: "Done", assignee: "KP" },
-    { id: "SCRUM-3", title: "dasda", status: "To Do", assignee: "KP" },
-  ];
+  const { sprints, isLoading, createSprint } = useSprint(projectId);
+  const { createIssue } = useIssues(projectId);
 
   return (
     <div className="flex">
@@ -24,7 +29,21 @@ const BacklogPage: React.FC = () => {
         {/* Search and Filters */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <div className="relative">
+            <Button
+              variant="primary"
+              className="bg-green-600 text-white hover:bg-green-700"
+              onClick={() => setIsCreateSprintModalOpen(true)}
+            >
+              Add Sprint
+            </Button>
+            <Button
+              variant="primary"
+              className="bg-green-600 text-white hover:bg-green-700"
+              onClick={() => setIsCreateIssueModalOpen(true)}
+            >
+              Create Issue
+            </Button>
+            <div className="relative ml-2">
               <input
                 type="text"
                 placeholder="Search backlog"
@@ -59,19 +78,66 @@ const BacklogPage: React.FC = () => {
         </div>
 
         {/* Scrum Sprints */}
-        <ScrumSprint
-          sprintName="SCRUM SPRINT 1"
-          startDate="22 Mar"
-          endDate="19 Apr"
-          issues={sprint1Issues}
-          issueCount={2}
-        />
-        <ScrumSprint sprintName="SCRUM SPRINT 2" startDate="19 Apr" endDate="17 May" issues={[]} issueCount={0} />
+        {isLoading ? (
+          <div className="text-center py-4">Loading sprints...</div>
+        ) : sprints.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No sprints created yet. Create one from the backlog section below.
+          </div>
+        ) : (
+          sprints.map((sprint) => (
+            <ScrumSprint
+              key={sprint.id}
+              sprintName={sprint.name}
+              startDate={new Date(sprint.date_started).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              endDate={new Date(sprint.date_ended).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              issues={[]} // TODO: Add sprint issues
+              issueCount={0} // TODO: Add issue count
+              projectId={projectId}
+              sprintId={sprint.id}
+            />
+          ))
+        )}
 
         {/* Backlog */}
-        <Backlog />
+        <Backlog projectId={projectId} />
       </div>
+
       <IssueSideBar />
+
+      {/* Create Issue Modal */}
+      <CreateIssueModal
+        isOpen={isCreateIssueModalOpen}
+        onClose={() => setIsCreateIssueModalOpen(false)}
+        onSubmit={async (data) => {
+          try {
+            await createIssue.mutateAsync(data);
+            setIsCreateIssueModalOpen(false);
+          } catch (error) {
+            console.error("Failed to create issue:", error);
+          }
+        }}
+      />
+
+      {/* Create Sprint Modal */}
+      <CreateSprintModal
+        isOpen={isCreateSprintModalOpen}
+        onClose={() => setIsCreateSprintModalOpen(false)}
+        projectId={projectId}
+        onSubmit={async (data) => {
+          try {
+            await createSprint.mutateAsync({
+              projectId,
+              name: data.name,
+              date_started: data.dateStarted,
+              date_ended: data.dateEnded,
+            });
+            setIsCreateSprintModalOpen(false);
+          } catch (error) {
+            console.error("Failed to create sprint:", error);
+          }
+        }}
+      />
     </div>
   );
 };

@@ -1,122 +1,63 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
-import { queryClient } from "../apis/react-query";
-import type { Sprint } from "../types";
-import { sprints } from "@libs/apis/sprint";
-import {
-  setSprints,
-  setCurrentSprint,
-  addSprint,
-  updateSprint as updateSprintAction,
-  deleteSprint as deleteSprintAction,
-  setLoading,
-  setError,
-} from "../store/slices/sprintSlice";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { sprints, Sprint } from "@libs/apis/sprint";
+import { toast } from "react-toastify";
+import { ResponseApi } from "@libs/apis/api";
 
-export function useSprints(projectId: string) {
-  const dispatch = useDispatch();
+export function useSprint(projectId: string) {
+  const queryClient = useQueryClient();
 
   const {
-    data: sprintsList,
+    data: sprintList,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["sprints", projectId],
-    queryFn: async () => {
-      dispatch(setLoading(true));
-      try {
-        const response = await sprints.list(projectId);
-        dispatch(setSprints(response.data.data));
-        return response.data;
-      } catch (error) {
-        dispatch(setError((error as Error).message));
-        throw error;
-      } finally {
-        dispatch(setLoading(false));
-      }
-    },
+    queryFn: () => sprints.list(projectId),
     enabled: !!projectId,
   });
 
   const createSprint = useMutation({
-    mutationFn: (data: Omit<Sprint, "id" | "issues" | "createdAt" | "updatedAt">) => sprints.create(projectId, data),
-    onSuccess: (response) => {
-      const newSprint = response.data;
-      dispatch(addSprint(newSprint));
-      queryClient.setQueryData<Sprint[]>(["sprints", projectId], (old = []) => [...old, newSprint]);
+    mutationFn: (data: Omit<Sprint, "id" | "created_at" | "updated_at">) =>
+      sprints.create(projectId, { ...data, project_id: projectId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
+      toast.success("Sprint created successfully");
     },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to create sprint");
     },
   });
 
   const updateSprint = useMutation({
-    mutationFn: ({ sprintId, data }: { sprintId: string; data: Partial<Sprint> }) =>
-      sprints.update(projectId, sprintId, data),
-    onSuccess: (response) => {
-      const updatedSprint = response.data;
-      dispatch(updateSprintAction(updatedSprint));
-      queryClient.setQueryData<Sprint[]>(["sprints", projectId], (old = []) =>
-        old.map((sprint) => (sprint.id === updatedSprint.id ? updatedSprint : sprint))
-      );
+    mutationFn: ({ id, data }: { id: string; data: Partial<Sprint> }) => sprints.update(projectId, id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
+      toast.success("Sprint updated successfully");
     },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to update sprint");
     },
   });
 
   const deleteSprint = useMutation({
-    mutationFn: (sprintId: string) => sprints.delete(projectId, sprintId),
-    onSuccess: (_, deletedId) => {
-      dispatch(deleteSprintAction(deletedId));
-      queryClient.setQueryData<Sprint[]>(["sprints", projectId], (old = []) =>
-        old.filter((sprint) => sprint.id !== deletedId)
-      );
+    mutationFn: (id: string) => sprints.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
+      toast.success("Sprint deleted successfully");
     },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to delete sprint");
     },
   });
 
   return {
-    sprints: sprintsList?.data || [],
-    pagination: sprintsList?.pagination,
+    sprints: sprintList?.data?.data || [],
+    pagination: sprintList?.data?.pagination,
     isLoading,
     error,
     createSprint,
     updateSprint,
     deleteSprint,
-  };
-}
-
-export function useSprint(projectId: string, sprintId: string) {
-  const dispatch = useDispatch();
-
-  const {
-    data: sprint,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["sprint", projectId, sprintId],
-    queryFn: async () => {
-      dispatch(setLoading(true));
-      try {
-        const { data } = await sprints.getById(projectId, sprintId);
-        dispatch(setCurrentSprint(data));
-        return data;
-      } catch (error) {
-        dispatch(setError((error as Error).message));
-        throw error;
-      } finally {
-        dispatch(setLoading(false));
-      }
-    },
-    enabled: !!projectId && !!sprintId,
-  });
-
-  return {
-    sprint,
-    isLoading,
-    error,
   };
 }

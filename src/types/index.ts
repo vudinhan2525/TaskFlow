@@ -18,9 +18,12 @@ export interface Project {
   name: string;
   key: string;
   description?: string;
-  boards: Board[];
-  createdAt?: Date;
-  updatedAt?: Date;
+  access: string;
+  type: "Kanban" | "Scrum";
+  owner_id: string;
+  boards?: Board[];
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Board {
