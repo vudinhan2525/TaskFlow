@@ -38,10 +38,16 @@ interface CreateProjectModalProps {
 const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreateProjectModalProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { updateProject, isLoading: isUpdating } = useUpdateProject({
-    onClose,
+    onClose: () => {
+      onClose();
+      reset();
+    },
   });
   const { createProject, isLoading: isCreating } = useCreateProject({
-    onClose,
+    onClose: () => {
+      onClose();
+      reset();
+    },
   });
   const isLoading = isUpdating || isCreating;
   const {
@@ -49,6 +55,7 @@ const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreatePr
     handleSubmit,
     setValue,
     watch,
+    reset,
     formState: { errors },
   } = useForm<CreateProjectForm>({
     resolver: zodResolver(createProjectSchema),

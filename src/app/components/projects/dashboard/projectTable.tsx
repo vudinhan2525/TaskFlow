@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Dropdown, Menu, Table } from "antd";
 import type { TableColumnsType } from "antd";
 import { useDeleteProject, useUserProjects } from "@libs/hooks/useProject";
@@ -55,7 +55,8 @@ const ProjectTable: React.FC = () => {
       onRow={(record) => {
         return {
           style: { cursor: "pointer" },
-          onClick: () => {
+          onClick: (e) => {
+            e.stopPropagation();
             navigate(`/projects/${record.id}`);
           },
         };
@@ -75,7 +76,9 @@ const ProjectActions = ({ record }: { record: IProject }) => {
     {
       key: "edit",
       label: "Edit",
-      onClick: () => setIsEditModalOpen(true),
+      onClick: () => {
+        setIsEditModalOpen(true);
+      },
     },
     {
       key: "delete",
@@ -93,29 +96,38 @@ const ProjectActions = ({ record }: { record: IProject }) => {
         placement="bottom"
         dropdownRender={() => (
           <div className="w-[140px]">
-            <Menu items={menuItems} />
+            <Menu
+              items={menuItems}
+              onClick={({ domEvent }) => {
+                domEvent.stopPropagation();
+              }}
+            />
           </div>
         )}
       >
         <Button type="text" icon={<LuEllipsisVertical />} onClick={(e) => e.stopPropagation()} />
       </Dropdown>
       <ModalPortal>
-        <ConfirmDeleteModal
-          open={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDelete}
-          loading={isLoading}
-          title="Delete Project"
-          description={`Are you sure you want to delete "${record.name}"?`}
-        />
-        <CreateProjectModal
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-          }}
-          iniProject={record}
-          isEditing={true}
-        />
+        <div
+          onClick={(e) => e.stopPropagation()} // Prevent propagation when clicking on the modal background
+        >
+          <ConfirmDeleteModal
+            open={isDeleteModalOpen}
+            onClose={() => setIsDeleteModalOpen(false)}
+            onConfirm={handleDelete}
+            loading={isLoading}
+            title="Delete Project"
+            description={`Are you sure you want to delete "${record.name}"?`}
+          />
+          <CreateProjectModal
+            isOpen={isEditModalOpen}
+            onClose={() => {
+              setIsEditModalOpen(false);
+            }}
+            iniProject={record}
+            isEditing={true}
+          />
+        </div>
       </ModalPortal>
     </>
   );
