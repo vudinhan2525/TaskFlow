@@ -20,13 +20,12 @@ export const Header = () => {
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+
   const navigate = useNavigate();
   // Using mock data
   const currentUser = mockUser;
 
-  const { projects, isLoading: projectsLoading } = useUserProjects();
-
-  console.log("Projects:", projects); // Debug log
+  const { projects } = useUserProjects();
 
   const { createIssue } = useIssues(selectedProject);
 
@@ -46,7 +45,6 @@ export const Header = () => {
       console.error("Failed to create issue:", error);
     }
   };
-
   return (
     <>
       <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 w-full">
@@ -58,15 +56,13 @@ export const Header = () => {
           </div>
 
           {/* Project Dropdown - Only show when authenticated */}
-          {isAuthenticated && (
+          {isAuthenticated && projects.length > 0 && (
             <div className="relative">
               <DropdownAntd
-                options={
-                  projects?.map((project) => ({
-                    value: project.id,
-                    label: project.name,
-                  })) || []
-                }
+                options={projects.map((project) => ({
+                  value: project.id,
+                  label: project.name,
+                }))}
                 placement="bottom"
                 onClickItem={(option) => {
                   setSelectedProject(option.value);
@@ -74,17 +70,7 @@ export const Header = () => {
                 }}
                 menuClassName={"min-w-[120px]"}
                 rowClassName="font-semibold text-gray-700"
-                parent={
-                  <div className="flex items-center space-x-2">
-                    <span>
-                      {projectsLoading
-                        ? "Loading..."
-                        : selectedProject
-                        ? projects?.find((p) => p.id === selectedProject)?.name
-                        : "Select Project"}
-                    </span>
-                  </div>
-                }
+                parent={<div className="flex items-center space-x-2">Projects</div>}
               />
             </div>
           )}

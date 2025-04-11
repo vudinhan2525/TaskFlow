@@ -1,13 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useDispatch, useSelector } from "react-redux";
-import { setProjects, setCurrentProject, setLoading, setError } from "../store/slices/projectSlice";
-import { queryClient } from "../apis/react-query";
+import { useSelector } from "react-redux";
 import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
 import { RootState } from "@libs/store";
+import { toast } from "react-toastify";
 
 export function useUserProjects() {
-  const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const userId = user?.id;
 
@@ -18,25 +16,15 @@ export function useUserProjects() {
   } = useQuery({
     queryKey: ["userProjects", userId],
     queryFn: async () => {
+      // TODO : TOAST DONT THROW
       if (!userId) throw new Error("User ID is required");
 
-      dispatch(setLoading(true));
-      try {
-        const response = await projects.getUserProjects(userId);
-        const data = response.data;
-        return data;
-      } catch (error) {
-        console.error("Error fetching user projects:", error);
-        dispatch(setError((error as Error).message));
-        throw error;
-      } finally {
-        dispatch(setLoading(false));
-      }
+      const response = await projects.getUserProjects(userId);
+      const data = response.data;
+      return data;
     },
     enabled: isAuthenticated && !!userId,
   });
-
-  console.log("User projects data:", projectsData); // Debug log
 
   return {
     projects: projectsData?.data || [],
@@ -47,8 +35,6 @@ export function useUserProjects() {
 }
 
 export function useProjects() {
-  const dispatch = useDispatch();
-
   const {
     data: projectsList,
     isLoading,
@@ -56,69 +42,55 @@ export function useProjects() {
   } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
-      dispatch(setLoading(true));
-      try {
-        const { data } = await projects.getAll();
-        dispatch(setProjects(data));
-        return data;
-      } catch (error) {
-        dispatch(setError((error as Error).message));
-        throw error;
-      } finally {
-        dispatch(setLoading(false));
-      }
-    },
-  });
-
-  const createProject = useMutation({
-    mutationFn: projects.create,
-    onSuccess: (response) => {
-      const newProject = response.data;
-      queryClient.setQueryData<Project[]>(["projects"], (old = []) => [...old, newProject]);
-    },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
+      const { data } = await projects.getAll();
+      return data;
     },
   });
 
   const updateProject = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) => projects.update(id, data),
-    onSuccess: (response) => {
-      const updatedProject = response.data;
-      queryClient.setQueryData<Project[]>(["projects"], (old = []) =>
-        old.map((project) => (project.id === updatedProject.id ? updatedProject : project))
-      );
-    },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
-    },
+    onSuccess: () => {},
+    onError: () => {},
   });
 
   const deleteProject = useMutation({
     mutationFn: projects.delete,
-    onSuccess: (_, deletedId) => {
-      queryClient.setQueryData<Project[]>(["projects"], (old = []) =>
-        old.filter((project) => project.id !== deletedId)
-      );
-    },
-    onError: (error: Error) => {
-      dispatch(setError(error.message));
-    },
+    onSuccess: () => {},
+    onError: () => {},
   });
 
   return {
     projects: projectsList,
     isLoading,
     error,
-    createProject,
     updateProject,
     deleteProject,
   };
 }
+export function useCreateProject() {
+  const {
+    mutate: createProject,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: projects.create,
+    onSuccess: () => {
+      toast.success("You must be logged in to create a project");
+    },
+    onError: () => {
+      toast.error("Some thing went wrong");
+    },
+  });
 
+  return {
+    createProject,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
 export function useProject(projectId: string) {
-  const dispatch = useDispatch();
-
   const {
     data: project,
     isLoading,
@@ -126,18 +98,8 @@ export function useProject(projectId: string) {
   } = useQuery({
     queryKey: ["project", projectId],
     queryFn: async () => {
-      dispatch(setLoading(true));
-      try {
-        const { data } = await projects.getById(projectId);
-        console.log("Project data:", data);
-        dispatch(setCurrentProject(data));
-        return data;
-      } catch (error) {
-        dispatch(setError((error as Error).message));
-        throw error;
-      } finally {
-        dispatch(setLoading(false));
-      }
+      const { data } = await projects.getById(projectId);
+      return data;
     },
     enabled: !!projectId,
   });

@@ -33,5 +33,12 @@ export interface ResponseApi<T> {
   status: string;
   message: string;
   data: T;
+  pagination?: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    limit: number;
+  };
 }
+
 export default api;

@@ -1,39 +1,11 @@
 import React from "react";
 import { Table } from "antd";
-import type { TableColumnsType, TableProps } from "antd";
-const data = [
-  {
-    key: "1",
-    name: "John Brown",
-    access: "Private",
-    type: "Scrum",
-  },
-  {
-    key: "2",
-    name: "Jim Green",
-    access: "Private",
-    type: "Scrum",
-  },
-  {
-    key: "3",
-    name: "Joe Black",
-    access: "Public",
-    type: "Kanban",
-  },
-  {
-    key: "4",
-    name: "Jim Red",
-    access: "Private",
-    type: "Scrum",
-  },
-];
-interface DataType {
-  key: string;
-  name: string;
-  type: string;
-  access: string;
-}
-const columns: TableColumnsType<DataType> = [
+import type { TableColumnsType } from "antd";
+import { useUserProjects } from "@libs/hooks/useProject";
+import { useNavigate } from "react-router-dom";
+import { IProject } from "@libs/types/project";
+
+const columns: TableColumnsType<IProject> = [
   {
     title: "Name",
     dataIndex: "name",
@@ -60,24 +32,25 @@ const columns: TableColumnsType<DataType> = [
   },
 ];
 
-const onChange: TableProps<DataType>["onChange"] = (pagination, filters, sorter, extra) => {
-  console.log("params", pagination, filters, sorter, extra);
-};
+const ProjectTable: React.FC = () => {
+  const { projects, isLoading } = useUserProjects();
+  const navigate = useNavigate();
 
-const ProjectTable: React.FC = () => (
-  <Table<DataType>
-    columns={columns}
-    dataSource={data}
-    onChange={onChange}
-    onRow={(record, rowIndex) => {
-      return {
-        style: { cursor: "pointer" },
-        onClick: () => {
-          console.log("Row clicked:", record, rowIndex);
-        },
-      };
-    }}
-  />
-);
+  return (
+    <Table<IProject>
+      columns={columns}
+      dataSource={projects}
+      loading={isLoading}
+      onRow={(record) => {
+        return {
+          style: { cursor: "pointer" },
+          onClick: () => {
+            navigate(`/projects/${record.id}`);
+          },
+        };
+      }}
+    />
+  );
+};
 
 export default ProjectTable;

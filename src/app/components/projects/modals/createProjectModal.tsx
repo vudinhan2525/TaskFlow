@@ -1,13 +1,13 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSelector } from "react-redux";
 import Modal from "@libs/app/components/general-components/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
-import { projects } from "@libs/apis/project";
 import { toast } from "react-toastify";
 import { RootState } from "@libs/store";
+import { useCreateProject } from "@libs/hooks/useProject";
+import { useEffect } from "react";
 
 interface CreateProjectForm {
   name: string;
@@ -30,14 +30,11 @@ const createProjectSchema = z.object({
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
 }
 
-const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-
+const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
-
+  const { createProject, isLoading, isSuccess } = useCreateProject();
   const {
     register,
     handleSubmit,
@@ -50,7 +47,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
       name: "",
       key: "",
       type: "Kanban",
-      access: "PRIVATE",
+      access: "Private",
     },
   });
 
@@ -62,33 +59,26 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
       toast.error("You must be logged in to create a project");
       return;
     }
-
-    try {
-      setIsLoading(true);
-      const request: CreateProjectRequest = {
-        ...formData,
-        owner_id: user.id,
-      };
-      await projects.create(request);
-      toast.success("Project created successfully");
-      onClose();
-      onSuccess?.();
-    } catch (error) {
-      toast.error("Failed to create project");
-      console.error("Error creating project:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    const request: CreateProjectRequest = {
+      ...formData,
+      owner_id: user.id,
+    };
+    createProject(request);
   };
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isSuccess) onClose();
+  }, [isSuccess, onClose]);
 
+  if (!isOpen) return null;
   return (
     <Modal
       title="Create Project"
       onClose={onClose}
       buttonContent={isLoading ? "Creating..." : "Create Project"}
       onSubmit={handleSubmit(onSubmit)}
+      className="w-[500px]"
+      isLoadingButton={isLoading}
     >
       <div className="p-4 space-y-4">
         <div>
@@ -130,7 +120,7 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[180px]"
-              parent={<div className="w-full">{type}</div>}
+              parent={<div className="w-full font-medium">{type}</div>}
               onClickItem={(option) => setValue("type", option.value as "Kanban" | "Scrum")}
             />
             {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type.message}</p>}
@@ -142,13 +132,13 @@ const CreateProjectModal = ({ isOpen, onClose, onSuccess }: CreateProjectModalPr
             </label>
             <DropdownAntd
               options={[
-                { value: "PRIVATE", label: "Private" },
-                { value: "PUBLIC", label: "Public" },
+                { value: "Private", label: "Private" },
+                { value: "Public", label: "Public" },
               ]}
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[180px]"
-              parent={<div className="w-full">{access}</div>}
+              parent={<div className="w-full font-medium">{access}</div>}
               onClickItem={(option) => setValue("access", option.value)}
             />
             {errors.access && <p className="text-sm text-red-500 mt-1">{errors.access.message}</p>}

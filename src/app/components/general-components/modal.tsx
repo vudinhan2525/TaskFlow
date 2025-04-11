@@ -5,13 +5,23 @@ import { LuX } from "react-icons/lu";
 interface BaseModalProps {
   title: string;
   buttonContent: string;
+  isLoadingButton?: boolean;
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: any;
   children: ReactNode;
+  className?: string;
 }
 
-export default function Modal({ title, buttonContent = "Accept", onClose, onSubmit, children }: BaseModalProps) {
+export default function Modal({
+  title,
+  buttonContent = "Accept",
+  onClose,
+  isLoadingButton,
+  onSubmit,
+  children,
+  className,
+}: BaseModalProps) {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -23,7 +33,7 @@ export default function Modal({ title, buttonContent = "Accept", onClose, onSubm
       onMouseDown={handleBackdropClick}
       className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50"
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 animate-fade-in">
+      <div className={`bg-white rounded-lg shadow-xl p-6 animate-fade-in ${className}`}>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-semibold text-green-700">{title}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 focus:outline-none">
@@ -32,7 +42,7 @@ export default function Modal({ title, buttonContent = "Accept", onClose, onSubm
         </div>
         {children}
 
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-end mt-4 space-x-3">
           <button
             type="button"
             onClick={onClose}
@@ -41,6 +51,7 @@ export default function Modal({ title, buttonContent = "Accept", onClose, onSubm
             Cancel
           </button>
           <Button
+            isLoading={isLoadingButton}
             onClick={() => {
               if (onSubmit) onSubmit();
             }}
