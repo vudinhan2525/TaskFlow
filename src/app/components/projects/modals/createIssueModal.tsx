@@ -3,7 +3,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
-import Modal from "@libs/app/components/general-components/modal";
+import Modal from "@libs/app/components/general-components/modal/modal";
 import { Issue, IssueStatus, IssuePriority } from "@libs/types";
 
 interface CreateIssueModalProps {

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
@@ -47,27 +47,15 @@ export function useProjects() {
     },
   });
 
-  const updateProject = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) => projects.update(id, data),
-    onSuccess: () => {},
-    onError: () => {},
-  });
-
-  const deleteProject = useMutation({
-    mutationFn: projects.delete,
-    onSuccess: () => {},
-    onError: () => {},
-  });
-
   return {
     projects: projectsList,
     isLoading,
     error,
-    updateProject,
-    deleteProject,
   };
 }
-export function useCreateProject() {
+export function useCreateProject({ onClose }: { onClose?: () => void }) {
+  const queryClient = useQueryClient();
+
   const {
     mutate: createProject,
     isPending: isLoading,
@@ -76,7 +64,11 @@ export function useCreateProject() {
   } = useMutation({
     mutationFn: projects.create,
     onSuccess: () => {
-      toast.success("You must be logged in to create a project");
+      toast.success("Create project successfully!!");
+      queryClient.invalidateQueries({
+        queryKey: ["userProjects"],
+      });
+      if (onClose) onClose();
     },
     onError: () => {
       toast.error("Some thing went wrong");
@@ -85,6 +77,60 @@ export function useCreateProject() {
 
   return {
     createProject,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
+export function useUpdateProject({ onClose }: { onClose?: () => void }) {
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: updateProject,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) => projects.update(id, data),
+    onSuccess: () => {
+      toast.success("Project updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["userProjects"] });
+      if (onClose) onClose();
+    },
+    onError: () => {
+      toast.error("Failed to update project.");
+    },
+  });
+
+  return {
+    updateProject,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
+export function useDeleteProject({ onClose }: { onClose?: () => void }) {
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: deleteProject,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (id: string) => projects.delete(id),
+    onSuccess: () => {
+      toast.success("Project deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["userProjects"] });
+      if (onClose) onClose();
+    },
+    onError: () => {
+      toast.error("Failed to delete project.");
+    },
+  });
+
+  return {
+    deleteProject,
     isLoading,
     isSuccess,
     error,

@@ -2,12 +2,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSelector } from "react-redux";
-import Modal from "@libs/app/components/general-components/modal";
+import Modal from "@libs/app/components/general-components/modal/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import { toast } from "react-toastify";
 import { RootState } from "@libs/store";
-import { useCreateProject } from "@libs/hooks/useProject";
+import { useCreateProject, useUpdateProject } from "@libs/hooks/useProject";
 import { useEffect } from "react";
+import { IProject } from "@libs/types/project";
 
 interface CreateProjectForm {
   name: string;
@@ -30,11 +31,19 @@ const createProjectSchema = z.object({
 interface CreateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isEditing?: boolean;
+  iniProject?: IProject;
 }
 
-const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps) => {
+const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreateProjectModalProps) => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const { createProject, isLoading, isSuccess } = useCreateProject();
+  const { updateProject, isLoading: isUpdating } = useUpdateProject({
+    onClose,
+  });
+  const { createProject, isLoading: isCreating } = useCreateProject({
+    onClose,
+  });
+  const isLoading = isUpdating || isCreating;
   const {
     register,
     handleSubmit,
@@ -63,19 +72,30 @@ const CreateProjectModal = ({ isOpen, onClose }: CreateProjectModalProps) => {
       ...formData,
       owner_id: user.id,
     };
-    createProject(request);
+    if (isEditing && iniProject) {
+      updateProject({ id: iniProject.id, data: request });
+    } else {
+      // Create new project
+      createProject(request);
+    }
   };
 
   useEffect(() => {
-    if (isSuccess) onClose();
-  }, [isSuccess, onClose]);
+    if (isEditing && iniProject) {
+      setValue("name", iniProject.name);
+      setValue("key", iniProject.key);
+      setValue("type", iniProject.type);
+      setValue("access", iniProject.access);
+    }
+  }, [isEditing, iniProject, setValue]);
 
+  const title = isEditing ? "Update Project" : "Create Project";
   if (!isOpen) return null;
   return (
     <Modal
       title="Create Project"
       onClose={onClose}
-      buttonContent={isLoading ? "Creating..." : "Create Project"}
+      buttonContent={isLoading ? "Loading..." : title}
       onSubmit={handleSubmit(onSubmit)}
       className="w-[500px]"
       isLoadingButton={isLoading}

@@ -2,7 +2,7 @@ import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Modal from "@libs/app/components/general-components/modal";
+import Modal from "@libs/app/components/general-components/modal/modal";
 
 interface CreateSprintModalProps {
   isOpen: boolean;

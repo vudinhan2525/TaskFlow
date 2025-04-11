@@ -1,9 +1,13 @@
-import React from "react";
-import { Table } from "antd";
+import React, { useEffect, useState } from "react";
+import { Button, Dropdown, Menu, Table } from "antd";
 import type { TableColumnsType } from "antd";
-import { useUserProjects } from "@libs/hooks/useProject";
+import { useDeleteProject, useUserProjects } from "@libs/hooks/useProject";
 import { useNavigate } from "react-router-dom";
 import { IProject } from "@libs/types/project";
+import { LuEllipsisVertical } from "react-icons/lu";
+import ConfirmDeleteModal from "@libs/app/components/general-components/modal/modalDeleteConfirm";
+import CreateProjectModal from "@libs/app/components/projects/modals/createProjectModal";
+import ModalPortal from "@libs/app/components/general-components/modal/modalPortal";
 
 const columns: TableColumnsType<IProject> = [
   {
@@ -15,13 +19,13 @@ const columns: TableColumnsType<IProject> = [
   {
     title: "Key",
     dataIndex: "key",
-    width: "25%",
+    width: "20%",
     sorter: (a, b) => a.key.length - b.key.length,
   },
   {
     title: "Access Type",
     dataIndex: "access",
-    width: "25%",
+    width: "20%",
     sorter: (a, b) => a.access.length - b.access.length,
   },
   {
@@ -29,6 +33,13 @@ const columns: TableColumnsType<IProject> = [
     dataIndex: "type",
     width: "10%",
     sorter: (a, b) => a.type.length - b.type.length,
+  },
+  {
+    title: "Actions",
+    dataIndex: "actions",
+    width: "10%",
+    align: "center",
+    render: (_, record) => <ProjectActions record={record} />,
   },
 ];
 
@@ -52,5 +63,60 @@ const ProjectTable: React.FC = () => {
     />
   );
 };
-
 export default ProjectTable;
+
+const ProjectActions = ({ record }: { record: IProject }) => {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { deleteProject, isLoading } = useDeleteProject({
+    onClose: () => setIsDeleteModalOpen(false),
+  });
+  const menuItems = [
+    {
+      key: "edit",
+      label: "Edit",
+      onClick: () => setIsEditModalOpen(true),
+    },
+    {
+      key: "delete",
+      label: "Delete",
+      onClick: () => setIsDeleteModalOpen(true),
+    },
+  ];
+  const handleDelete = async () => {
+    deleteProject(record.id);
+  };
+  return (
+    <>
+      <Dropdown
+        trigger={["click"]}
+        placement="bottom"
+        dropdownRender={() => (
+          <div className="w-[140px]">
+            <Menu items={menuItems} />
+          </div>
+        )}
+      >
+        <Button type="text" icon={<LuEllipsisVertical />} onClick={(e) => e.stopPropagation()} />
+      </Dropdown>
+      <ModalPortal>
+        <ConfirmDeleteModal
+          open={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleDelete}
+          loading={isLoading}
+          title="Delete Project"
+          description={`Are you sure you want to delete "${record.name}"?`}
+        />
+        <CreateProjectModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+          }}
+          iniProject={record}
+          isEditing={true}
+        />
+      </ModalPortal>
+    </>
+  );
+};
