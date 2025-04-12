@@ -16,5 +16,5 @@ export interface IIssue {
   created_at: string;
   updated_at: string;
 }
-export type IssueStatus = "To Do" | "In Progress" | "Done";
+export type IssueStatus = "ToDo" | "InProgress" | "Done";
 export type IssuePriority = "Low" | "Medium" | "High";

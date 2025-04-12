@@ -2,14 +2,16 @@ import React, { useCallback } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSelector } from "react-redux";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import { Issue, IssueStatus, IssuePriority } from "@libs/types";
-
+import { IIssue } from "@libs/types/issue";
+import { IssueStatus, IssuePriority } from "@libs/types/issue";
+import { RootState } from "@libs/store";
 interface CreateIssueModalFromSprintProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Partial<Issue>) => Promise<void>;
+  onSubmit: (data: Partial<IIssue>) => Promise<void>;
   projectId: string;
   sprintId: string;
 }
@@ -23,10 +25,10 @@ const issueSchema = z.object({
   sprintId: z.string().min(1, "Sprint is required"),
   type: z.enum(["Bug", "Task", "Story", "Epic"]),
   title: z.string().min(1, "Title is required"),
+  summary: z.string().min(1, "Summary is required"),
   description: z.string().optional(),
-  status: z.enum(["To Do", "In Progress", "Done"] as const),
-  assignee: z.string(),
-  reporter: z.string().optional(),
+  status: z.enum(["ToDo", "InProgress", "Done"] as const),
+  assignee_id: z.string().optional(),
   priority: z.enum(["Low", "Medium", "High"] as const),
   attachments: z.array(FileSchema),
 });
@@ -40,6 +42,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
   projectId,
   sprintId,
 }) => {
+  const { user } = useSelector((state: RootState) => state.auth);
   const {
     register,
     handleSubmit,
@@ -52,7 +55,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
       projectId,
       sprintId,
       type: "Task",
-      status: "To Do",
+      status: "ToDo",
       priority: "Medium",
       attachments: [],
     },
@@ -86,9 +89,22 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
     [setValue]
   );
 
-  const handleFormSubmit: SubmitHandler<IssueFormData> = (data) => {
-    console.log("Form submitted with data:", data);
-    onSubmit(data);
+  const handleFormSubmit: SubmitHandler<IssueFormData> = (formData) => {
+    if (!user?.id) {
+      console.error("No user found");
+      return;
+    }
+
+    onSubmit({
+      ...formData,
+      project_id: projectId,
+      sprint_id: sprintId,
+      reporter_id: user.id,
+      status: formData.status || "ToDo",
+      summary: formData.summary,
+      description: formData.description || "",
+      attachments: [],
+    });
   };
 
   if (!isOpen) return null;
@@ -135,7 +151,17 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
             />
             {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
           </div>
-
+          <div>
+            <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
+              Summary <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="summary"
+              {...register("summary")}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+            {errors.summary && <p className="text-sm text-red-500 mt-1">{errors.summary.message}</p>}
+          </div>
           <div>
             <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
               Description
@@ -189,7 +215,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
 
           <div>
             <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
-              Assignee
+              Assignee (Optional)
             </label>
             <DropdownAntd
               options={[
@@ -199,28 +225,10 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[380px]"
-              parent={<div className="w-full">Select Assignee</div>}
-              onClickItem={(option) => setValue("assignee", option.value)}
+              parent={<div className="w-full">Select Assignee (Optional)</div>}
+              onClickItem={(option) => setValue("assignee_id", option.value)}
             />
-            {errors.assignee && <p className="text-sm text-red-500 mt-1">{errors.assignee.message}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="reporter" className="block text-sm font-medium text-gray-700 mb-1">
-              Reporter
-            </label>
-            <DropdownAntd
-              options={[
-                { value: "user1", label: "User 1" },
-                { value: "user2", label: "User 2" },
-              ]}
-              placement="bottom"
-              rowClassName="w-full text-[15px]"
-              menuClassName="w-[380px]"
-              parent={<div className="w-full">Select Reporter</div>}
-              onClickItem={(option) => setValue("reporter", option.value)}
-            />
-            {errors.reporter && <p className="text-sm text-red-500 mt-1">{errors.reporter.message}</p>}
+            {errors.assignee_id && <p className="text-sm text-red-500 mt-1">{errors.assignee_id.message}</p>}
           </div>
 
           <div>

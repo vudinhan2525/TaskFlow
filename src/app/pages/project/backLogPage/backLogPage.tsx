@@ -1,27 +1,36 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useSprint } from "@libs/hooks/useSprint";
-import { useIssues } from "@libs/hooks/useIssue";
+import { useProjectSprints, useCreateSprint } from "@libs/hooks/useSprint";
+import { useProjectIssues, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { Sprint } from "@libs/apis/sprint";
-import { IssueStatus } from "@libs/types";
+import { IssueStatus } from "@libs/types/issue";
 import ScrumSprint from "@libs/app/components/projects/backlog/scrumPrint";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import Button from "@libs/app/components/general-components/button";
 import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
 
 const BackLogPage: React.FC = () => {
-  const { projectKey: projectId = "" } = useParams();
+  const { projectId = "" } = useParams();
+  // console.log("Route params projectId:", projectId);
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
   const { selectIssue } = useIssueSelection();
   const [selectedIssues, setSelectedIssues] = useState<{ [key: string]: boolean }>({});
-
-  const { sprints, isLoading: isLoadingSprints, createSprint } = useSprint(projectId);
-  const { issues, isLoading: isLoadingIssues, updateIssue } = useIssues(projectId);
+  const { sprints, isLoading: isLoadingSprints } = useProjectSprints(projectId || "");
+  // console.log("sprints data:", {
+  //   projectId,
+  //   sprints,
+  //   isLoading: isLoadingSprints,
+  //   error: sprintsError,
+  //   enabled: !!projectId,
+  // });
+  const { createSprintAsync } = useCreateSprint({ projectId });
+  const { issues, isLoading: isLoadingIssues } = useProjectIssues(projectId);
+  const { updateIssueAsync } = useUpdateIssue({ projectId });
 
   const handleCreateSprint = async (data: { name: string; dateStarted: string; dateEnded: string }) => {
     try {
-      await createSprint.mutateAsync({
+      await createSprintAsync({
         name: data.name,
         date_started: data.dateStarted,
         date_ended: data.dateEnded,
@@ -39,7 +48,7 @@ const BackLogPage: React.FC = () => {
 
   const handleStatusChange = async (issueId: string, newStatus: IssueStatus) => {
     try {
-      await updateIssue.mutateAsync({ id: issueId, data: { status: newStatus } });
+      await updateIssueAsync({ id: issueId, data: { status: newStatus } });
     } catch (error) {
       console.error("Failed to update issue status:", error);
     }

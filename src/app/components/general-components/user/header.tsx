@@ -10,16 +10,16 @@ import { useSelector } from "react-redux";
 import { RootState } from "@libs/store";
 import { useNavigate } from "react-router-dom";
 import CreateIssueModal from "../../projects/modals/createIssueModal";
-import { useIssues } from "@libs/hooks/useIssue";
+import { useCreateIssue } from "@libs/hooks/useIssue";
+import { CreateIssueParams } from "@libs/apis/issue";
+import { IIssue } from "@libs/types/issue";
 import { useUserProjects } from "@libs/hooks/useProject";
-import { Issue } from "@libs/types";
-
 export const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProject, setSelectedProject] = useState<string>("");
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
 
   const navigate = useNavigate();
   // Using mock data
@@ -27,7 +27,10 @@ export const Header = () => {
 
   const { projects } = useUserProjects();
 
-  const { createIssue } = useIssues(selectedProject);
+  const { createIssueAsync } = useCreateIssue({
+    projectId: selectedProject,
+    onClose: () => setIsCreateIssueModalOpen(false),
+  });
 
   const handleCreateIssue = () => {
     setIsCreateIssueModalOpen(true);
@@ -37,10 +40,26 @@ export const Header = () => {
     setIsCreateIssueModalOpen(false);
   };
 
-  const handleSubmitIssue = async (data: Partial<Issue>) => {
+  const handleSubmitIssue = async (formData: Partial<IIssue>) => {
+    if (!selectedProject || !user?.id || !formData.title || !formData.type || !formData.priority) {
+      console.error("Missing required fields or not logged in");
+      return;
+    }
+
     try {
-      await createIssue.mutateAsync(data);
-      setIsCreateIssueModalOpen(false);
+      const issueData: CreateIssueParams = {
+        title: formData.title,
+        description: formData.description || "",
+        status: formData.status || "To Do",
+        priority: formData.priority,
+        type: formData.type,
+        project_id: selectedProject,
+        reporter_id: user.id,
+        assignee_id: formData.assignee_id,
+        sprint_id: formData.sprint_id,
+        attachments: [],
+      };
+      await createIssueAsync(issueData);
     } catch (error) {
       console.error("Failed to create issue:", error);
     }
@@ -90,7 +109,7 @@ export const Header = () => {
             <FaMagnifyingGlass className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
           </div>
           {isAuthenticated && (
-            <Button className="" onClick={handleCreateIssue}>
+            <Button className="" onClick={handleCreateIssue} disabled={!selectedProject}>
               <span className="text-base font-semibold">Create Issue</span>
             </Button>
           )}

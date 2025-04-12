@@ -3,6 +3,7 @@ import { IIssue } from "@libs/types/issue";
 // Parameters for creating an issue
 export interface CreateIssueParams {
   title: string;
+  summary?: string;
   description?: string;
   status: string;
   priority: string;
@@ -34,11 +35,14 @@ export const issues = {
   getById: (projectId: string, issueId: string) => api.get<IIssue>(`/project/${projectId}/issues/${issueId}`, config),
 
   // Create a new issue
-  create: (projectId: string, data: CreateIssueParams) => api.post<IIssue>(`/project/${projectId}/issues`, data, config),
+  create: (projectId: string, data: CreateIssueParams) =>
+    api.post<IIssue>(`/project/${projectId}/issues`, data, config),
 
   // Update an existing issue
-  update: (projectId: string, issueId: string, data: Partial<CreateIssueParams>) => api.put<IIssue>(`/project/${projectId}/issues/${issueId}`, data, config),
+  update: (projectId: string, issueId: string, data: Partial<CreateIssueParams>) =>
+    api.put<IIssue>(`/project/${projectId}/issues/${issueId}`, data, config),
 
   // Delete an issue
-  delete: (projectId: string, issueId: string) => api.delete<unknown>(`/project/${projectId}/issues/${issueId}`, config),
+  delete: (projectId: string, issueId: string) =>
+    api.delete<unknown>(`/project/${projectId}/issues/${issueId}`, config),
 };

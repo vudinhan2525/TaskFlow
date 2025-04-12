@@ -4,12 +4,14 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import { Issue, IssueStatus, IssuePriority } from "@libs/types";
+import { IIssue, IssueStatus, IssuePriority } from "@libs/types/issue";
+import { useSelector } from "react-redux";
+import { RootState } from "@libs/store";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Partial<Issue>) => Promise<void>;
+  onSubmit: (data: Partial<IIssue>) => Promise<void>;
 }
 
 const FileSchema = z.custom<File>((val) => val instanceof File, {
@@ -22,8 +24,8 @@ const issueSchema = z.object({
   type: z.enum(["Bug", "Task", "Story", "Epic"]),
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  status: z.enum(["To Do", "In Progress", "Done"] as const),
-  assignee: z.string(),
+  status: z.enum(["ToDo", "InProgress", "Done"] as const),
+  assignee: z.string().optional(),
   reporter: z.string().optional(),
   priority: z.enum(["Low", "Medium", "High"] as const),
   attachments: z.array(FileSchema),
@@ -32,6 +34,7 @@ const issueSchema = z.object({
 type IssueFormData = z.infer<typeof issueSchema>;
 
 const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, onSubmit }) => {
+  const { user } = useSelector((state: RootState) => state.auth);
   const {
     register,
     handleSubmit,
@@ -42,7 +45,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
     resolver: zodResolver(issueSchema),
     defaultValues: {
       type: "Task",
-      status: "To Do",
+      status: "ToDo",
       priority: "Medium",
       attachments: [],
     },
@@ -77,21 +80,25 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
     [setValue]
   );
 
-  const handleFormSubmit: SubmitHandler<IssueFormData> = (data) => {
-    console.log("Form submitted with data:", data);
+  const handleFormSubmit: SubmitHandler<IssueFormData> = (formData) => {
+    if (!user?.id) {
+      console.error("No user found");
+      return;
+    }
+
     onSubmit({
-      project_id: data.projectId,
-      sprint_id: data.sprintId,
-      assignee_id: data.assignee,
-      reporter_id: data.reporter,
-      title: data.title,
-      description: data.description || "",
-      type: data.type,
-      status: "To Do",
-      priority: data.priority,
+      project_id: formData.projectId,
+      sprint_id: formData.sprintId,
+      assignee_id: formData.assignee,
+      reporter_id: user.id,
+      title: formData.title,
+      description: formData.description || "",
+      type: formData.type,
+      status: "ToDo",
+      priority: formData.priority,
       attachments: [],
       story_point: 0,
-      summary: data.title,
+      summary: formData.title,
     });
   };
 
@@ -200,8 +207,8 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
             </label>
             <DropdownAntd
               options={[
-                { value: "To Do", label: "To Do" },
-                { value: "In Progress", label: "In Progress" },
+                { value: "ToDo", label: "To Do" },
+                { value: "InProgress", label: "In Progress" },
                 { value: "Done", label: "Done" },
               ]}
               placement="bottom"
@@ -234,7 +241,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
 
           <div>
             <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
-              Assignee
+              Assignee (Optional)
             </label>
             <DropdownAntd
               options={[
@@ -244,28 +251,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[380px]"
-              parent={<div className="w-full">Select Assignee</div>}
+              parent={<div className="w-full">Select Assignee (Optional)</div>}
               onClickItem={(option) => setValue("assignee", option.value)}
             />
             {errors.assignee && <p className="text-sm text-red-500 mt-1">{errors.assignee.message}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="reporter" className="block text-sm font-medium text-gray-700 mb-1">
-              Reporter
-            </label>
-            <DropdownAntd
-              options={[
-                { value: "user1", label: "User 1" },
-                { value: "user2", label: "User 2" },
-              ]}
-              placement="bottom"
-              rowClassName="w-full text-[15px]"
-              menuClassName="w-[380px]"
-              parent={<div className="w-full">Select Reporter</div>}
-              onClickItem={(option) => setValue("reporter", option.value)}
-            />
-            {errors.reporter && <p className="text-sm text-red-500 mt-1">{errors.reporter.message}</p>}
           </div>
 
           <div>

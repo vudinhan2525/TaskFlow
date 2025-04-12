@@ -61,18 +61,18 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({ item, isActive }) => 
 };
 
 const ProjectNavbar = (): React.ReactElement => {
-  const { projectKey } = useParams<{ projectKey: string }>();
+  const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
 
   const [items, setItems] = useState<NavItem[]>([
-    { id: "summary", label: "Summary", icon: <FaGlobe />, route: `/projects/${projectKey}/summary` },
-    { id: "board", label: "Board", icon: <FaTh />, route: `/projects/${projectKey}/board` },
-    { id: "backlog", label: "Backlog", icon: <FaTasks />, route: `/projects/${projectKey}/backlog` },
-    { id: "list", label: "List", icon: <FaListAlt />, route: `/projects/${projectKey}/list` },
-    { id: "roadmap", label: "Roadmap", icon: <FaChartBar />, route: `/projects/${projectKey}/roadmap` },
-    { id: "sprints", label: "Sprints", icon: <FaCalendarAlt />, route: `/projects/${projectKey}/sprints` },
-    { id: "reports", label: "Reports", icon: <FaChartBar />, route: `/projects/${projectKey}/reports` },
-    { id: "settings", label: "Settings", icon: <FaCode />, route: `/projects/${projectKey}/settings` },
+    { id: "summary", label: "Summary", icon: <FaGlobe />, route: `/projects/${projectId}/summary` },
+    { id: "board", label: "Board", icon: <FaTh />, route: `/projects/${projectId}/board` },
+    { id: "backlog", label: "Backlog", icon: <FaTasks />, route: `/projects/${projectId}/backlog` },
+    { id: "list", label: "List", icon: <FaListAlt />, route: `/projects/${projectId}/list` },
+    { id: "roadmap", label: "Roadmap", icon: <FaChartBar />, route: `/projects/${projectId}/roadmap` },
+    { id: "sprints", label: "Sprints", icon: <FaCalendarAlt />, route: `/projects/${projectId}/sprints` },
+    { id: "reports", label: "Reports", icon: <FaChartBar />, route: `/projects/${projectId}/reports` },
+    { id: "settings", label: "Settings", icon: <FaCode />, route: `/projects/${projectId}/settings` },
   ]);
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));

@@ -3,32 +3,46 @@ import { FaChevronDown, FaChevronUp, FaCog } from "react-icons/fa";
 import Button from "../general-components/button";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { formatDate } from "../../../utils/date";
-import { IssueStatus } from "@libs/types";
+import { IssueStatus } from "@libs/types/issue";
 
-const statusOptions: IssueStatus[] = ["To Do", "In Progress", "Done"];
+const statusOptions: IssueStatus[] = ["ToDo", "InProgress", "Done"];
 
 const IssueSideBar: React.FC = () => {
-  const { selectedIssueId, selectIssue, mockIssue } = useIssueSelection();
+  const { selectedIssueId, selectedIssue, selectIssue, isLoading, isSidebarVisible } = useIssueSelection();
   const [activeTab, setActiveTab] = useState<string>("Comments");
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(true);
 
-  if (!selectedIssueId) {
+  if (!isSidebarVisible || !selectedIssueId || !selectedIssue) {
     return null;
   }
 
+  if (isLoading) {
+    return (
+      <div className="h-screen p-4 bg-white border-l border-gray-200 w-[400px] flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
   const details = {
-    assignee: mockIssue.assignee,
+    assignee: {
+      initials: selectedIssue.assignee_id ? selectedIssue.assignee_id.substring(0, 2).toUpperCase() : "NA",
+      name: selectedIssue.assignee_id || "Unassigned",
+    },
     labels: "None",
-    parent: "None",
+    parent: selectedIssue.parent_id || "None",
     team: "None",
-    sprint: "SCRUM Sprint 1",
-    storyPointEstimate: "None",
+    sprint: selectedIssue.sprint_id ? "Current Sprint" : "Backlog",
+    storyPointEstimate: selectedIssue.story_point || "None",
     fixVersions: "None",
     development: [
       { icon: "🔗", label: "Create branch" },
       { icon: "📝", label: "Create commit" },
     ],
-    reporter: mockIssue.reporter,
+    reporter: {
+      initials: selectedIssue.reporter_id ? selectedIssue.reporter_id.substring(0, 2).toUpperCase() : "NA",
+      name: selectedIssue.reporter_id || "Unknown",
+    },
   };
 
   return (
@@ -38,7 +52,7 @@ const IssueSideBar: React.FC = () => {
         <div className="flex items-center space-x-2">
           <span className="text-sm text-blue-600 hover:underline">Add epic</span>
           <span className="text-sm text-gray-500">/</span>
-          <span className="text-sm text-blue-600 hover:underline">{mockIssue.id}</span>
+          <span className="text-sm text-blue-600 hover:underline">{selectedIssue.id}</span>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="dark" className="text-gray-500 hover:text-gray-700" onClick={() => selectIssue(null)}>
@@ -48,13 +62,13 @@ const IssueSideBar: React.FC = () => {
       </div>
 
       {/* Title */}
-      <h2 className="text-xl text-left font-semibold text-gray-800 mb-2">{mockIssue.title}</h2>
+      <h2 className="text-xl text-left font-semibold text-gray-800 mb-2">{selectedIssue.title}</h2>
 
       {/* Status Dropdown */}
       <div className="mb-4">
         <div className="flex items-center space-x-2">
           <select
-            value={mockIssue.status}
+            value={selectedIssue.status}
             onChange={(e) => console.log(e.target.value)}
             className="px-3 py-1 text-sm text-white bg-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
@@ -70,7 +84,7 @@ const IssueSideBar: React.FC = () => {
       {/* Description */}
       <div className="mb-4">
         <h2 className="text-md text-left font-bold text-gray-800">Description</h2>
-        <p className="text-sm text-gray-600">{mockIssue.description}</p>
+        <p className="text-sm text-gray-600">{selectedIssue.description || "No description"}</p>
       </div>
 
       {/* Details */}
@@ -131,12 +145,12 @@ const IssueSideBar: React.FC = () => {
       {/* Created/Updated */}
       <div className="mb-4">
         <p className="text-sm text-gray-600">
-          Created {formatDate(mockIssue.created_at)}
+          Created {formatDate(selectedIssue.created_at)}
           <button className="ml-1 text-gray-500 hover:text-gray-700">
             <FaCog />
           </button>
         </p>
-        <p className="text-sm text-gray-600">Updated {formatDate(mockIssue.updated_at)}</p>
+        <p className="text-sm text-gray-600">Updated {formatDate(selectedIssue.updated_at)}</p>
       </div>
 
       {/* Activity Tabs */}

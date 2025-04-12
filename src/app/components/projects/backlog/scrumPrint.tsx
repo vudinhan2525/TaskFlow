@@ -1,16 +1,15 @@
 import React, { useState } from "react";
-import { IssueStatus } from "@libs/types";
+import { IssueStatus, IIssue } from "@libs/types/issue";
 import Button from "@libs/app/components/general-components/button";
 import CreateIssueModalFromSprint from "@libs/app/components/projects/modals/createIssueModalFromSprint";
 import StatusDropdown from "./StatusDropdown";
 import { formatSprintDate } from "../../../../utils/date";
-import { Issue } from "@libs/apis/issue";
-
+import { useCreateIssue } from "@libs/hooks/useIssue";
 interface ScrumSprintProps {
   sprintName: string;
   startDate: string;
   endDate: string;
-  issues: Issue[];
+  issues: IIssue[];
   issueCount: number;
   projectId: string;
   sprintId: string;
@@ -33,6 +32,10 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const { createIssueAsync } = useCreateIssue({
+    projectId,
+    onClose: () => setIsModalOpen(false),
+  });
 
   return (
     <div className="mb-6">
@@ -49,8 +52,8 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
             <span className="text-sm text-gray-500">{issueCount} issues</span>
           </div>
           <div className="grid grid-cols-4 gap-4 text-sm text-gray-500">
-            <div>To Do: {issues.filter((issue) => issue.status === "To Do").length}</div>
-            <div>In Progress: {issues.filter((issue) => issue.status === "In Progress").length}</div>
+            <div>To Do: {issues.filter((issue) => issue.status === "ToDo").length}</div>
+            <div>In Progress: {issues.filter((issue) => issue.status === "InProgress").length}</div>
             <div>Done: {issues.filter((issue) => issue.status === "Done").length}</div>
           </div>
           <div className="flex items-center space-x-2">
@@ -122,9 +125,28 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
       <CreateIssueModalFromSprint
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={async (data) => {
-          console.log("Creating issue in sprint:", data);
-          setIsModalOpen(false);
+        onSubmit={async (formData) => {
+          if (!formData.title || !formData.priority || !formData.type) {
+            console.error("Missing required fields");
+            return;
+          }
+          try {
+            await createIssueAsync({
+              title: formData.title,
+              summary: formData.summary || "",
+              description: formData.description || "",
+              status: formData.status || "ToDo",
+              priority: formData.priority,
+              type: formData.type,
+              assignee_id: formData.assignee_id || undefined,
+              reporter_id: formData.reporter_id || undefined,
+              sprint_id: sprintId,
+              project_id: projectId,
+              attachments: [],
+            });
+          } catch (error) {
+            console.error("Failed to create issue:", error);
+          }
         }}
         projectId={projectId}
         sprintId={sprintId}
