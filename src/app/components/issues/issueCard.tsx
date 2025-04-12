@@ -1,69 +1,95 @@
-// import { type Issue, type Priority, type Status } from "@libs/types";
+import { IIssue, IssuePriority } from "@libs/types/issue";
+import { useState } from "react";
 
-// interface IssueCardProps {
-//   issue: Issue;
-//   onStatusChange?: (newStatus: Status) => void;
-//   onPriorityChange?: (newPriority: Priority) => void;
-// }
+// Helper function to format dates
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
+};
 
-// const priorityColors: Record<Priority, string> = {
-//   Highest: "bg-red-500",
-//   High: "bg-orange-500",
-//   Medium: "bg-yellow-500",
-//   Low: "bg-blue-500",
-//   Lowest: "bg-gray-500",
-// };
+// Priority badge component
+const PriorityBadge = ({ priority }: { priority: IssuePriority }) => {
+  const priorityColors = {
+    Low: "bg-blue-100 text-blue-800",
+    Medium: "bg-yellow-100 text-yellow-800",
+    High: "bg-red-100 text-red-800",
+  };
 
-// const statusColors: Record<Status, string> = {
-//   "To Do": "bg-gray-500",
-//   "In Progress": "bg-blue-500",
-//   "In Review": "bg-yellow-500",
-//   Done: "bg-green-500",
-// };
+  return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${priorityColors[priority]}`}>{priority}</span>;
+};
 
-// export const IssueCard: React.FC<IssueCardProps> = ({ issue, onStatusChange, onPriorityChange }) => {
-//   return (
-//     <div className="p-4 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-//       <div className="flex items-center justify-between mb-2">
-//         <span className="text-sm text-gray-500">{issue.key}</span>
-//         <div className="flex items-center space-x-2">
-//           <span
-//             className={`w-2 h-2 rounded-full ${priorityColors[issue.priority]}`}
-//             title={`Priority: ${issue.priority}`}
-//           />
-//           <span className={`px-2 py-1 text-xs text-white rounded ${statusColors[issue.status]}`}>{issue.status}</span>
-//         </div>
-//       </div>
+// Type badge component
+const TypeBadge = ({ type }: { type: IIssue["type"] }) => {
+  const typeIcons = {
+    Bug: "🐞",
+    Task: "✅",
+    Story: "📖",
+    Epic: "🌟",
+  };
 
-//       <h3 className="font-medium mb-2">{issue.title}</h3>
+  return (
+    <span className="mr-1 text-sm" title={type}>
+      {typeIcons[type]}
+    </span>
+  );
+};
 
-//       <div className="flex items-center justify-between">
-//         <div className="flex items-center space-x-2">
-//           {issue.assignee && (
-//             <img
-//               src={issue.assignee.avatar}
-//               alt={issue.assignee.name}
-//               className="w-6 h-6 rounded-full"
-//               title={`Assigned to: ${issue.assignee.name}`}
-//             />
-//           )}
-//           {issue.labels.length > 0 && (
-//             <div className="flex space-x-1">
-//               {issue.labels.map((label) => (
-//                 <span key={label.id} className="px-2 py-1 text-xs rounded" style={{ backgroundColor: label.color }}>
-//                   {label.name}
-//                 </span>
-//               ))}
-//             </div>
-//           )}
-//         </div>
+export default function IssueCard({ issue }: { issue: IIssue }) {
+  const [isHovered, setIsHovered] = useState(false);
 
-//         {issue.estimate && <span className="text-sm text-gray-500">{issue.estimate} points</span>}
-//       </div>
+  return (
+    <div
+      className="bg-white rounded-md shadow-sm border border-gray-200 p-3 mb-2 cursor-pointer transition-all hover:shadow-md"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Header with issue key and menu */}
+      <div className="flex justify-between items-center mb-2 text-xs text-gray-500">
+        <div className="flex items-center">
+          <TypeBadge type={issue.type} />
+          <span>{issue.id.toUpperCase()}</span>
+        </div>
+        {isHovered && (
+          <div className="text-gray-400 hover:text-gray-600">
+            <span className="px-1">⋮</span>
+          </div>
+        )}
+      </div>
 
-//       {issue.epic && <div className="mt-2 text-sm text-purple-600">{issue.epic.title}</div>}
-//     </div>
-//   );
-// };
+      {/* Issue title */}
+      <h3 className="font-medium text-sm mb-2 line-clamp-2">{issue.title}</h3>
 
-// export default IssueCard;
+      {/* Issue metadata */}
+      <div className="flex flex-wrap gap-2 mb-2">
+        <PriorityBadge priority={issue.priority} />
+        {issue.story_point > 0 && (
+          <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">
+            {issue.story_point} {issue.story_point === 1 ? "point" : "points"}
+          </span>
+        )}
+      </div>
+
+      {/* Footer with assignee and date */}
+      <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
+        <div className="flex items-center">
+          <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-xs mr-1 uppercase">{issue.assignee_id.charAt(0)}</div>
+          <span className="truncate max-w-[100px]">{issue.assignee_id}</span>
+        </div>
+        <span title={issue.updated_at}>Updated {formatDate(issue.updated_at)}</span>
+      </div>
+
+      {/* Attachments indicator */}
+      {issue.attachments.length > 0 && (
+        <div className="mt-2 text-xs text-gray-500">
+          <span className="flex items-center">
+            <span className="mr-1">📎</span>
+            {issue.attachments.length}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
