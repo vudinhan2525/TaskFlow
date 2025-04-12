@@ -4,14 +4,18 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import { IIssue, IssueStatus, IssuePriority } from "@libs/types/issue";
+import { IssueStatus, IssuePriority } from "@libs/types/issue";
 import { useSelector } from "react-redux";
 import { RootState } from "@libs/store";
+import { useUserProjects } from "@libs/hooks/useProject";
+import { useProjectSprints } from "@libs/hooks/useSprint";
+import { useCreateIssue } from "@libs/hooks/useIssue";
+import { toast } from "react-toastify";
+import { CreateIssueParams } from "@libs/apis/issue";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Partial<IIssue>) => Promise<void>;
 }
 
 const FileSchema = z.custom<File>((val) => val instanceof File, {
@@ -23,6 +27,7 @@ const issueSchema = z.object({
   sprintId: z.string().optional(),
   type: z.enum(["Bug", "Task", "Story", "Epic"]),
   title: z.string().min(1, "Title is required"),
+  summary: z.string().optional(),
   description: z.string().optional(),
   status: z.enum(["ToDo", "InProgress", "Done"] as const),
   assignee: z.string().optional(),
@@ -32,9 +37,10 @@ const issueSchema = z.object({
 });
 
 type IssueFormData = z.infer<typeof issueSchema>;
-
-const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose }) => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const { projects } = useUserProjects();
+
   const {
     register,
     handleSubmit,
@@ -56,6 +62,12 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
   const status = watch("status");
   const priority = watch("priority");
   const files = watch("attachments");
+
+  const { sprints } = useProjectSprints(projectId || "");
+  const { createIssueAsync } = useCreateIssue({
+    projectId: projectId || "",
+    onClose,
+  });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -79,27 +91,36 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
     },
     [setValue]
   );
-
-  const handleFormSubmit: SubmitHandler<IssueFormData> = (formData) => {
+  const handleFormSubmit: SubmitHandler<IssueFormData> = async (formData) => {
     if (!user?.id) {
-      console.error("No user found");
+      toast.error("Please log in to create an issue");
       return;
     }
 
-    onSubmit({
-      project_id: formData.projectId,
-      sprint_id: formData.sprintId,
-      assignee_id: formData.assignee,
-      reporter_id: user.id,
-      title: formData.title,
-      description: formData.description || "",
-      type: formData.type,
-      status: "ToDo",
-      priority: formData.priority,
-      attachments: [],
-      story_point: 0,
-      summary: formData.title,
-    });
+    if (!formData.projectId || !formData.title || !formData.type || !formData.priority) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      const issueData: CreateIssueParams = {
+        project_id: formData.projectId,
+        sprint_id: formData.sprintId,
+        assignee_id: formData.assignee,
+        reporter_id: user.id,
+        title: formData.title,
+        description: formData.description || "",
+        type: formData.type,
+        status: "ToDo",
+        priority: formData.priority,
+        attachments: [],
+        summary: formData.title,
+      };
+      await createIssueAsync(issueData);
+    } catch (error) {
+      console.error("Failed to create issue:", error);
+      toast.error("Failed to create issue");
+    }
   };
 
   if (!isOpen) return null;
@@ -119,10 +140,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
                 Project <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
-                options={[
-                  { value: "project1", label: "Project 1" },
-                  { value: "project2", label: "Project 2" },
-                ]}
+                options={projects.map((project) => ({
+                  value: project.id,
+                  label: project.name,
+                }))}
                 placement="bottom"
                 rowClassName="w-full text-[15px]"
                 menuClassName="w-[380px]"
@@ -138,10 +159,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
               </label>
               {projectId ? (
                 <DropdownAntd
-                  options={[
-                    { value: "sprint1", label: "Sprint 1" },
-                    { value: "sprint2", label: "Sprint 2" },
-                  ]}
+                  options={sprints.map((sprint) => ({
+                    value: sprint.id,
+                    label: sprint.name,
+                  }))}
                   placement="bottom"
                   rowClassName="w-full text-[15px]"
                   menuClassName="w-[380px]"
