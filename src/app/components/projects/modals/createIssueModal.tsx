@@ -79,7 +79,20 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
 
   const handleFormSubmit: SubmitHandler<IssueFormData> = (data) => {
     console.log("Form submitted with data:", data);
-    onSubmit(data);
+    onSubmit({
+      project_id: data.projectId,
+      sprint_id: data.sprintId,
+      assignee_id: data.assignee,
+      reporter_id: data.reporter,
+      title: data.title,
+      description: data.description || "",
+      type: data.type,
+      status: "To Do",
+      priority: data.priority,
+      attachments: [],
+      story_point: 0,
+      summary: data.title,
+    });
   };
 
   if (!isOpen) return null;

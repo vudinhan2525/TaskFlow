@@ -1,33 +1,23 @@
 import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { FaChevronDown, FaChevronUp, FaCheckCircle, FaPlus, FaCog } from "react-icons/fa";
+import { FaChevronDown, FaChevronUp, FaCog } from "react-icons/fa";
 import Button from "../general-components/button";
-import { RootState } from "@libs/store";
-import { setSelectedIssueId } from "@libs/store/slices/uiSlice";
+import { useIssueSelection } from "@libs/hooks/useIssueSelection";
+import { formatDate } from "../../../utils/date";
+import { IssueStatus } from "@libs/types";
 
-interface ChildIssue {
-  key: string;
-  summary: string;
-  priority: string;
-  assignee: string;
-  status: string;
-}
+const statusOptions: IssueStatus[] = ["To Do", "In Progress", "Done"];
 
 const IssueSideBar: React.FC = () => {
-  const selectedIssueId = useSelector((state: RootState) => state.ui.selectedIssueId);
-  const dispatch = useDispatch();
-  const [status, setStatus] = useState<string>("In Progress");
+  const { selectedIssueId, selectIssue, mockIssue } = useIssueSelection();
   const [activeTab, setActiveTab] = useState<string>("Comments");
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(true);
 
-  const childIssues: ChildIssue[] = [
-    { key: "SCRUM-3", summary: "asdasd", priority: "=", assignee: "", status: "DONE" },
-  ];
-
-  const statusOptions = ["To Do", "In Progress", "Done"];
+  if (!selectedIssueId) {
+    return null;
+  }
 
   const details = {
-    assignee: { initials: "KP", name: "Khoa Phan" },
+    assignee: mockIssue.assignee,
     labels: "None",
     parent: "None",
     team: "None",
@@ -38,10 +28,8 @@ const IssueSideBar: React.FC = () => {
       { icon: "🔗", label: "Create branch" },
       { icon: "📝", label: "Create commit" },
     ],
-    reporter: { initials: "KP", name: "Khoa Phan" },
+    reporter: mockIssue.reporter,
   };
-
-  if (!selectedIssueId) return null;
 
   return (
     <div className="h-screen p-4 bg-white border-l border-gray-200 w-[400px] transition-all duration-300 overflow-y-auto">
@@ -50,28 +38,24 @@ const IssueSideBar: React.FC = () => {
         <div className="flex items-center space-x-2">
           <span className="text-sm text-blue-600 hover:underline">Add epic</span>
           <span className="text-sm text-gray-500">/</span>
-          <span className="text-sm text-blue-600 hover:underline">SCRUM-1</span>
+          <span className="text-sm text-blue-600 hover:underline">{mockIssue.id}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <Button
-            variant="dark"
-            className="text-gray-500 hover:text-gray-700"
-            onClick={() => dispatch(setSelectedIssueId(null))}
-          >
+          <Button variant="dark" className="text-gray-500 hover:text-gray-700" onClick={() => selectIssue(null)}>
             ✖
           </Button>
         </div>
       </div>
 
       {/* Title */}
-      <h2 className="text-xl text-left font-semibold text-gray-800 mb-2">Build landing page</h2>
+      <h2 className="text-xl text-left font-semibold text-gray-800 mb-2">{mockIssue.title}</h2>
 
       {/* Status Dropdown */}
       <div className="mb-4">
         <div className="flex items-center space-x-2">
           <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            value={mockIssue.status}
+            onChange={(e) => console.log(e.target.value)}
             className="px-3 py-1 text-sm text-white bg-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {statusOptions.map((option) => (
@@ -85,43 +69,8 @@ const IssueSideBar: React.FC = () => {
 
       {/* Description */}
       <div className="mb-4">
-        <h2 className="text-md text-left font-bold  text-gray-800">Description</h2>
-        <p className="text-sm text-gray-600">asdasda</p>
-      </div>
-
-      {/* Child Issues */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-md text-left font-bold  text-gray-800">Child issues</h2>
-          <div className="flex items-center space-x-2">
-            <span className="text-green-500 text-sm">100% Done</span>
-            <Button className="">
-              <FaPlus />
-            </Button>
-          </div>
-        </div>
-        <div className="mt-2">
-          <div className="grid grid-cols-6 gap-3 text-sm text-gray-600 font-medium">
-            <span>T...</span>
-            <span>Key</span>
-            <span>Summary</span>
-            <span>Prio</span>
-            <span>Ass</span>
-            <span>Status</span>
-          </div>
-          {childIssues.map((issue) => (
-            <div key={issue.key} className="grid grid-cols-6 gap-3 text-sm mt-1">
-              <span className="text-gray-500">📄</span>
-              <span className="text-blue-600 hover:underline">{issue.key}</span>
-              <span className="text-gray-600">{issue.summary}</span>
-              <span className="text-gray-600">{issue.priority}</span>
-              <span className="text-gray-600">{issue.assignee || "Unassigned"}</span>
-              <span className="items-center flex justify-center">
-                <FaCheckCircle className="text-green-500 " />
-              </span>
-            </div>
-          ))}
-        </div>
+        <h2 className="text-md text-left font-bold text-gray-800">Description</h2>
+        <p className="text-sm text-gray-600">{mockIssue.description}</p>
       </div>
 
       {/* Details */}
@@ -130,7 +79,7 @@ const IssueSideBar: React.FC = () => {
           className="flex items-center justify-between cursor-pointer"
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
         >
-          <h2 className="text-md text-left font-bold  text-gray-800">Details</h2>
+          <h2 className="text-md text-left font-bold text-gray-800">Details</h2>
           <div className="text-gray-500 hover:text-gray-700">{isDetailsOpen ? <FaChevronUp /> : <FaChevronDown />}</div>
         </div>
         {isDetailsOpen && (
@@ -182,12 +131,12 @@ const IssueSideBar: React.FC = () => {
       {/* Created/Updated */}
       <div className="mb-4">
         <p className="text-sm text-gray-600">
-          Created March 22, 2025 at 3:39 PM
+          Created {formatDate(mockIssue.created_at)}
           <button className="ml-1 text-gray-500 hover:text-gray-700">
             <FaCog />
           </button>
         </p>
-        <p className="text-sm text-gray-600">Updated 2 minutes ago</p>
+        <p className="text-sm text-gray-600">Updated {formatDate(mockIssue.updated_at)}</p>
       </div>
 
       {/* Activity Tabs */}

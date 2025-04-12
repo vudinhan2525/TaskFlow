@@ -1,57 +1,71 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
-import { updateIssue as updateStoreIssue } from "../store/slices/projectSlice";
-import { queryClient } from "../apis/react-query";
-import type { Issue } from "../types";
-import { issues } from "@libs/apis/issue";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { issues, Issue, CreateIssueParams } from "@libs/apis/issue";
+import { toast } from "react-toastify";
+import { ResponseApi } from "@libs/apis/api";
+
+type CreateIssueRequest = Omit<CreateIssueParams, "project_id"> & {
+  sprintId?: string;
+  assignee?: string;
+};
 
 export function useIssues(projectId: string) {
-  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
   const {
-    data: issuesList,
+    data: issueList,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["issues", projectId],
-    queryFn: async () => {
-      const { data } = await issues.getAll(projectId);
-      return data;
-    },
+    queryFn: () => issues.list(projectId),
     enabled: !!projectId,
   });
 
   const createIssue = useMutation({
-    mutationFn: (data: Partial<Issue>) => issues.create(projectId, data),
-    onSuccess: (response) => {
-      const newIssue = response.data;
-      queryClient.setQueryData<Issue[]>(["issues", projectId], (old = []) => [...old, newIssue]);
+    mutationFn: (data: CreateIssueRequest) =>
+      issues.create(projectId, {
+        ...data,
+        project_id: projectId,
+        sprint_id: data.sprintId,
+        assignee_id: data.assignee,
+        attachments: data.attachments || [],
+        type: data.type || "Task",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      toast.success("Issue created successfully");
+    },
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to create issue");
     },
   });
 
   const updateIssue = useMutation({
-    mutationFn: ({ issueId, data }: { issueId: string; data: Partial<Issue> }) =>
-      issues.update(projectId, issueId, data),
-    onSuccess: (response) => {
-      const updatedIssue = response.data;
-      queryClient.setQueryData<Issue[]>(["issues", projectId], (old = []) =>
-        old.map((issue) => (issue.id === updatedIssue.id ? updatedIssue : issue))
-      );
-      dispatch(updateStoreIssue(updatedIssue));
+    mutationFn: ({ id, data }: { id: string; data: Partial<Issue> }) => issues.update(projectId, id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      toast.success("Issue updated successfully");
+    },
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to update issue");
     },
   });
 
   const deleteIssue = useMutation({
-    mutationFn: (issueId: string) => issues.delete(projectId, issueId),
-    onSuccess: (_, deletedId) => {
-      queryClient.setQueryData<Issue[]>(["issues", projectId], (old = []) =>
-        old.filter((issue) => issue.id !== deletedId)
-      );
+    mutationFn: (id: string) => issues.delete(projectId, id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      toast.success("Issue deleted successfully");
+    },
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to delete issue");
     },
   });
 
   return {
-    issues: issuesList,
+    issues: issueList?.data?.data || [],
+    pagination: issueList?.data?.pagination,
     isLoading,
     error,
     createIssue,
@@ -61,34 +75,46 @@ export function useIssues(projectId: string) {
 }
 
 export function useIssue(projectId: string, issueId: string) {
+  const queryClient = useQueryClient();
+
   const {
-    data: issue,
+    data: response,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["issue", projectId, issueId],
-    queryFn: async () => {
-      const { data } = await issues.getById(projectId, issueId);
-      return data;
-    },
+    queryFn: () => issues.getById(projectId, issueId),
     enabled: !!projectId && !!issueId,
   });
 
   const updateIssue = useMutation({
     mutationFn: (data: Partial<Issue>) => issues.update(projectId, issueId, data),
-    onSuccess: (response) => {
-      const updatedIssue = response.data;
-      queryClient.setQueryData(["issue", projectId, issueId], updatedIssue);
-      queryClient.setQueryData<Issue[]>(["issues", projectId], (old = []) =>
-        old.map((issue) => (issue.id === updatedIssue.id ? updatedIssue : issue))
-      );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["issue", projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      toast.success("Issue updated successfully");
+    },
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to update issue");
+    },
+  });
+
+  const deleteIssue = useMutation({
+    mutationFn: () => issues.delete(projectId, issueId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      toast.success("Issue deleted successfully");
+    },
+    onError: (error: AxiosError<ResponseApi<null>>) => {
+      toast.error(error.response?.data?.message || "Failed to delete issue");
     },
   });
 
   return {
-    issue,
+    issue: response?.data,
     isLoading,
     error,
     updateIssue,
+    deleteIssue,
   };
 }
