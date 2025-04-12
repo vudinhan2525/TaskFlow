@@ -1,120 +1,148 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import { issues, Issue, CreateIssueParams } from "@libs/apis/issue";
+import { issues, type CreateIssueParams } from "../apis/issue";
 import { toast } from "react-toastify";
-import { ResponseApi } from "@libs/apis/api";
 
-type CreateIssueRequest = Omit<CreateIssueParams, "project_id"> & {
-  sprintId?: string;
-  assignee?: string;
-};
-
-export function useIssues(projectId: string) {
-  const queryClient = useQueryClient();
-
+export function useProjectIssues(projectId: string, sprintId?: string) {
   const {
-    data: issueList,
+    data: issuesData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["issues", projectId],
-    queryFn: () => issues.list(projectId),
+    queryKey: ["issues", projectId, sprintId],
+    queryFn: async () => {
+      if (!projectId) throw new Error("Project ID is required");
+      const response = await issues.list(projectId, { sprint_id: sprintId });
+      return response.data;
+    },
     enabled: !!projectId,
   });
 
-  const createIssue = useMutation({
-    mutationFn: (data: CreateIssueRequest) =>
-      issues.create(projectId, {
-        ...data,
-        project_id: projectId,
-        sprint_id: data.sprintId,
-        assignee_id: data.assignee,
-        attachments: data.attachments || [],
-        type: data.type || "Task",
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      toast.success("Issue created successfully");
-    },
-    onError: (error: AxiosError<ResponseApi<null>>) => {
-      toast.error(error.response?.data?.message || "Failed to create issue");
-    },
-  });
-
-  const updateIssue = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Issue> }) => issues.update(projectId, id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      toast.success("Issue updated successfully");
-    },
-    onError: (error: AxiosError<ResponseApi<null>>) => {
-      toast.error(error.response?.data?.message || "Failed to update issue");
-    },
-  });
-
-  const deleteIssue = useMutation({
-    mutationFn: (id: string) => issues.delete(projectId, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      toast.success("Issue deleted successfully");
-    },
-    onError: (error: AxiosError<ResponseApi<null>>) => {
-      toast.error(error.response?.data?.message || "Failed to delete issue");
-    },
-  });
-
   return {
-    issues: issueList?.data?.data || [],
-    pagination: issueList?.data?.pagination,
+    issues: issuesData?.data || [],
+    pagination: issuesData?.pagination,
     isLoading,
     error,
-    createIssue,
-    updateIssue,
-    deleteIssue,
   };
 }
 
 export function useIssue(projectId: string, issueId: string) {
-  const queryClient = useQueryClient();
-
   const {
-    data: response,
+    data: issue,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["issue", projectId, issueId],
-    queryFn: () => issues.getById(projectId, issueId),
+    queryFn: async () => {
+      const { data } = await issues.getById(projectId, issueId);
+      return data;
+    },
     enabled: !!projectId && !!issueId,
   });
 
-  const updateIssue = useMutation({
-    mutationFn: (data: Partial<Issue>) => issues.update(projectId, issueId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["issue", projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      toast.success("Issue updated successfully");
-    },
-    onError: (error: AxiosError<ResponseApi<null>>) => {
-      toast.error(error.response?.data?.message || "Failed to update issue");
-    },
-  });
+  return {
+    issue,
+    isLoading,
+    error,
+  };
+}
 
-  const deleteIssue = useMutation({
-    mutationFn: () => issues.delete(projectId, issueId),
-    onSuccess: () => {
+export function useCreateIssue({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: createIssue,
+    mutateAsync: createIssueAsync,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (data: CreateIssueParams) => issues.create(projectId, data),
+    onSuccess: (response) => {
+      toast.success("Issue created successfully!");
+      // Invalidate the issues list
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      toast.success("Issue deleted successfully");
+      // If the issue is created with a sprint_id, invalidate that sprint's issues too
+      if (response.data.sprint_id) {
+        queryClient.invalidateQueries({ queryKey: ["issues", projectId, response.data.sprint_id] });
+      }
+      if (onClose) onClose();
     },
-    onError: (error: AxiosError<ResponseApi<null>>) => {
-      toast.error(error.response?.data?.message || "Failed to delete issue");
+    onError: () => {
+      toast.error("Failed to create issue");
     },
   });
 
   return {
-    issue: response?.data,
+    createIssue,
+    createIssueAsync,
     isLoading,
+    isSuccess,
     error,
+  };
+}
+
+export function useUpdateIssue({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: updateIssue,
+    mutateAsync: updateIssueAsync,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<CreateIssueParams> }) => issues.update(projectId, id, data),
+    onSuccess: (response, variables) => {
+      toast.success("Issue updated successfully!");
+      // Invalidate the specific issue
+      queryClient.invalidateQueries({ queryKey: ["issue", projectId, variables.id] });
+      // Invalidate the issues list
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      // If the issue has a sprint_id, invalidate that sprint's issues too
+      if (response.data.sprint_id) {
+        queryClient.invalidateQueries({ queryKey: ["issues", projectId, response.data.sprint_id] });
+      }
+      if (onClose) onClose();
+    },
+    onError: () => {
+      toast.error("Failed to update issue");
+    },
+  });
+
+  return {
     updateIssue,
+    updateIssueAsync,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
+
+export function useDeleteIssue({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+  const queryClient = useQueryClient();
+
+  const {
+    mutate: deleteIssue,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (issueId: string) => issues.delete(projectId, issueId),
+    onSuccess: () => {
+      toast.success("Issue deleted successfully!");
+      // Invalidate all issue-related queries for this project
+      queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      if (onClose) onClose();
+    },
+    onError: () => {
+      toast.error("Failed to delete issue");
+    },
+  });
+
+  return {
     deleteIssue,
+    isLoading,
+    isSuccess,
+    error,
   };
 }

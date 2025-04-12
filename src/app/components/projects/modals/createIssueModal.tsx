@@ -4,12 +4,18 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import { Issue, IssueStatus, IssuePriority } from "@libs/types";
+import { IssueStatus, IssuePriority } from "@libs/types/issue";
+import { useSelector } from "react-redux";
+import { RootState } from "@libs/store";
+import { useUserProjects } from "@libs/hooks/useProject";
+import { useProjectSprints } from "@libs/hooks/useSprint";
+import { useCreateIssue } from "@libs/hooks/useIssue";
+import { toast } from "react-toastify";
+import { CreateIssueParams } from "@libs/apis/issue";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Partial<Issue>) => Promise<void>;
 }
 
 const FileSchema = z.custom<File>((val) => val instanceof File, {
@@ -21,17 +27,20 @@ const issueSchema = z.object({
   sprintId: z.string().optional(),
   type: z.enum(["Bug", "Task", "Story", "Epic"]),
   title: z.string().min(1, "Title is required"),
+  summary: z.string().optional(),
   description: z.string().optional(),
-  status: z.enum(["To Do", "In Progress", "Done"] as const),
-  assignee: z.string(),
+  status: z.enum(["ToDo", "InProgress", "Done"] as const),
+  assignee: z.string().optional(),
   reporter: z.string().optional(),
   priority: z.enum(["Low", "Medium", "High"] as const),
   attachments: z.array(FileSchema),
 });
 
 type IssueFormData = z.infer<typeof issueSchema>;
+const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose }) => {
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { projects } = useUserProjects();
 
-const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const {
     register,
     handleSubmit,
@@ -42,7 +51,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
     resolver: zodResolver(issueSchema),
     defaultValues: {
       type: "Task",
-      status: "To Do",
+      status: "ToDo",
       priority: "Medium",
       attachments: [],
     },
@@ -53,6 +62,12 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
   const status = watch("status");
   const priority = watch("priority");
   const files = watch("attachments");
+
+  const { sprints } = useProjectSprints(projectId || "");
+  const { createIssueAsync } = useCreateIssue({
+    projectId: projectId || "",
+    onClose,
+  });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -76,23 +91,36 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
     },
     [setValue]
   );
+  const handleFormSubmit: SubmitHandler<IssueFormData> = async (formData) => {
+    if (!user?.id) {
+      toast.error("Please log in to create an issue");
+      return;
+    }
 
-  const handleFormSubmit: SubmitHandler<IssueFormData> = (data) => {
-    console.log("Form submitted with data:", data);
-    onSubmit({
-      project_id: data.projectId,
-      sprint_id: data.sprintId,
-      assignee_id: data.assignee,
-      reporter_id: data.reporter,
-      title: data.title,
-      description: data.description || "",
-      type: data.type,
-      status: "To Do",
-      priority: data.priority,
-      attachments: [],
-      story_point: 0,
-      summary: data.title,
-    });
+    if (!formData.projectId || !formData.title || !formData.type || !formData.priority) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      const issueData: CreateIssueParams = {
+        project_id: formData.projectId,
+        sprint_id: formData.sprintId,
+        assignee_id: formData.assignee,
+        reporter_id: user.id,
+        title: formData.title,
+        description: formData.description || "",
+        type: formData.type,
+        status: "ToDo",
+        priority: formData.priority,
+        attachments: [],
+        summary: formData.title,
+      };
+      await createIssueAsync(issueData);
+    } catch (error) {
+      console.error("Failed to create issue:", error);
+      toast.error("Failed to create issue");
+    }
   };
 
   if (!isOpen) return null;
@@ -112,10 +140,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
                 Project <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
-                options={[
-                  { value: "project1", label: "Project 1" },
-                  { value: "project2", label: "Project 2" },
-                ]}
+                options={projects.map((project) => ({
+                  value: project.id,
+                  label: project.name,
+                }))}
                 placement="bottom"
                 rowClassName="w-full text-[15px]"
                 menuClassName="w-[380px]"
@@ -131,10 +159,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
               </label>
               {projectId ? (
                 <DropdownAntd
-                  options={[
-                    { value: "sprint1", label: "Sprint 1" },
-                    { value: "sprint2", label: "Sprint 2" },
-                  ]}
+                  options={sprints.map((sprint) => ({
+                    value: sprint.id,
+                    label: sprint.name,
+                  }))}
                   placement="bottom"
                   rowClassName="w-full text-[15px]"
                   menuClassName="w-[380px]"
@@ -200,8 +228,8 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
             </label>
             <DropdownAntd
               options={[
-                { value: "To Do", label: "To Do" },
-                { value: "In Progress", label: "In Progress" },
+                { value: "ToDo", label: "To Do" },
+                { value: "InProgress", label: "In Progress" },
                 { value: "Done", label: "Done" },
               ]}
               placement="bottom"
@@ -234,7 +262,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
 
           <div>
             <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
-              Assignee
+              Assignee (Optional)
             </label>
             <DropdownAntd
               options={[
@@ -244,28 +272,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, on
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[380px]"
-              parent={<div className="w-full">Select Assignee</div>}
+              parent={<div className="w-full">Select Assignee (Optional)</div>}
               onClickItem={(option) => setValue("assignee", option.value)}
             />
             {errors.assignee && <p className="text-sm text-red-500 mt-1">{errors.assignee.message}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="reporter" className="block text-sm font-medium text-gray-700 mb-1">
-              Reporter
-            </label>
-            <DropdownAntd
-              options={[
-                { value: "user1", label: "User 1" },
-                { value: "user2", label: "User 2" },
-              ]}
-              placement="bottom"
-              rowClassName="w-full text-[15px]"
-              menuClassName="w-[380px]"
-              parent={<div className="w-full">Select Reporter</div>}
-              onClickItem={(option) => setValue("reporter", option.value)}
-            />
-            {errors.reporter && <p className="text-sm text-red-500 mt-1">{errors.reporter.message}</p>}
           </div>
 
           <div>

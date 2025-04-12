@@ -10,14 +10,10 @@ import { useSelector } from "react-redux";
 import { RootState } from "@libs/store";
 import { useNavigate } from "react-router-dom";
 import CreateIssueModal from "../../projects/modals/createIssueModal";
-import { useIssues } from "@libs/hooks/useIssue";
 import { useUserProjects } from "@libs/hooks/useProject";
-import { Issue } from "@libs/types";
-
 export const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProject, setSelectedProject] = useState<string>("");
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
@@ -27,23 +23,12 @@ export const Header = () => {
 
   const { projects } = useUserProjects();
 
-  const { createIssue } = useIssues(selectedProject);
-
-  const handleCreateIssue = () => {
+  const handleOpenCreateIssue = () => {
     setIsCreateIssueModalOpen(true);
   };
 
   const handleCloseIssueModal = () => {
     setIsCreateIssueModalOpen(false);
-  };
-
-  const handleSubmitIssue = async (data: Partial<Issue>) => {
-    try {
-      await createIssue.mutateAsync(data);
-      setIsCreateIssueModalOpen(false);
-    } catch (error) {
-      console.error("Failed to create issue:", error);
-    }
   };
   return (
     <>
@@ -65,7 +50,6 @@ export const Header = () => {
                 }))}
                 placement="bottom"
                 onClickItem={(option) => {
-                  setSelectedProject(option.value);
                   navigate(`/projects/${option.value}`);
                 }}
                 menuClassName={"min-w-[120px]"}
@@ -90,7 +74,7 @@ export const Header = () => {
             <FaMagnifyingGlass className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
           </div>
           {isAuthenticated && (
-            <Button className="" onClick={handleCreateIssue}>
+            <Button className="" onClick={handleOpenCreateIssue}>
               <span className="text-base font-semibold">Create Issue</span>
             </Button>
           )}
@@ -143,7 +127,7 @@ export const Header = () => {
         )}
       </header>
 
-      <CreateIssueModal isOpen={isCreateIssueModalOpen} onClose={handleCloseIssueModal} onSubmit={handleSubmitIssue} />
+      <CreateIssueModal isOpen={isCreateIssueModalOpen} onClose={handleCloseIssueModal} />
     </>
   );
 };

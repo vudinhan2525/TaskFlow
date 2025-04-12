@@ -59,7 +59,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
       {/* Navigation Bar */}
       <div className="bg-white p-6 border-b border-gray-200 flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <input type="text" placeholder="Search issues..." className="px-3 py-2 border-gray-300 border-[1px] rounded-md w-64" />
+          <input
+            type="text"
+            placeholder="Search issues..."
+            className="px-3 py-2 border-gray-300 border-[1px] rounded-md w-64"
+          />
           <DropdownAntd
             options={[{ value: "Sprint 1", label: "Sprint 1" }]}
             parent={<div>Select</div>}
@@ -76,13 +80,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
 
       {/* Board Content */}
       <div className="flex-1 overflow-x-auto p-6">
-        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
           <div className="flex space-x-4">
             {initialColumns.map((column) => (
               <div key={column.id} className="flex-shrink-0 w-80">
                 <div className="bg-gray-100 rounded-lg p-4">
                   <h3 className="font-semibold mb-4">{column.title}</h3>
-                  <SortableContext items={column.issues.map((issue) => issue.id)} strategy={verticalListSortingStrategy}>
+                  <SortableContext
+                    items={column.issues.map((issue) => issue.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
                     <div className="min-h-[200px]">
                       {column.issues.map((issue) => (
                         <div key={issue.id} className="mb-3">
@@ -96,7 +108,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
             ))}
           </div>
           <DragOverlay>
-            {activeId ? <div className="transform rotate-3 opacity-80">{/* <IssueCard issue={issues.find((issue) => issue.id === activeId)!} /> */}</div> : null}
+            {activeId ? (
+              <div className="transform rotate-3 opacity-80">
+                {/* <IssueCard issue={issues.find((issue) => issue.id === activeId)!} /> */}
+              </div>
+            ) : null}
           </DragOverlay>
         </DndContext>
       </div>
