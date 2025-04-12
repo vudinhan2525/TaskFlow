@@ -1,212 +1,149 @@
-import React, { useCallback } from "react";
+import React from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import { IssueStatus, IssuePriority } from "@libs/types/issue";
-import { useSelector } from "react-redux";
-import { RootState } from "@libs/store";
-import { useUserProjects } from "@libs/hooks/useProject";
-import { useProjectSprints } from "@libs/hooks/useSprint";
-import { useCreateIssue } from "@libs/hooks/useIssue";
-import { toast } from "react-toastify";
-import { CreateIssueParams } from "@libs/apis/issue";
+import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
+import DropdownAntd from "@libs/app/components/general-components/dropdown";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
+  projectId: string;
+  isEditing?: boolean;
+  initialIssue?: {
+    id: string;
+    title: string;
+    summary?: string;
+    description?: string;
+    status: string;
+    priority: string;
+    type: "Bug" | "Task" | "Story" | "Epic";
+    sprint_id?: string;
+    assignee_id?: string;
+  };
 }
 
-const FileSchema = z.custom<File>((val) => val instanceof File, {
-  message: "Must be a file",
-});
-
 const issueSchema = z.object({
-  projectId: z.string().min(1, "Project is required"),
-  sprintId: z.string().optional(),
-  type: z.enum(["Bug", "Task", "Story", "Epic"]),
   title: z.string().min(1, "Title is required"),
   summary: z.string().optional(),
   description: z.string().optional(),
-  status: z.enum(["ToDo", "InProgress", "Done"] as const),
-  assignee: z.string().optional(),
-  reporter: z.string().optional(),
-  priority: z.enum(["Low", "Medium", "High"] as const),
-  attachments: z.array(FileSchema),
+  status: z.string().min(1, "Status is required"),
+  priority: z.string().min(1, "Priority is required"),
+  type: z.enum(["Bug", "Task", "Story", "Epic"]),
+  sprint_id: z.string().optional(),
+  assignee_id: z.string().optional(),
 });
 
 type IssueFormData = z.infer<typeof issueSchema>;
-const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose }) => {
-  const { user } = useSelector((state: RootState) => state.auth);
-  const { projects } = useUserProjects();
+
+const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, projectId, isEditing, initialIssue }) => {
+  const { createIssue, isLoading: isCreating } = useCreateIssue({
+    projectId,
+    onClose: () => {
+      onClose();
+      reset();
+    },
+  });
+
+  const { updateIssue, isLoading: isUpdating } = useUpdateIssue({
+    projectId,
+    onClose: () => {
+      onClose();
+      reset();
+    },
+  });
+
+  const isLoading = isCreating || isUpdating;
 
   const {
     register,
     handleSubmit,
+    reset,
     setValue,
     watch,
     formState: { errors },
   } = useForm<IssueFormData>({
     resolver: zodResolver(issueSchema),
     defaultValues: {
-      type: "Task",
-      status: "ToDo",
+      title: "",
+      summary: "",
+      description: "",
+      status: "To Do",
       priority: "Medium",
-      attachments: [],
+      type: "Task",
     },
   });
 
-  const projectId = watch("projectId");
+  React.useEffect(() => {
+    if (isEditing && initialIssue) {
+      reset({
+        title: initialIssue.title,
+        summary: initialIssue.summary || "",
+        description: initialIssue.description || "",
+        status: initialIssue.status,
+        priority: initialIssue.priority,
+        type: initialIssue.type,
+        sprint_id: initialIssue.sprint_id,
+        assignee_id: initialIssue.assignee_id,
+      });
+    }
+  }, [isEditing, initialIssue, reset]);
+
+  const handleFormSubmit: SubmitHandler<IssueFormData> = async (data) => {
+    const issueData = {
+      ...data,
+      project_id: projectId,
+    };
+
+    if (isEditing && initialIssue) {
+      updateIssue({ id: initialIssue.id, data: issueData });
+    } else {
+      createIssue(issueData);
+    }
+  };
+
   const type = watch("type");
-  const status = watch("status");
   const priority = watch("priority");
-  const files = watch("attachments");
-
-  const { sprints } = useProjectSprints(projectId || "");
-  const { createIssueAsync } = useCreateIssue({
-    projectId: projectId || "",
-    onClose,
-  });
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const droppedFiles = Array.from(e.dataTransfer.files);
-      setValue("attachments", droppedFiles);
-    },
-    [setValue]
-  );
-
-  const handleFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const selectedFiles = Array.from(e.target.files || []);
-      setValue("attachments", selectedFiles);
-    },
-    [setValue]
-  );
-  const handleFormSubmit: SubmitHandler<IssueFormData> = async (formData) => {
-    if (!user?.id) {
-      toast.error("Please log in to create an issue");
-      return;
-    }
-
-    if (!formData.projectId || !formData.title || !formData.type || !formData.priority) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    try {
-      const issueData: CreateIssueParams = {
-        project_id: formData.projectId,
-        sprint_id: formData.sprintId,
-        assignee_id: formData.assignee,
-        reporter_id: user.id,
-        title: formData.title,
-        description: formData.description || "",
-        type: formData.type,
-        status: "ToDo",
-        priority: formData.priority,
-        attachments: [],
-        summary: formData.title,
-      };
-      await createIssueAsync(issueData);
-    } catch (error) {
-      console.error("Failed to create issue:", error);
-      toast.error("Failed to create issue");
-    }
-  };
+  const status = watch("status");
 
   if (!isOpen) return null;
 
   return (
     <Modal
-      title="Create Issue"
+      title={isEditing ? "Update Issue" : "Create Issue"}
       onClose={onClose}
-      buttonContent="Create issue"
+      buttonContent={isLoading ? "Loading..." : isEditing ? "Update Issue" : "Create Issue"}
       onSubmit={handleSubmit(handleFormSubmit)}
+      isLoadingButton={isLoading}
     >
-      <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-4">
+      <div className="p-4">
         <form className="space-y-4">
-          <div className=" gap-4 mb-6">
-            <div>
-              <label htmlFor="project" className="block text-sm font-medium text-gray-700 mb-1">
-                Project <span className="text-red-500">*</span>
-              </label>
-              <DropdownAntd
-                options={projects.map((project) => ({
-                  value: project.id,
-                  label: project.name,
-                }))}
-                placement="bottom"
-                rowClassName="w-full text-[15px]"
-                menuClassName="w-[380px]"
-                parent={<div className="w-full">Select Project</div>}
-                onClickItem={(option) => setValue("projectId", option.value)}
-              />
-              {errors.projectId && <p className="text-sm text-red-500 mt-1">{errors.projectId.message}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="sprint" className="block text-sm font-medium text-gray-700 mb-1">
-                Sprint
-              </label>
-              {projectId ? (
-                <DropdownAntd
-                  options={sprints.map((sprint) => ({
-                    value: sprint.id,
-                    label: sprint.name,
-                  }))}
-                  placement="bottom"
-                  rowClassName="w-full text-[15px]"
-                  menuClassName="w-[380px]"
-                  parent={<div className="w-full">Select Sprint</div>}
-                  onClickItem={(option) => setValue("sprintId", option.value)}
-                />
-              ) : (
-                <div className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-400">
-                  Select a project first
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
-                Type <span className="text-red-500">*</span>
-              </label>
-              <DropdownAntd
-                options={[
-                  { value: "Bug", label: "Bug" },
-                  { value: "Task", label: "Task" },
-                  { value: "Story", label: "Story" },
-                  { value: "Epic", label: "Epic" },
-                ]}
-                placement="bottom"
-                rowClassName="w-full text-[15px]"
-                menuClassName="w-[380px]"
-                parent={<div className="w-full">{type}</div>}
-                onClickItem={(option) => setValue("type", option.value as "Bug" | "Task" | "Story" | "Epic")}
-              />
-              {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type.message}</p>}
-            </div>
-          </div>
-
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              Title <span className="text-red-500">*</span>
+              Issue Title <span className="text-red-500">*</span>
             </label>
             <input
               id="title"
+              type="text"
               {...register("title")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Enter issue title"
             />
             {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
+              Summary
+            </label>
+            <input
+              id="summary"
+              type="text"
+              {...register("summary")}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Brief summary of the issue"
+            />
           </div>
 
           <div>
@@ -218,100 +155,67 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose }) 
               {...register("description")}
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              placeholder="Detailed description of the issue"
             />
-            {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+                Issue Type <span className="text-red-500">*</span>
+              </label>
+              <DropdownAntd
+                options={[
+                  { value: "Bug", label: "Bug" },
+                  { value: "Task", label: "Task" },
+                  { value: "Story", label: "Story" },
+                  { value: "Epic", label: "Epic" },
+                ]}
+                placement="bottom"
+                rowClassName="w-full text-[15px]"
+                menuClassName="w-[180px]"
+                parent={<div className="w-full font-medium">{type}</div>}
+                onClickItem={(option) => setValue("type", option.value as "Bug" | "Task" | "Story" | "Epic")}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+                Priority <span className="text-red-500">*</span>
+              </label>
+              <DropdownAntd
+                options={[
+                  { value: "Highest", label: "Highest" },
+                  { value: "High", label: "High" },
+                  { value: "Medium", label: "Medium" },
+                  { value: "Low", label: "Low" },
+                  { value: "Lowest", label: "Lowest" },
+                ]}
+                placement="bottom"
+                rowClassName="w-full text-[15px]"
+                menuClassName="w-[180px]"
+                parent={<div className="w-full font-medium">{priority}</div>}
+                onClickItem={(option) => setValue("priority", option.value)}
+              />
+            </div>
           </div>
 
           <div>
             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-              Status
+              Status <span className="text-red-500">*</span>
             </label>
             <DropdownAntd
               options={[
-                { value: "ToDo", label: "To Do" },
-                { value: "InProgress", label: "In Progress" },
+                { value: "To Do", label: "To Do" },
+                { value: "In Progress", label: "In Progress" },
                 { value: "Done", label: "Done" },
               ]}
               placement="bottom"
               rowClassName="w-full text-[15px]"
-              menuClassName="w-[380px]"
-              parent={<div className="w-full">{status}</div>}
-              onClickItem={(option) => setValue("status", option.value as IssueStatus)}
+              menuClassName="w-[180px]"
+              parent={<div className="w-full font-medium">{status}</div>}
+              onClickItem={(option) => setValue("status", option.value)}
             />
-            {errors.status && <p className="text-sm text-red-500 mt-1">{errors.status.message}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
-              Priority
-            </label>
-            <DropdownAntd
-              options={[
-                { value: "Low", label: "Low" },
-                { value: "Medium", label: "Medium" },
-                { value: "High", label: "High" },
-              ]}
-              placement="bottom"
-              rowClassName="w-full text-[15px]"
-              menuClassName="w-[380px]"
-              parent={<div className="w-full">{priority}</div>}
-              onClickItem={(option) => setValue("priority", option.value as IssuePriority)}
-            />
-            {errors.priority && <p className="text-sm text-red-500 mt-1">{errors.priority.message}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
-              Assignee (Optional)
-            </label>
-            <DropdownAntd
-              options={[
-                { value: "user1", label: "User 1" },
-                { value: "user2", label: "User 2" },
-              ]}
-              placement="bottom"
-              rowClassName="w-full text-[15px]"
-              menuClassName="w-[380px]"
-              parent={<div className="w-full">Select Assignee (Optional)</div>}
-              onClickItem={(option) => setValue("assignee", option.value)}
-            />
-            {errors.assignee && <p className="text-sm text-red-500 mt-1">{errors.assignee.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
-            <div
-              className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors 
-                ${files?.length ? "border-green-500 bg-green-50" : "hover:border-green-500 hover:bg-green-50"}`}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById("file-input")?.click()}
-            >
-              <input
-                id="file-input"
-                type="file"
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-                accept="image/*,.pdf,.doc,.docx"
-              />
-              <p>
-                {files?.length
-                  ? "Drop files here or click to replace"
-                  : "Drag & drop files here, or click to select files"}
-              </p>
-            </div>
-            {files?.length > 0 && (
-              <div className="mt-2">
-                <ul className="list-disc pl-5">
-                  {files.map((file: File, index: number) => (
-                    <li key={index} className="text-sm text-gray-600">
-                      {file.name} ({(file.size / 1024).toFixed(1)} KB)
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         </form>
       </div>
