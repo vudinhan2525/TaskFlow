@@ -11,18 +11,14 @@ import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
 import ProjectPage from "@libs/app/pages/project/projectPage/projectPage";
 
 // Placeholder components until we implement the real ones
-const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement => (
-  <div className="p-8 text-center text-gray-600">{title}</div>
-);
+const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement => <div className="p-8 text-center text-gray-600">{title}</div>;
 
 // Lazy load components
 const ProjectReport = lazy(() => import("@libs/app/pages/project/reportPage/reportPage"));
 const ProjectBoard = lazy(() => import("@libs/app/pages/project/boardPage/boardPage"));
 const Roadmap = lazy(() => import("@libs/app/pages/project/roadmapPage/roadmapPage"));
 const ActiveSprints = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Active Sprints" /> }));
-const ProjectSettings = lazy(() =>
-  Promise.resolve({ default: () => <PlaceholderComponent title="Project Settings" /> })
-);
+const ProjectSettings = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Project Settings" /> }));
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -52,7 +48,7 @@ const Router = (): React.ReactElement => {
           {/* Projects routes */}
           <Route path="projects">
             <Route index element={<ProjectPage />} />
-            <Route path=":projectKey" element={<ProjectLayout />}>
+            <Route path=":projectId" element={<ProjectLayout />}>
               <Route index element={<ProjectPage />} />
               <Route path="board" element={<ProjectBoard />} />
               <Route path="summary" element={<ProjectPage />} />
