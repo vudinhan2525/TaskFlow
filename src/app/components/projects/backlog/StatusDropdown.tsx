@@ -1,5 +1,5 @@
 import React from "react";
-import { IssueStatus } from "@libs/types";
+import { IssueStatus } from "@libs/types/issue";
 
 interface StatusDropdownProps {
   status: IssueStatus;
@@ -7,21 +7,40 @@ interface StatusDropdownProps {
 }
 
 const StatusDropdown: React.FC<StatusDropdownProps> = ({ status, onChange }) => {
-  const statusColors = {
-    "To Do": "bg-gray-100 text-gray-800",
-    "In Progress": "bg-blue-100 text-blue-800",
+  const statusMap: Record<IssueStatus, string> = {
+    ToDo: "To Do",
+    InProgress: "In Progress",
+    Done: "Done",
+  };
+
+  const statusColors: Record<IssueStatus, string> = {
+    ToDo: "bg-gray-100 text-gray-800",
+    InProgress: "bg-blue-100 text-blue-800",
     Done: "bg-green-100 text-green-800",
+  };
+
+  const displayToStatus: Record<string, IssueStatus> = {
+    "To Do": "ToDo",
+    "In Progress": "InProgress",
+    Done: "Done",
   };
 
   return (
     <select
-      value={status}
-      onChange={(e) => onChange(e.target.value as IssueStatus)}
+      value={statusMap[status]}
+      onChange={(e) => {
+        const newStatus = displayToStatus[e.target.value];
+        if (newStatus) {
+          onChange(newStatus);
+        }
+      }}
       className={`px-2 py-1 rounded border-0 ${statusColors[status]} cursor-pointer`}
     >
-      <option value="To Do">To Do</option>
-      <option value="In Progress">In Progress</option>
-      <option value="Done">Done</option>
+      {Object.entries(statusMap).map(([value, display]) => (
+        <option key={value} value={display}>
+          {display}
+        </option>
+      ))}
     </select>
   );
 };

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import { useProjectSprints, useCreateSprint } from "@libs/hooks/useSprint";
+import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectIssues, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { Sprint } from "@libs/apis/sprint";
-import { IssueStatus } from "@libs/types/issue";
+import { IssueStatus, IIssue } from "@libs/types/issue";
 import ScrumSprint from "@libs/app/components/projects/backlog/scrumPrint";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import Button from "@libs/app/components/general-components/button";
@@ -12,39 +12,12 @@ import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
 
 const BackLogPage: React.FC = () => {
   const { projectId = "" } = useParams();
-  // console.log("Route params projectId:", projectId);
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
   const { selectIssue } = useIssueSelection();
   const [selectedIssues, setSelectedIssues] = useState<{ [key: string]: boolean }>({});
   const { sprints, isLoading: isLoadingSprints } = useProjectSprints(projectId || "");
-  // console.log("sprints data:", {
-  //   projectId,
-  //   sprints,
-  //   isLoading: isLoadingSprints,
-  //   error: sprintsError,
-  //   enabled: !!projectId,
-  // });
-  const { createSprintAsync } = useCreateSprint({ projectId });
   const { issues, isLoading: isLoadingIssues } = useProjectIssues(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
-
-  const handleCreateSprint = async (data: { name: string; dateStarted: string; dateEnded: string }) => {
-    try {
-      await createSprintAsync({
-        name: data.name,
-        date_started: data.dateStarted,
-        date_ended: data.dateEnded,
-        project_id: projectId,
-        goal: "",
-        duration: Math.ceil(
-          (new Date(data.dateEnded).getTime() - new Date(data.dateStarted).getTime()) / (1000 * 3600 * 24)
-        ),
-      });
-      setIsCreateSprintModalOpen(false);
-    } catch (error) {
-      console.error("Failed to create sprint:", error);
-    }
-  };
 
   const handleStatusChange = async (issueId: string, newStatus: IssueStatus) => {
     try {
@@ -54,13 +27,16 @@ const BackLogPage: React.FC = () => {
     }
   };
 
-  const handleIssueSelect = (issueId: string, selected: boolean) => {
+  const handleIssueSelect = (issueId: string, selected: boolean, issue?: IIssue) => {
     setSelectedIssues((prev) => ({
       ...prev,
       [issueId]: selected,
     }));
-    if (selected) {
-      selectIssue(issueId);
+
+    if (!selected) {
+      selectIssue(null);
+    } else if (issue) {
+      selectIssue(issue);
     }
   };
 
@@ -111,7 +87,7 @@ const BackLogPage: React.FC = () => {
                 <div
                   key={issue.id}
                   className="bg-white p-4 rounded-lg shadow cursor-pointer hover:bg-gray-50"
-                  onClick={() => handleIssueSelect(issue.id, true)}
+                  onClick={() => handleIssueSelect(issue.id, !selectedIssues[issue.id], issue)}
                 >
                   <div className="flex justify-between items-center">
                     <div>
@@ -132,7 +108,6 @@ const BackLogPage: React.FC = () => {
         <CreateSprintModal
           isOpen={isCreateSprintModalOpen}
           onClose={() => setIsCreateSprintModalOpen(false)}
-          onSubmit={handleCreateSprint}
           projectId={projectId}
         />
       </div>

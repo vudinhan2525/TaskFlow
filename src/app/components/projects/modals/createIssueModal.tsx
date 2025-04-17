@@ -206,8 +206,8 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, pr
             </label>
             <DropdownAntd
               options={[
-                { value: "To Do", label: "To Do" },
-                { value: "In Progress", label: "In Progress" },
+                { value: "ToDo", label: "To Do" },
+                { value: "InProgress", label: "In Progress" },
                 { value: "Done", label: "Done" },
               ]}
               placement="bottom"

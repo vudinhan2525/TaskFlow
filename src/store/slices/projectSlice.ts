@@ -1,11 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Project, Board, Sprint, Issue } from "@libs/types";
+import { Project, Board, Sprint } from "@libs/types";
+import { IIssue as Issue } from "@libs/types/issue";
 
 interface ProjectState {
   currentProject: Project | null;
   projects: Project[];
   currentBoard: Board | null;
   currentSprint: Sprint | null;
+  selectedIssueId: string | null;
+  selectedIssue: Issue | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -15,6 +18,8 @@ const initialState: ProjectState = {
   projects: [],
   currentBoard: null,
   currentSprint: null,
+  selectedIssueId: null,
+  selectedIssue: null,
   isLoading: false,
   error: null,
 };
@@ -58,7 +63,7 @@ const projectSlice = createSlice({
       }
 
       // Update issue in current project
-      if (currentProject) {
+      if (currentProject?.boards) {
         currentProject.boards.forEach((board) => {
           board.columns.forEach((column) => {
             const issueIndex = column.issues.findIndex((i) => i.id === updatedIssue.id);
@@ -75,10 +80,23 @@ const projectSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
+    selectIssue: (state, action: PayloadAction<Issue | null>) => {
+      console.log("Selecting issue in redux:", action.payload);
+      state.selectedIssueId = action.payload?.id || null;
+      state.selectedIssue = action.payload;
+    },
   },
 });
 
-export const { setProjects, setCurrentProject, setCurrentBoard, setCurrentSprint, updateIssue, setLoading, setError } =
-  projectSlice.actions;
+export const {
+  setProjects,
+  setCurrentProject,
+  setCurrentBoard,
+  setCurrentSprint,
+  updateIssue,
+  setLoading,
+  setError,
+  selectIssue,
+} = projectSlice.actions;
 
 export const projectReducer = projectSlice.reducer;

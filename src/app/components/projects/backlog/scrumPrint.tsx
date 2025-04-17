@@ -15,7 +15,7 @@ interface ScrumSprintProps {
   projectId: string;
   sprintId: string;
   selectedIssues: { [key: string]: boolean };
-  onIssueSelect: (issueId: string, selected: boolean) => void;
+  onIssueSelect: (issueId: string, selected: boolean, issue?: IIssue) => void;
   onStatusChange?: (issueId: string, newStatus: IssueStatus) => void;
 }
 
@@ -86,6 +86,7 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
                 checked={issues.length > 0 && issues.every((issue) => selectedIssues[issue.id])}
                 onChange={(e) => {
                   issues.forEach((issue) => {
+                    // Only pass issue ID and selection state for bulk selection
                     onIssueSelect(issue.id, e.target.checked);
                   });
                 }}
@@ -102,13 +103,22 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
                   type="checkbox"
                   checked={selectedIssues[issue.id] || false}
                   onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => onIssueSelect(issue.id, e.target.checked)}
+                  onChange={(e) => {
+                    console.log("Checkbox changed:", { issueId: issue.id, checked: e.target.checked });
+                    onIssueSelect(issue.id, e.target.checked, issue);
+                  }}
                   className="rounded"
                 />
                 <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-sm">👤</span>
                 </div>
-                <div className="flex-grow cursor-pointer" onClick={() => onIssueSelect(issue.id, true)}>
+                <div
+                  className="flex-grow cursor-pointer"
+                  onClick={() => {
+                    console.log("Issue clicked:", issue.id);
+                    onIssueSelect(issue.id, !selectedIssues[issue.id], issue);
+                  }}
+                >
                   <div className="font-medium">{issue.title}</div>
                   <div className="text-sm text-gray-500">{issue.id}</div>
                 </div>
