@@ -91,13 +91,6 @@ const ProjectNavbar = (): React.ReactElement => {
 
   return (
     <div className="flex flex-col bg-white p-2 border-b border-gray-200">
-      {/* Project Header */}
-      <div className="flex items-center mb-2">
-        <FaRocket className="text-emerald-600 text-xl mr-2" />
-        <span className="text-base font-semibold text-gray-800">TaskFlow</span>
-        <span className="ml-1 text-gray-500">...</span>
-      </div>
-
       {/* Navigation Items */}
       <nav className="flex items-center overflow-x-auto whitespace-nowrap">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

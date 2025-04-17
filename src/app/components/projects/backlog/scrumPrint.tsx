@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { IssueStatus, IIssue } from "@libs/types/issue";
 import Button from "@libs/app/components/general-components/button";
 import CreateIssueModalFromSprint from "@libs/app/components/projects/modals/createIssueModalFromSprint";
+import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import StatusDropdown from "./StatusDropdown";
 import { formatSprintDate } from "../../../../utils/date";
 import { useCreateIssue } from "@libs/hooks/useIssue";
@@ -14,7 +15,7 @@ interface ScrumSprintProps {
   projectId: string;
   sprintId: string;
   selectedIssues: { [key: string]: boolean };
-  onIssueSelect: (issueId: string, selected: boolean) => void;
+  onIssueSelect: (issueId: string, selected: boolean, issue?: IIssue) => void;
   onStatusChange?: (issueId: string, newStatus: IssueStatus) => void;
 }
 
@@ -30,11 +31,12 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
   onIssueSelect,
   onStatusChange,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const { createIssueAsync } = useCreateIssue({
     projectId,
-    onClose: () => setIsModalOpen(false),
+    onClose: () => setIsIssueModalOpen(false),
   });
 
   return (
@@ -60,14 +62,14 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
             <Button
               variant="primary"
               className="text-sm bg-green-600 text-white hover:bg-green-700"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsIssueModalOpen(true)}
             >
               Create Issue
             </Button>
             <Button variant="secondary" className="text-sm">
               Complete Sprint
             </Button>
-            <Button variant="secondary" className="text-sm">
+            <Button variant="secondary" className="text-sm" onClick={() => setIsSprintModalOpen(true)}>
               Edit Sprint
             </Button>
           </div>
@@ -84,6 +86,7 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
                 checked={issues.length > 0 && issues.every((issue) => selectedIssues[issue.id])}
                 onChange={(e) => {
                   issues.forEach((issue) => {
+                    // Only pass issue ID and selection state for bulk selection
                     onIssueSelect(issue.id, e.target.checked);
                   });
                 }}
@@ -100,13 +103,22 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
                   type="checkbox"
                   checked={selectedIssues[issue.id] || false}
                   onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => onIssueSelect(issue.id, e.target.checked)}
+                  onChange={(e) => {
+                    console.log("Checkbox changed:", { issueId: issue.id, checked: e.target.checked });
+                    onIssueSelect(issue.id, e.target.checked, issue);
+                  }}
                   className="rounded"
                 />
                 <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-sm">👤</span>
                 </div>
-                <div className="flex-grow cursor-pointer" onClick={() => onIssueSelect(issue.id, true)}>
+                <div
+                  className="flex-grow cursor-pointer"
+                  onClick={() => {
+                    console.log("Issue clicked:", issue.id);
+                    onIssueSelect(issue.id, !selectedIssues[issue.id], issue);
+                  }}
+                >
                   <div className="font-medium">{issue.title}</div>
                   <div className="text-sm text-gray-500">{issue.id}</div>
                 </div>
@@ -123,8 +135,8 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
       )}
 
       <CreateIssueModalFromSprint
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isIssueModalOpen}
+        onClose={() => setIsIssueModalOpen(false)}
         onSubmit={async (formData) => {
           if (!formData.title || !formData.priority || !formData.type) {
             console.error("Missing required fields");
@@ -150,6 +162,19 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
         }}
         projectId={projectId}
         sprintId={sprintId}
+      />
+
+      <CreateSprintModal
+        isOpen={isSprintModalOpen}
+        onClose={() => setIsSprintModalOpen(false)}
+        projectId={projectId}
+        isEditing={true}
+        initialSprint={{
+          id: sprintId,
+          name: sprintName,
+          date_started: startDate,
+          date_ended: endDate,
+        }}
       />
     </div>
   );
