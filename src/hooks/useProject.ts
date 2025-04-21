@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import type { Project } from "../types";
-import { projects } from "@libs/apis/project";
+import { projects, Column } from "@libs/apis/project";
 import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
 
@@ -152,6 +152,28 @@ export function useProject(projectId: string) {
 
   return {
     project,
+    isLoading,
+    error,
+  };
+}
+
+export function useProjectColumns(projectId: string) {
+  const {
+    data: columnsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["projectColumns", projectId],
+    queryFn: async () => {
+      if (!projectId) throw new Error("Project ID is required");
+      const response = await projects.getColumns(projectId);
+      return response.data;
+    },
+    enabled: !!projectId,
+  });
+
+  return {
+    columns: columnsData?.data || [],
     isLoading,
     error,
   };

@@ -3,8 +3,9 @@ import { useParams } from "react-router-dom";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectIssues, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
+import { useProjectColumns } from "@libs/hooks/useProject";
 import { Sprint } from "@libs/apis/sprint";
-import { IssueStatus, IIssue } from "@libs/types/issue";
+import { IIssue } from "@libs/types/issue";
 import ScrumSprint from "@libs/app/components/projects/backlog/scrumPrint";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import Button from "@libs/app/components/general-components/button";
@@ -17,9 +18,10 @@ const BackLogPage: React.FC = () => {
   const [selectedIssues, setSelectedIssues] = useState<{ [key: string]: boolean }>({});
   const { sprints, isLoading: isLoadingSprints } = useProjectSprints(projectId || "");
   const { issues, isLoading: isLoadingIssues } = useProjectIssues(projectId);
+  const { columns, isLoading: isLoadingColumns } = useProjectColumns(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-  const handleStatusChange = async (issueId: string, newStatus: IssueStatus) => {
+  const handleStatusChange = async (issueId: string, newStatus: string) => {
     try {
       await updateIssueAsync({ id: issueId, data: { status: newStatus } });
     } catch (error) {
@@ -40,7 +42,7 @@ const BackLogPage: React.FC = () => {
     }
   };
 
-  if (isLoadingSprints || isLoadingIssues) {
+  if (isLoadingSprints || isLoadingIssues || isLoadingColumns) {
     return <div>Loading...</div>;
   }
 
@@ -94,8 +96,18 @@ const BackLogPage: React.FC = () => {
                       <h3 className="font-medium">{issue.title}</h3>
                       <p className="text-sm text-gray-500">{issue.description}</p>
                     </div>
-                    <div>
-                      <span className="px-2 py-1 text-sm bg-blue-100 text-blue-800 rounded">{issue.status}</span>
+                    <div className="flex items-center space-x-2">
+                      <select
+                        value={issue.status}
+                        onChange={(e) => handleStatusChange(issue.id, e.target.value)}
+                        className="p-1 border rounded text-sm"
+                      >
+                        {columns.map((column) => (
+                          <option key={column.id} value={column.name}>
+                            {column.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>

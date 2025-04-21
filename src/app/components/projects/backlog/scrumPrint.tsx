@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { IssueStatus, IIssue } from "@libs/types/issue";
+import { IIssue } from "@libs/types/issue";
+import { useProjectColumns } from "@libs/hooks/useProject";
 import Button from "@libs/app/components/general-components/button";
 import CreateIssueModalFromSprint from "@libs/app/components/projects/modals/createIssueModalFromSprint";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
@@ -16,7 +17,7 @@ interface ScrumSprintProps {
   sprintId: string;
   selectedIssues: { [key: string]: boolean };
   onIssueSelect: (issueId: string, selected: boolean, issue?: IIssue) => void;
-  onStatusChange?: (issueId: string, newStatus: IssueStatus) => void;
+  onStatusChange?: (issueId: string, newStatus: string) => void;
 }
 
 const ScrumSprint: React.FC<ScrumSprintProps> = ({
@@ -34,6 +35,7 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
   const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const { columns } = useProjectColumns(projectId);
   const { createIssueAsync } = useCreateIssue({
     projectId,
     onClose: () => setIsIssueModalOpen(false),
@@ -54,9 +56,11 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
             <span className="text-sm text-gray-500">{issueCount} issues</span>
           </div>
           <div className="grid grid-cols-4 gap-4 text-sm text-gray-500">
-            <div>To Do: {issues.filter((issue) => issue.status === "ToDo").length}</div>
-            <div>In Progress: {issues.filter((issue) => issue.status === "InProgress").length}</div>
-            <div>Done: {issues.filter((issue) => issue.status === "Done").length}</div>
+            {columns?.map((column) => (
+              <div key={column.id}>
+                {column.name}: {issues.filter((issue) => issue.status === column.name).length}
+              </div>
+            ))}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -124,8 +128,9 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
                 </div>
                 <div onClick={(e) => e.stopPropagation()}>
                   <StatusDropdown
-                    status={issue.status as IssueStatus}
-                    onChange={(newStatus) => onStatusChange?.(issue.id, newStatus as IssueStatus)}
+                    status={issue.status}
+                    columns={columns || []}
+                    onChange={(newStatus) => onStatusChange?.(issue.id, newStatus)}
                   />
                 </div>
               </div>
@@ -147,7 +152,7 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
               title: formData.title,
               summary: formData.summary || "",
               description: formData.description || "",
-              status: formData.status || "ToDo",
+              status: formData.status || columns?.[0]?.name || "TO DO",
               priority: formData.priority,
               type: formData.type,
               assignee_id: formData.assignee_id || undefined,
