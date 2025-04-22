@@ -1,16 +1,38 @@
 import React, { useState } from "react";
-import { FaChevronDown, FaChevronUp, FaCog } from "react-icons/fa";
+import { FaChevronDown, FaChevronUp, FaCog, FaPaperclip } from "react-icons/fa";
+import StatusDropdown from "../projects/backlog/StatusDropdown";
+import { useProjectColumns } from "@libs/hooks/useProject";
 import Button from "../general-components/button";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { formatDate } from "../../../utils/date";
-import { IssueStatus } from "@libs/types/issue";
 
-const statusOptions: IssueStatus[] = ["ToDo", "InProgress", "Done"];
+type DetailOption = "Attachment" | "Child Issue";
+const detailOptions: DetailOption[] = ["Attachment", "Child Issue"];
 
 const IssueSideBar: React.FC = () => {
   const { selectedIssueId, selectedIssue, selectIssue, isLoading, isSidebarVisible } = useIssueSelection();
+  const { columns } = useProjectColumns(selectedIssue?.project_id || "");
+  const { updateIssueAsync } = useUpdateIssue({
+    projectId: selectedIssue?.project_id || "",
+  });
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (selectedIssue && selectedIssue.status !== newStatus) {
+      try {
+        await updateIssueAsync({
+          id: selectedIssue.id,
+          data: { status: newStatus },
+        });
+      } catch (error) {
+        console.error("Failed to update status:", error);
+      }
+    }
+  };
   const [activeTab, setActiveTab] = useState<string>("Comments");
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(true);
+  const [selectedDetailOption, setSelectedDetailOption] = useState<DetailOption | null>(null);
+  const [detailInput, setDetailInput] = useState<string>("");
 
   if (!isSidebarVisible || !selectedIssueId || !selectedIssue) {
     return null;
@@ -23,6 +45,21 @@ const IssueSideBar: React.FC = () => {
       </div>
     );
   }
+
+  const handleDetailSubmit = () => {
+    if (!selectedDetailOption || !detailInput) return;
+
+    // Here you would typically make an API call to save the details
+    if (selectedDetailOption === "Attachment") {
+      console.log("Adding attachment:", detailInput);
+    } else if (selectedDetailOption === "Child Issue") {
+      console.log("Creating child issue with parent_id:", selectedIssueId);
+    }
+
+    // Reset the form
+    setSelectedDetailOption(null);
+    setDetailInput("");
+  };
 
   const details = {
     assignee: {
@@ -43,6 +80,7 @@ const IssueSideBar: React.FC = () => {
       initials: selectedIssue.reporter_id ? selectedIssue.reporter_id.substring(0, 2).toUpperCase() : "NA",
       name: selectedIssue.reporter_id || "Unknown",
     },
+    attachments: selectedIssue.attachments || [],
   };
 
   return (
@@ -64,21 +102,47 @@ const IssueSideBar: React.FC = () => {
       {/* Title */}
       <h2 className="text-xl text-left font-semibold text-gray-800 mb-2">{selectedIssue.title}</h2>
 
-      {/* Status Dropdown */}
+      {/* Status and Detail Options Dropdowns */}
       <div className="mb-4">
         <div className="flex items-center space-x-2">
+          {/* Status Dropdown */}
+          <StatusDropdown status={selectedIssue.status} columns={columns || []} onChange={handleStatusChange} />
+
           <select
-            value={selectedIssue.status}
-            onChange={(e) => console.log(e.target.value)}
-            className="px-3 py-1 text-sm text-white bg-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+            value={selectedDetailOption || ""}
+            onChange={(e) => setSelectedDetailOption((e.target.value as DetailOption) || null)}
+            className="px-3 py-1 text-sm text-gray-700 bg-gray-100 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
           >
-            {statusOptions.map((option) => (
+            <option value="">Add detail...</option>
+            {detailOptions.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
             ))}
           </select>
         </div>
+
+        {/* Input field for selected detail option */}
+        {selectedDetailOption && (
+          <div className="mt-2">
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-500">{selectedDetailOption === "Attachment" && <FaPaperclip />}</span>
+              <input
+                type={selectedDetailOption === "Attachment" ? "file" : "text"}
+                placeholder={`Add ${selectedDetailOption.toLowerCase()}...`}
+                value={selectedDetailOption === "Attachment" ? undefined : detailInput}
+                onChange={(e) => setDetailInput(e.target.value)}
+                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <button
+                onClick={handleDetailSubmit}
+                className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Description */}
@@ -136,6 +200,25 @@ const IssueSideBar: React.FC = () => {
                   {details.reporter.initials}
                 </span>
                 <span className="text-sm text-gray-800">{details.reporter.name}</span>
+              </div>
+            </div>
+
+            {/* Attachments Section */}
+            <div className="flex items-center justify-between group">
+              <span className="text-sm text-gray-600">Attachments</span>
+              <div className="flex items-center space-x-1">
+                {details.attachments.length > 0 ? (
+                  <div className="flex flex-col space-y-1">
+                    {details.attachments.map((attachment, index) => (
+                      <span key={index} className="text-sm text-blue-600 hover:underline flex items-center">
+                        <FaPaperclip className="mr-1" />
+                        {attachment}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-sm text-gray-800">None</span>
+                )}
               </div>
             </div>
           </div>

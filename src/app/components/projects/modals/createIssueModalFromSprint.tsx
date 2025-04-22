@@ -5,6 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSelector } from "react-redux";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
+import StatusDropdown from "../backlog/StatusDropdown";
+import { useProjectColumns } from "@libs/hooks/useProject";
 import { IIssue } from "@libs/types/issue";
 import { IssueStatus, IssuePriority } from "@libs/types/issue";
 import { RootState } from "@libs/store";
@@ -42,6 +44,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
   projectId,
   sprintId,
 }) => {
+  const { columns } = useProjectColumns(projectId);
   const { user } = useSelector((state: RootState) => state.auth);
   const {
     register,
@@ -179,17 +182,10 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
               Status
             </label>
-            <DropdownAntd
-              options={[
-                { value: "ToDo", label: "To Do" },
-                { value: "InProgress", label: "In Progress" },
-                { value: "Done", label: "Done" },
-              ]}
-              placement="bottom"
-              rowClassName="w-full text-[15px]"
-              menuClassName="w-[380px]"
-              parent={<div className="w-full">{status}</div>}
-              onClickItem={(option) => setValue("status", option.value as IssueStatus)}
+            <StatusDropdown
+              status={status}
+              columns={columns || []}
+              onChange={(newStatus) => setValue("status", newStatus as IssueStatus)}
             />
             {errors.status && <p className="text-sm text-red-500 mt-1">{errors.status.message}</p>}
           </div>

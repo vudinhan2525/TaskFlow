@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { FaRocket, FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaPlus, FaTasks, FaGlobe } from "react-icons/fa";
+import { FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaPlus, FaTasks, FaGlobe } from "react-icons/fa";
 import {
   DndContext,
   closestCenter,
@@ -12,6 +12,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import type { CSSProperties } from "react";
 
 interface NavItem {
   id: string;
@@ -26,32 +27,33 @@ interface SortableNavItemProps {
 }
 
 const SortableNavItem: React.FC<SortableNavItemProps> = ({ item, isActive }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: item.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
 
-  const style = {
+  const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-  };
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (isDragging) {
-      e.preventDefault();
-    }
+    cursor: isDragging ? "grabbing" : "grab",
+    touchAction: "none",
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="mr-1">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`mr-1 ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
+      {...attributes}
+      {...listeners}
+    >
       <Link
         to={item.route}
-        onClick={handleClick}
-        className={`flex items-center px-3 py-2 rounded cursor-grab transition-colors duration-200 no-underline
+        className={`flex items-center px-3 py-2 rounded transition-colors duration-200 no-underline
           ${
             isActive
               ? "bg-emerald-100 text-emerald-700 font-medium"
               : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
           }`}
-        {...attributes}
-        {...listeners}
       >
         <span className="text-base mr-2 text-emerald-700">{item.icon}</span>
         <span className="text-sm text-emerald-600">{item.label}</span>
@@ -64,7 +66,7 @@ const ProjectNavbar = (): React.ReactElement => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
 
-  const [items, setItems] = useState<NavItem[]>([
+  const defaultItems: NavItem[] = [
     { id: "summary", label: "Summary", icon: <FaGlobe />, route: `/projects/${projectId}/summary` },
     { id: "board", label: "Board", icon: <FaTh />, route: `/projects/${projectId}/board` },
     { id: "backlog", label: "Backlog", icon: <FaTasks />, route: `/projects/${projectId}/backlog` },
@@ -73,25 +75,44 @@ const ProjectNavbar = (): React.ReactElement => {
     { id: "sprints", label: "Sprints", icon: <FaCalendarAlt />, route: `/projects/${projectId}/sprints` },
     { id: "reports", label: "Reports", icon: <FaChartBar />, route: `/projects/${projectId}/reports` },
     { id: "settings", label: "Settings", icon: <FaCode />, route: `/projects/${projectId}/settings` },
-  ]);
+  ];
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+  const [items, setItems] = useState<NavItem[]>(() => {
+    const savedOrder = localStorage.getItem(`navbar-order-${projectId}`);
+    if (savedOrder) {
+      const orderIds: string[] = JSON.parse(savedOrder);
+      return orderIds.map((id: string) => defaultItems.find((item) => item.id === id)).filter(Boolean) as NavItem[];
+    }
+    return defaultItems;
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Small distance for easier activation
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
       setItems((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
+        const newItems = arrayMove(
+          items,
+          items.findIndex((item) => item.id === active.id),
+          items.findIndex((item) => item.id === over.id)
+        );
+        localStorage.setItem(`navbar-order-${projectId}`, JSON.stringify(newItems.map((item) => item.id)));
+        return newItems;
       });
     }
   };
 
   return (
     <div className="flex flex-col bg-white p-2 border-b border-gray-200">
-      {/* Navigation Items */}
       <nav className="flex items-center overflow-x-auto whitespace-nowrap">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={items} strategy={horizontalListSortingStrategy}>
