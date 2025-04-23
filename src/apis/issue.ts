@@ -10,9 +10,12 @@ export interface CreateIssueParams {
   type: "Bug" | "Task" | "Story" | "Epic";
   sprint_id?: string;
   assignee_id?: string;
+  team_id?: string;
   attachments?: string[];
   project_id: string;
   reporter_id?: string;
+  parent_id?: string;
+  story_point?: number;
 }
 interface ListIssuesParams {
   page?: number;

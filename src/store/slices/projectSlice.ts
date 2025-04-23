@@ -81,7 +81,6 @@ const projectSlice = createSlice({
       state.error = action.payload;
     },
     selectIssue: (state, action: PayloadAction<Issue | null>) => {
-      console.log("Selecting issue in redux:", action.payload);
       state.selectedIssueId = action.payload?.id || null;
       state.selectedIssue = action.payload;
     },

@@ -24,7 +24,7 @@ interface ButtonProps {
 
 const variantStyles = {
   primary: "border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-700 hover:border-emerald-700",
-  secondary: "border border-gray-600 bg-gray-600 text-white hover:bg-gray-700 hover:border-gray-700",
+  secondary: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
   dark: "border border-gray-800 bg-gray-800 text-white hover:bg-gray-900 hover:border-gray-900",
   light: "border border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-200",
   "primary-outline": "border-2 border-emerald-400 text-emerald-600 hover:bg-emerald-100 hover:text-black",
