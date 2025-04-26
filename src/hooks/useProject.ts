@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import type { Project } from "../types";
-import { projects, Column } from "@libs/apis/project";
+import { projects } from "@libs/apis/project";
 import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
 

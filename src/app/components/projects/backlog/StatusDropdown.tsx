@@ -1,9 +1,9 @@
+import { IColumn } from "@libs/types/project";
 import React from "react";
-import { Column } from "@libs/apis/project";
 
 interface StatusDropdownProps {
   status: string;
-  columns: Column[];
+  columns: IColumn[];
   onChange: (newStatus: string) => void;
 }
 
@@ -22,11 +22,7 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ status, columns, onChan
   };
 
   return (
-    <select
-      value={status}
-      onChange={(e) => onChange(e.target.value)}
-      className={`px-2 py-1 rounded border-0 ${getStatusColor(status)} cursor-pointer`}
-    >
+    <select value={status} onChange={(e) => onChange(e.target.value)} className={`px-2 py-1 rounded border-0 ${getStatusColor(status)} cursor-pointer`}>
       {columns.map((column) => (
         <option key={column.id} value={column.name}>
           {column.name}

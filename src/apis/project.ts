@@ -1,11 +1,6 @@
 import api, { ResponseApi } from "@libs/apis/api";
 import { Project } from "@libs/types";
-
-export interface Column {
-  id: string;
-  name: string;
-  order: number;
-}
+import { IColumn } from "@libs/types/project";
 
 interface ListProjectsParams {
   page?: number;
@@ -27,7 +22,6 @@ export const projects = {
   update: (id: string, data: Partial<Project>) => api.put<Project>(`/projects/${id}`, data, config),
   delete: (id: string) => api.delete(`/projects/${id}`, config),
   getUserProjects: (userId: string) => api.get<ResponseApi<Project[]>>(`/projects/user/${userId}`, config),
-  listProjects: (params: ListProjectsParams = { page: 1, limit: 10 }) =>
-    api.get<ResponseApi<Project>>("/projects", { ...config, params }),
-  getColumns: (projectId: string) => api.get<ResponseApi<Column[]>>(`/projects/${projectId}/columns`, config),
+  listProjects: (params: ListProjectsParams = { page: 1, limit: 10 }) => api.get<ResponseApi<Project>>("/projects", { ...config, params }),
+  getColumns: (projectId: string) => api.get<ResponseApi<IColumn[]>>(`/projects/${projectId}/columns`, config),
 };

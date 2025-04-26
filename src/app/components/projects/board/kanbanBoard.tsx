@@ -3,8 +3,11 @@ import { DndContext, DragOverlay, closestCorners, KeyboardSensor, PointerSensor,
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 // import IssueCard from "../../issues/issueCard";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
+import { useParams } from "react-router-dom";
+import { useProjectColumns } from "@libs/hooks/useProject";
+import IssueCard from "@libs/app/components/projects/board/issueCard";
 import { IIssue } from "@libs/types/issue";
-import IssueCard from "@libs/app/components/issues/issueCard";
+import { LuCirclePlus } from "react-icons/lu";
 
 interface Column {
   id: string;
@@ -24,6 +27,8 @@ const initialColumns: Column[] = [
 ];
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove }) => {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const { projectId } = useParams();
+  const { columns } = useProjectColumns(projectId || "");
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -33,6 +38,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
   );
 
   const handleDragStart = (event: DragStartEvent) => {
+    console.log(">>>>");
     setActiveId(event.active.id as string);
   };
 
@@ -59,11 +65,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
       {/* Navigation Bar */}
       <div className="bg-white p-6 border-b border-gray-200 flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <input
-            type="text"
-            placeholder="Search issues..."
-            className="px-3 py-2 border-gray-300 border-[1px] rounded-md w-64"
-          />
+          <input type="text" placeholder="Search issues..." className="px-3 py-2 border-gray-300 border-[1px] rounded-md w-64" />
           <DropdownAntd
             options={[{ value: "Sprint 1", label: "Sprint 1" }]}
             parent={<div>Select</div>}
@@ -80,21 +82,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
 
       {/* Board Content */}
       <div className="flex-1 overflow-x-auto p-6">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
           <div className="flex space-x-4">
-            {initialColumns.map((column) => (
+            {columns.map((column) => (
               <div key={column.id} className="flex-shrink-0 w-80">
                 <div className="bg-gray-100 rounded-lg p-4">
-                  <h3 className="font-semibold mb-4">{column.title}</h3>
-                  <SortableContext
-                    items={column.issues.map((issue) => issue.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
+                  <h3 className="font-semibold mb-4">{column.name}</h3>
+                  <SortableContext items={column.issues.map((issue) => issue.id)} strategy={verticalListSortingStrategy}>
                     <div className="min-h-[200px]">
                       {column.issues.map((issue) => (
                         <div key={issue.id} className="mb-3">
@@ -106,13 +100,22 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
                 </div>
               </div>
             ))}
+
+            <div className="bg-gray-100 rounded-lg h-[200px] p-4 w-80 relative ">
+              <input
+                id="email-address"
+                autoComplete="email"
+                onChange={() => {}}
+                placeholder="New Stage"
+                className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 shadow-md text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm`}
+              />
+              <div className="flex items-center justify-center absolute left-[50%] translate-y-[-50%] translate-x-[-50%] top-[60%]">
+                <LuCirclePlus className="text-3xl text-gray-600 cursor-pointer" />
+              </div>
+            </div>
           </div>
           <DragOverlay>
-            {activeId ? (
-              <div className="transform rotate-3 opacity-80">
-                {/* <IssueCard issue={issues.find((issue) => issue.id === activeId)!} /> */}
-              </div>
-            ) : null}
+            {activeId ? <div className="transform rotate-3 opacity-80">{/* <IssueCard issue={issues.find((issue) => issue.id === activeId)!} /> */}</div> : null}
           </DragOverlay>
         </DndContext>
       </div>
