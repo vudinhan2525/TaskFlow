@@ -1,4 +1,3 @@
-import { useDraggable } from "@dnd-kit/core";
 import { IIssue, IssuePriority } from "@libs/types/issue";
 import { useState } from "react";
 
@@ -37,21 +36,11 @@ const TypeBadge = ({ type }: { type: IIssue["type"] }) => {
 
 const IssueCard = ({ issue }: { issue: IIssue }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: issue.id,
-  });
   const isChildIssue = !!issue.parent_id;
   const titleClasses = `font-medium mb-2 line-clamp-2 text-sm`;
   if (isChildIssue) return <></>;
   return (
     <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={{
-        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-        opacity: isDragging ? 0.5 : 1,
-      }}
       className={`bg-white rounded-md shadow-sm border border-gray-200 p-3 mb-2 cursor-pointer transition-all hover:shadow-md`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

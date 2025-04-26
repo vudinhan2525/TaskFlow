@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { DndContext, DragOverlay, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragStartEvent, DragEndEvent } from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import React, { CSSProperties, useEffect } from "react";
+import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { horizontalListSortingStrategy, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 // import IssueCard from "../../issues/issueCard";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import { useParams } from "react-router-dom";
@@ -8,25 +8,14 @@ import { useProjectColumns } from "@libs/hooks/useProject";
 import IssueCard from "@libs/app/components/projects/board/issueCard";
 import { IIssue } from "@libs/types/issue";
 import { LuCirclePlus } from "react-icons/lu";
-
-interface Column {
-  id: string;
-  title: string;
-  issues: IIssue[];
-}
-
+import { IColumn } from "@libs/types/project";
+import { CSS } from "@dnd-kit/utilities";
 interface KanbanBoardProps {
   issues: IIssue[];
   onIssueMove: (issueId: string, sourceColumn: string, destinationColumn: string) => void;
 }
-
-const initialColumns: Column[] = [
-  { id: "todo", title: "Todo", issues: [] },
-  { id: "in-progress", title: "In Progress", issues: [] },
-  { id: "done", title: "Done", issues: [] },
-];
-export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove }) => {
-  const [activeId, setActiveId] = useState<string | null>(null);
+export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues }) => {
+  // const [activeId, setActiveId] = useState<string | null>(null);
   const { projectId } = useParams();
   const { columns } = useProjectColumns(projectId || "");
 
@@ -37,11 +26,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
     })
   );
 
-  const handleDragStart = (event: DragStartEvent) => {
-    console.log(">>>>");
-    setActiveId(event.active.id as string);
-  };
-
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -51,13 +35,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
     const overId = over.id as string;
 
     if (activeIssueId === overId) return;
-
-    const sourceColumn = initialColumns.find((col) => col.issues.some((issue) => issue.id === activeIssueId));
-    const destColumn = initialColumns.find((col) => col.issues.some((issue) => issue.id === overId));
-
-    if (!sourceColumn || !destColumn) return;
-
-    setActiveId(null);
   };
   useEffect(() => {}, [issues]);
   return (
@@ -82,45 +59,86 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ issues, onIssueMove })
 
       {/* Board Content */}
       <div className="flex-1 overflow-x-auto p-6">
-        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-          <div className="flex space-x-4">
-            {columns.map((column) => (
-              <div key={column.id} className="flex-shrink-0 w-80">
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <h3 className="font-semibold mb-4">{column.name}</h3>
-                  <SortableContext items={column.issues.map((issue) => issue.id)} strategy={verticalListSortingStrategy}>
-                    <div className="min-h-[200px]">
-                      {column.issues.map((issue) => (
-                        <div key={issue.id} className="mb-3">
-                          <IssueCard issue={issue} />
-                        </div>
-                      ))}
-                    </div>
-                  </SortableContext>
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+          <SortableContext items={columns.map((col) => col.id)} strategy={horizontalListSortingStrategy}>
+            <div className="flex gap-8">
+              {columns.map((column) => (
+                <DraggableColumn key={column.id} column={column} />
+              ))}
+              <div className="bg-gray-100 rounded-lg h-[200px] p-4 w-80 relative ">
+                <input
+                  id="email-address"
+                  autoComplete="email"
+                  onChange={() => {}}
+                  placeholder="New Stage"
+                  className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 shadow-md text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm`}
+                />
+                <div className="flex items-center justify-center absolute left-[50%] translate-y-[-50%] translate-x-[-50%] top-[60%]">
+                  <LuCirclePlus className="text-3xl text-gray-600 cursor-pointer" />
                 </div>
               </div>
-            ))}
-
-            <div className="bg-gray-100 rounded-lg h-[200px] p-4 w-80 relative ">
-              <input
-                id="email-address"
-                autoComplete="email"
-                onChange={() => {}}
-                placeholder="New Stage"
-                className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 shadow-md text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm`}
-              />
-              <div className="flex items-center justify-center absolute left-[50%] translate-y-[-50%] translate-x-[-50%] top-[60%]">
-                <LuCirclePlus className="text-3xl text-gray-600 cursor-pointer" />
-              </div>
             </div>
-          </div>
-          <DragOverlay>
-            {activeId ? <div className="transform rotate-3 opacity-80">{/* <IssueCard issue={issues.find((issue) => issue.id === activeId)!} /> */}</div> : null}
-          </DragOverlay>
+          </SortableContext>
         </DndContext>
       </div>
     </div>
   );
 };
+const DraggableColumn = ({ column }: { column: IColumn }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: column.id,
+  });
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    touchAction: "none",
+  };
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
+    if (!over) return;
+
+    const activeIssueId = active.id as string;
+    const overId = over.id as string;
+
+    if (activeIssueId === overId) return;
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="bg-gray-100 min-h-[200px] rounded-lg p-4 w-80 relative">
+      <div className="mb-4 font-semibold cursor-grab active:cursor-grabbing" {...listeners} {...attributes}>
+        {column.name}
+      </div>
+      <div className="min-h-[200px]">
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+          <SortableContext items={column.issues.map((issue) => issue.id)} strategy={verticalListSortingStrategy}>
+            {column.issues.map((issue) => (
+              <IssueDragable issue={issue} />
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
+    </div>
+  );
+};
+const IssueDragable = ({ issue }: { issue: IIssue }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: issue.id,
+  });
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    touchAction: "none",
+  };
+  return (
+    <div ref={setNodeRef} {...listeners} {...attributes} style={style}>
+      <IssueCard issue={issue} />
+    </div>
+  );
+};
 export default KanbanBoard;
