@@ -1,16 +1,14 @@
-export type IssuePriority = "I" | "II" | "III";
-export type IssueType = "BUG" | "TASK" | "STORY" | "EPIC";
-export type IssueStatus = "TODO" | "ONGOING" | "DONE";
+import { IssueStatus, IssuePriority } from "@libs/types/issue";
 
-export interface Task {
+export type Task = {
   id: string;
   title: string;
   date: Date;
-  type: IssueType;
+  type: "Bug" | "Task" | "Story" | "Epic";
   status: IssueStatus;
   priority: IssuePriority;
   assignee: {
     initials: string;
     name: string;
   };
-}
+};
