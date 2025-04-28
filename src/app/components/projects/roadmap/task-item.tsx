@@ -17,7 +17,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ title, type, status, priority, assi
     switch (status) {
       case "DONE":
         return "bg-green-100 text-green-800";
-      case "ONGOING":
+      case "IN PROGRESS":
         return "bg-blue-100 text-blue-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -28,11 +28,11 @@ const TaskItem: React.FC<TaskItemProps> = ({ title, type, status, priority, assi
     switch (priority) {
       case "CRITICAL" as IssuePriority:
         return "bg-red-500 text-white";
-      case "HIGH" as IssuePriority:
+      case "High" as IssuePriority:
         return "bg-orange-500 text-white";
-      case "MEDIUM" as IssuePriority:
+      case "Medium" as IssuePriority:
         return "bg-yellow-500 text-white";
-      case "LOW" as IssuePriority:
+      case "Low" as IssuePriority:
         return "bg-gray-500 text-white";
       default:
         return "bg-gray-500 text-white";
