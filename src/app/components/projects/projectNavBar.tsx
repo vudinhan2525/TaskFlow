@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaPlus, FaTasks, FaGlobe } from "react-icons/fa";
 import {
@@ -13,6 +13,7 @@ import {
 import { arrayMove, SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";
+import { useProject } from "../../../hooks/useProject";
 
 interface NavItem {
   id: string;
@@ -65,26 +66,48 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({ item, isActive }) => 
 const ProjectNavbar = (): React.ReactElement => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
+  useProject(projectId || ""); // Keep project synchronized
 
-  const defaultItems: NavItem[] = [
-    { id: "summary", label: "Summary", icon: <FaGlobe />, route: `/projects/${projectId}/summary` },
-    { id: "board", label: "Board", icon: <FaTh />, route: `/projects/${projectId}/board` },
-    { id: "backlog", label: "Backlog", icon: <FaTasks />, route: `/projects/${projectId}/backlog` },
-    { id: "list", label: "List", icon: <FaListAlt />, route: `/projects/${projectId}/list` },
-    { id: "roadmap", label: "Roadmap", icon: <FaChartBar />, route: `/projects/${projectId}/roadmap` },
-    { id: "sprints", label: "Sprints", icon: <FaCalendarAlt />, route: `/projects/${projectId}/sprints` },
-    { id: "reports", label: "Reports", icon: <FaChartBar />, route: `/projects/${projectId}/reports` },
-    { id: "settings", label: "Settings", icon: <FaCode />, route: `/projects/${projectId}/settings` },
+  const getNavItems = (currentProjectId: string): NavItem[] => [
+    { id: "summary", label: "Summary", icon: <FaGlobe />, route: `/projects/${currentProjectId}/summary` },
+    { id: "board", label: "Board", icon: <FaTh />, route: `/projects/${currentProjectId}/board` },
+    { id: "backlog", label: "Backlog", icon: <FaTasks />, route: `/projects/${currentProjectId}/backlog` },
+    { id: "list", label: "List", icon: <FaListAlt />, route: `/projects/${currentProjectId}/list` },
+    { id: "roadmap", label: "Roadmap", icon: <FaChartBar />, route: `/projects/${currentProjectId}/roadmap` },
+    { id: "sprints", label: "Sprints", icon: <FaCalendarAlt />, route: `/projects/${currentProjectId}/sprints` },
+    { id: "reports", label: "Reports", icon: <FaChartBar />, route: `/projects/${currentProjectId}/reports` },
+    { id: "settings", label: "Settings", icon: <FaCode />, route: `/projects/${currentProjectId}/settings` },
   ];
+
+  const defaultItems = getNavItems(projectId || "");
 
   const [items, setItems] = useState<NavItem[]>(() => {
     const savedOrder = localStorage.getItem(`navbar-order-${projectId}`);
     if (savedOrder) {
       const orderIds: string[] = JSON.parse(savedOrder);
-      return orderIds.map((id: string) => defaultItems.find((item) => item.id === id)).filter(Boolean) as NavItem[];
+      return orderIds
+        .map((id: string) => getNavItems(projectId || "").find((item) => item.id === id))
+        .filter(Boolean) as NavItem[];
     }
     return defaultItems;
   });
+
+  // Update items when project ID changes
+  useEffect(() => {
+    if (projectId) {
+      const savedOrder = localStorage.getItem(`navbar-order-${projectId}`);
+      if (savedOrder) {
+        const orderIds: string[] = JSON.parse(savedOrder);
+        setItems(
+          orderIds
+            .map((id: string) => getNavItems(projectId).find((item) => item.id === id))
+            .filter(Boolean) as NavItem[]
+        );
+      } else {
+        setItems(getNavItems(projectId));
+      }
+    }
+  }, [projectId]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
