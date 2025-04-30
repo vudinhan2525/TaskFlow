@@ -34,14 +34,14 @@ const TypeBadge = ({ type }: { type: IIssue["type"] }) => {
   );
 };
 
-const IssueCard = ({ issue }: { issue: IIssue }) => {
+const IssueCard = ({ issue, isDragging }: { issue: IIssue; isDragging?: boolean }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isChildIssue = !!issue.parent_id;
   const titleClasses = `font-medium mb-2 line-clamp-2 text-sm`;
   if (isChildIssue) return <></>;
   return (
     <div
-      className={`bg-white rounded-md shadow-sm border border-gray-200 p-3 mb-2 cursor-pointer transition-all hover:shadow-md`}
+      className={`bg-white rounded-md shadow-sm border border-gray-200 p-3 mb-2 cursor-pointer transition-all hover:shadow-md ${isDragging ? "opacity-40" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

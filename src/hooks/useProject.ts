@@ -4,6 +4,8 @@ import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
 import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
+import { CreateColumnProjectParams, IColumn } from "@libs/types/project";
+import { Dispatch, SetStateAction } from "react";
 
 export function useUserProjects() {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -175,6 +177,32 @@ export function useProjectColumns(projectId: string) {
   return {
     columns: columnsData?.data || [],
     isLoading,
+    error,
+  };
+}
+export function useAddProjectColumn({ setColumns }: { setColumns: Dispatch<SetStateAction<IColumn[]>> }) {
+  const {
+    mutate: createColumn,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (body: CreateColumnProjectParams) => projects.addColumns(body),
+    onSuccess: (res) => {
+      if (res.data.status === "success") {
+        setColumns((prev) => [...prev, res.data.data]);
+      }
+      toast.success("Stage added successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to delete project.");
+    },
+  });
+
+  return {
+    createColumn,
+    isLoading,
+    isSuccess,
     error,
   };
 }
