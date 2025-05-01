@@ -1,6 +1,6 @@
 import api, { ResponseApi } from "@libs/apis/api";
 import { Project } from "@libs/types";
-import { CreateColumnProjectParams, IColumn } from "@libs/types/project";
+import { CreateColumnProjectParams, IColumn, UpdateColumnOrderParams, UpdateColumnProjectParams } from "@libs/types/project";
 
 interface ListProjectsParams {
   page?: number;
@@ -25,4 +25,6 @@ export const projects = {
   listProjects: (params: ListProjectsParams = { page: 1, limit: 10 }) => api.get<ResponseApi<Project>>("/projects", { ...config, params }),
   getColumns: (projectId: string) => api.get<ResponseApi<IColumn[]>>(`/projects/${projectId}/columns`, config),
   addColumns: (body: CreateColumnProjectParams) => api.post<ResponseApi<IColumn>>(`/projects/add-column`, body, config),
+  updateOrderColumns: (body: UpdateColumnOrderParams) => api.post<ResponseApi<IColumn[]>>(`/projects/${body.projectId}/columns/order`, body, config),
+  updateColumns: (body: UpdateColumnProjectParams) => api.put<ResponseApi<IColumn>>(`/projects/${body.projectId}/columns`, body, config),
 };

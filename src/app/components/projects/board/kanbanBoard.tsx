@@ -1,61 +1,14 @@
 import { useEffect, useState } from "react";
-import { DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, KeyboardSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
-import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { DndContext, DragEndEvent, DragOverEvent, DragStartEvent, KeyboardSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { IColumn } from "@libs/types/project";
 import { IIssue } from "@libs/types/issue";
 import { useParams } from "react-router-dom";
 import { useAddProjectColumn, useProjectColumns } from "@libs/hooks/useProject";
-import IssueCard from "@libs/app/components/projects/board/issueCard";
 import { LuCirclePlus } from "react-icons/lu";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
 
-// Issue component - the draggable item
-const Issue = ({ issue, isDragging }: { issue: IIssue; isDragging?: boolean }) => {
-  return <IssueCard issue={issue} isDragging={isDragging} />;
-};
-
-// Sortable Issue component
-const SortableIssue = ({ issue }: { issue: IIssue }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: issue.id });
-
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    transition,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab">
-      <Issue issue={issue} />
-    </div>
-  );
-};
-
-// Column component - now droppable
-const Column = ({ column }: { column: IColumn }) => {
-  const { setNodeRef } = useSortable({
-    id: column.id,
-    data: {
-      type: "Column",
-      column,
-    },
-  });
-
-  return (
-    <div ref={setNodeRef} className="w-80 p-2 mx-2 bg-gray-100 rounded">
-      <h2 className="p-2 mb-3 text-lg font-bold">{column.name}</h2>
-      <SortableContext items={column.issues.map((issue) => issue.id)} strategy={verticalListSortingStrategy}>
-        <div className="min-h-40">
-          {column.issues.map((issue) => {
-            if (issue.parent_id === "") {
-              return <SortableIssue key={issue.id} issue={issue} />;
-            }
-          })}
-        </div>
-      </SortableContext>
-    </div>
-  );
-};
-
-// Kanban Board component
 export default function KanbanBoard() {
   const { projectId } = useParams();
   const { columns: initialColumns } = useProjectColumns(projectId || "");
@@ -63,8 +16,12 @@ export default function KanbanBoard() {
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [newColumnText, setNewColumnText] = useState("");
-  const { createColumn, isSuccess } = useAddProjectColumn({
+  const { createColumn } = useAddProjectColumn({
     setColumns: setColumns,
+  });
+  const { updateIssue } = useUpdateIssue({
+    projectId: projectId || "",
+    isNotToasting: true,
   });
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -198,6 +155,18 @@ export default function KanbanBoard() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
+    // Update issue status in backend
+    if (projectId) {
+      const targetColumn = columns.find((col) => col.issues.some((issue) => issue.id === overId));
+      if (targetColumn) {
+        updateIssue({
+          id: activeId,
+          data: {
+            status: targetColumn.name,
+          },
+        });
+      }
+    }
     if (activeId === overId) return;
 
     const isOverColumn = columns.some((col) => col.id === overId);
@@ -205,7 +174,6 @@ export default function KanbanBoard() {
     if (isOverColumn) {
       return;
     }
-
     // We're dropping onto another issue
     setColumns((prevColumns) => {
       // Find the column containing our active issue
@@ -240,11 +208,6 @@ export default function KanbanBoard() {
       setColumns(initialColumns);
     }
   }, [initialColumns]);
-  useEffect(() => {
-    if (isSuccess) {
-      setNewColumnText("");
-    }
-  }, [isSuccess]);
   return (
     <div className="p-4">
       <h1 className="mb-6 text-2xl font-bold">Kanban Board</h1>
@@ -252,7 +215,7 @@ export default function KanbanBoard() {
         <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
           <SortableContext items={columns.map((col) => col.id)} strategy={verticalListSortingStrategy}>
             {columns.map((column) => (
-              <Column key={column.id} column={column} />
+              <KanbanColumn key={column.id} column={column} setColumns={setColumns} columns={columns} projectId={projectId} />
             ))}
             <div className="bg-gray-100 rounded-lg h-[200px] p-4 w-80 relative ">
               <input
@@ -275,13 +238,13 @@ export default function KanbanBoard() {
                       name: newColumnText,
                       projectId: projectId,
                     });
+                    setNewColumnText("");
                   }}
                 />
               </div>
             </div>
           </SortableContext>
-
-          <DragOverlay>{activeIssue ? <Issue issue={activeIssue} isDragging /> : null}</DragOverlay>
+          {/* <DragOverlay>{activeIssue ? <Issue issue={activeIssue} isDragging /> : null}</DragOverlay> */}
         </DndContext>
       </div>
     </div>

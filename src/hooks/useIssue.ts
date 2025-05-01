@@ -81,7 +81,7 @@ export function useCreateIssue({ projectId, onClose }: { projectId: string; onCl
   };
 }
 
-export function useUpdateIssue({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+export function useUpdateIssue({ projectId, onClose, isNotToasting }: { projectId: string; onClose?: () => void; isNotToasting?: boolean }) {
   const queryClient = useQueryClient();
 
   const {
@@ -93,7 +93,7 @@ export function useUpdateIssue({ projectId, onClose }: { projectId: string; onCl
   } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateIssueParams> }) => issues.update(projectId, id, data),
     onSuccess: (response, variables) => {
-      toast.success("Issue updated successfully!");
+      if (!isNotToasting) toast.success("Issue updated successfully!");
       // Invalidate the specific issue
       queryClient.invalidateQueries({ queryKey: ["issue", projectId, variables.id] });
       // Invalidate the issues list
@@ -105,7 +105,7 @@ export function useUpdateIssue({ projectId, onClose }: { projectId: string; onCl
       if (onClose) onClose();
     },
     onError: () => {
-      toast.error("Failed to update issue");
+      if (!isNotToasting) toast.error("Failed to update issue");
     },
   });
 

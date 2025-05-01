@@ -4,7 +4,7 @@ import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
 import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
-import { CreateColumnProjectParams, IColumn } from "@libs/types/project";
+import { CreateColumnProjectParams, IColumn, UpdateColumnOrderParams, UpdateColumnProjectParams } from "@libs/types/project";
 import { Dispatch, SetStateAction } from "react";
 
 export function useUserProjects() {
@@ -201,6 +201,54 @@ export function useAddProjectColumn({ setColumns }: { setColumns: Dispatch<SetSt
 
   return {
     createColumn,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
+
+export function useUpdateProjectOrderColumn() {
+  const {
+    mutate: updateOrderColumn,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (body: UpdateColumnOrderParams) => projects.updateOrderColumns(body),
+    onSuccess: () => {
+      toast.success("Column order updated successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to update column order.");
+    },
+  });
+
+  return {
+    updateOrderColumn,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
+
+export function useUpdateColumn() {
+  const {
+    mutate: updateColumn,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (body: UpdateColumnProjectParams) => projects.updateColumns(body),
+    onSuccess: () => {
+      toast.success("Column updated successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to update column.");
+    },
+  });
+
+  return {
+    updateColumn,
     isLoading,
     isSuccess,
     error,

@@ -24,3 +24,15 @@ export interface CreateColumnProjectParams {
   projectId: string;
   name: string;
 }
+export interface UpdateColumnProjectParams {
+  name: string;
+  column_id: string;
+  projectId: string;
+}
+export interface UpdateColumnOrderParams {
+  projectId: string;
+  columns: {
+    id: string;
+    order: number;
+  }[];
+}
