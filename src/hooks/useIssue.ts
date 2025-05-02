@@ -1,20 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { issues, type CreateIssueParams } from "../apis/issue";
 import { toast } from "react-toastify";
+import { GetIssuesParams } from "@libs/types/issue";
 
-export function useProjectIssues(projectId: string, sprintId?: string) {
+export function useProjectIssues(body: GetIssuesParams) {
   const {
     data: issuesData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["issues", projectId, sprintId],
+    queryKey: ["issues", body.project_id, body.sprint_id, body.keyword],
     queryFn: async () => {
-      if (!projectId) throw new Error("Project ID is required");
-      const response = await issues.list(projectId, { sprint_id: sprintId });
+      const response = await issues.list(body);
       return response.data;
     },
-    enabled: !!projectId,
   });
 
   return {

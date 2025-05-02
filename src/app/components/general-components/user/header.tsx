@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { mockUser } from "./mockData";
-import { FaGear, FaMagnifyingGlass } from "react-icons/fa6";
+import { FaGear } from "react-icons/fa6";
 import { FaBell } from "react-icons/fa";
 import DropdownAntd from "../dropdown";
 import Image from "../image";
@@ -11,9 +11,9 @@ import { RootState } from "@libs/store";
 import { useNavigate } from "react-router-dom";
 import CreateIssueModal from "../../projects/modals/createIssueModal";
 import { useUserProjects } from "@libs/hooks/useProject";
+import SearchHeader from "@libs/app/components/general-components/user/search";
 export const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
@@ -64,14 +64,7 @@ export const Header = () => {
         <div className="flex items-center space-x-4 w-1/2 justify-center">
           {/* Search Box */}
           <div className="relative w-[60%]">
-            <input
-              type="text"
-              placeholder="Search for issue..."
-              className="px-4 py-2 border border-gray-300 outline-[#1447e6] rounded-md w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <FaMagnifyingGlass className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
+            <SearchHeader />
           </div>
           {isAuthenticated && (
             <Button className="" onClick={handleOpenCreateIssue}>

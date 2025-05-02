@@ -5,7 +5,9 @@ import { useProjectIssues } from "@libs/hooks/useIssue";
 
 const RoadmapPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const { issues } = useProjectIssues(projectId || "");
+  const { issues } = useProjectIssues({
+    project_id: projectId,
+  });
 
   return (
     <div className="w-full py-6 px-4">

@@ -21,3 +21,13 @@ export interface IIssue {
 
 export type IssueStatus = "TO DO" | "IN PROGRESS" | "DONE";
 export type IssuePriority = "Low" | "Medium" | "High";
+
+export interface GetIssuesParams {
+  project_id?: string;
+  keyword?: string;
+  sprint_id?: string;
+  assignee_id?: string;
+  status?: IssueStatus;
+  page?: number | string;
+  limit?: number | string;
+}

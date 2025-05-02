@@ -17,7 +17,9 @@ const BackLogPage: React.FC = () => {
   const { selectIssue } = useIssueSelection();
   const [selectedIssues, setSelectedIssues] = useState<{ [key: string]: boolean }>({});
   const { sprints, isLoading: isLoadingSprints } = useProjectSprints(projectId || "");
-  const { issues, isLoading: isLoadingIssues } = useProjectIssues(projectId);
+  const { issues, isLoading: isLoadingIssues } = useProjectIssues({
+    project_id: projectId,
+  });
   const { columns, isLoading: isLoadingColumns } = useProjectColumns(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
@@ -97,11 +99,7 @@ const BackLogPage: React.FC = () => {
                       <p className="text-sm text-gray-500">{issue.description}</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <select
-                        value={issue.status}
-                        onChange={(e) => handleStatusChange(issue.id, e.target.value)}
-                        className="p-1 border rounded text-sm"
-                      >
+                      <select value={issue.status} onChange={(e) => handleStatusChange(issue.id, e.target.value)} className="p-1 border rounded text-sm">
                         {columns.map((column) => (
                           <option key={column.id} value={column.name}>
                             {column.name}
@@ -117,11 +115,7 @@ const BackLogPage: React.FC = () => {
         </div>
 
         {/* Create Sprint Modal */}
-        <CreateSprintModal
-          isOpen={isCreateSprintModalOpen}
-          onClose={() => setIsCreateSprintModalOpen(false)}
-          projectId={projectId}
-        />
+        <CreateSprintModal isOpen={isCreateSprintModalOpen} onClose={() => setIsCreateSprintModalOpen(false)} projectId={projectId} />
       </div>
 
       <IssueSideBar />
