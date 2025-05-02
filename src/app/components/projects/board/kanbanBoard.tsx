@@ -210,7 +210,7 @@ export default function KanbanBoard() {
   }, [initialColumns]);
   return (
     <div className="p-4">
-      <h1 className="mb-6 text-2xl font-bold">Kanban Board</h1>
+      <h1 className="mb-6 p-2 text-2xl font-bold">Kanban Board</h1>
       <div className="flex">
         <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
           <SortableContext items={columns.map((col) => col.id)} strategy={verticalListSortingStrategy}>

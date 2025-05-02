@@ -2,7 +2,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import IssueCard from "@libs/app/components/projects/board/issueCard";
 import DeleteColumnModal from "@libs/app/components/projects/modals/deleteColumnModal";
 import RenameColumnModal from "@libs/app/components/projects/modals/renameColumnModal";
-import { useUpdateColumn, useUpdateProjectOrderColumn } from "@libs/hooks/useProject";
+import { useDeleteColumn, useUpdateColumn, useUpdateProjectOrderColumn } from "@libs/hooks/useProject";
 import { IIssue } from "@libs/types/issue";
 import { IColumn } from "@libs/types/project";
 import { Popover } from "antd";
@@ -51,7 +51,17 @@ export const KanbanColumn = ({
   const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const { updateColumn } = useUpdateColumn();
+  const { deleteColumn } = useDeleteColumn((deletedColumnId) => {
+    // Xử lý sau khi xóa thành công
+    const newColumns = columns
+      .filter((col) => col.id !== deletedColumnId)
+      .map((col, index) => ({
+        ...col,
+        order: index,
+      }));
 
+    setColumns(newColumns);
+  });
   const handleMove = (direction: "left" | "right") => {
     const currentIndex = columns.findIndex((c) => c.id === column.id);
     const targetIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
@@ -92,30 +102,11 @@ export const KanbanColumn = ({
     }
   };
   const handleDeleteColumn = () => {
-    // Only allow deletion if column has no issues
-    if (column.issues.length > 0) {
-      alert("Cannot delete column with issues. Please move all issues to another column first.");
-      setShowDeleteColumnModal(false);
-      return;
-    }
-
-    const newColumns = columns.filter((col) => col.id !== column.id);
-
-    // Reorder remaining columns
-    const reordered = newColumns.map((col, index) => ({
-      ...col,
-      order: index,
-    }));
-
-    setColumns(reordered);
+    // Kiểm tra nếu còn issue thì không xó
     setShowDeleteColumnModal(false);
 
-    // Update column order on server
     if (projectId) {
-      updateOrderColumn({
-        projectId: projectId,
-        columns: reordered.map((col) => ({ id: col.id, order: col.order + 1 })),
-      });
+      deleteColumn({ column_id: column.id });
     }
   };
   const content: ReactNode = (

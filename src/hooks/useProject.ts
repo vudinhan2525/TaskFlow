@@ -6,6 +6,7 @@ import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
 import { CreateColumnProjectParams, IColumn, UpdateColumnOrderParams, UpdateColumnProjectParams } from "@libs/types/project";
 import { Dispatch, SetStateAction } from "react";
+import { AxiosError } from "axios";
 
 export function useUserProjects() {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
@@ -249,6 +250,38 @@ export function useUpdateColumn() {
 
   return {
     updateColumn,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
+export function useDeleteColumn(onDeleteSuccess?: (deletedColumnId: string) => void) {
+  const {
+    mutate: deleteColumn,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (body: { column_id: string }) => projects.deleteColumn(body),
+    onSuccess: (_data, variables) => {
+      toast.success("Column deleted successfully!");
+      if (onDeleteSuccess) {
+        onDeleteSuccess(variables.column_id);
+      }
+    },
+    onError: (error: AxiosError) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error?.response?.data as any).message) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        toast.error((error?.response?.data as any).message);
+        return;
+      }
+      toast.error("Failed to delete column.");
+    },
+  });
+
+  return {
+    deleteColumn,
     isLoading,
     isSuccess,
     error,

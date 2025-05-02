@@ -27,4 +27,5 @@ export const projects = {
   addColumns: (body: CreateColumnProjectParams) => api.post<ResponseApi<IColumn>>(`/projects/add-column`, body, config),
   updateOrderColumns: (body: UpdateColumnOrderParams) => api.post<ResponseApi<IColumn[]>>(`/projects/${body.projectId}/columns/order`, body, config),
   updateColumns: (body: UpdateColumnProjectParams) => api.put<ResponseApi<IColumn>>(`/projects/${body.projectId}/columns`, body, config),
+  deleteColumn: (body: { column_id: string }) => api.delete<ResponseApi<IColumn>>(`/projects/columns/${body.column_id}`, config),
 };
