@@ -1,308 +1,152 @@
 import React, { useState, useEffect } from "react";
-import { FaPlus, FaFileAlt, FaChevronDown } from "react-icons/fa";
-import { Issue, IssueStatus } from "@libs/types";
-import { useIssueSelection } from "@libs/hooks/useIssueSelection";
-import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
-import { useProjectColumns } from "@libs/hooks/useProject";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
+import ListFilter from "./listFilter";
+import { IIssue, IssueStatus } from "@libs/types/issue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
-import StatusDropdown from "../backlog/StatusDropdown";
 import CreateIssueModal from "../modals/createIssueModal";
-import { toast } from "react-toastify";
-import { formatDate } from "@libs/utils/date";
+import { useSearchParams } from "react-router-dom";
+import ListTable from "./listTable";
+import { Sprint } from "@libs/types";
+import { TableRowSelection } from "antd/es/table/interface";
 
-// Custom hook for debouncing values
-const useDebounce = <T,>(value: T, delay: number): T => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-};
-
-interface ListProps {
+const List = ({
+  projectId,
+  issues,
+}: {
   projectId?: string;
-  issues?: Issue[];
-}
+  issues?: IIssue[];
+}) => {
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [searchParams] = useSearchParams();
+  const defaultVisibleColumns = [
+    "title",
+    "summary",
+    "description",
+    "status",
+    "sprint_id",
+    "assignee_id",
+    "story_point",
+    "created_at",
+    "updated_at",
+  ];
+  
+  const issueProperties = Object.keys(issues?.[0] || {}) as Array<keyof IIssue>;
+  const [visibleColumns, setVisibleColumns] = useState<
+    { key: keyof IIssue; visible: boolean }[]
+  >(
+    issueProperties.map((key) => ({
+      key: key as keyof IIssue,
+      visible: defaultVisibleColumns.includes(key as string),
+    }))
+  );
 
-const List: React.FC<ListProps> = ({ projectId, issues: propIssues }) => {
+  const keyword = searchParams.get("keyword");
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+  const rowSelection: TableRowSelection<IIssue> = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
+
+ 
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
-  const [editingIssueId, setEditingIssueId] = useState<string | null>(null);
-  const { selectIssue } = useIssueSelection();
-  const { createIssueAsync } = useCreateIssue({ projectId: projectId || "" });
   const { updateIssueAsync } = useUpdateIssue({ projectId: projectId || "" });
-  const { columns } = useProjectColumns(projectId || "");
   const { sprints } = useProjectSprints(projectId || "");
 
-  // Local state for editing fields
-  const [editValues, setEditValues] = useState({
-    summary: "",
-    description: "",
-    storyPoint: 0,
-  });
-
-  // Track if values were changed by user
-  const [valueChangedByUser, setValueChangedByUser] = useState({
-    summary: false,
-    description: false,
-  });
-
-  // Debounced values
-  const debouncedSummary = useDebounce(editValues.summary, 500);
-  const debouncedDescription = useDebounce(editValues.description, 500);
-
-  // Update edit values when selecting an issue to edit
-  useEffect(() => {
-    if (editingIssueId) {
-      const issue = propIssues?.find((i) => i.id === editingIssueId);
-      if (issue) {
-        setEditValues({
+  const [initTypeValues, setInitTypeValues] = useState(
+    issues?.length
+      ? issues.map((issue) => ({
+          id: issue.id || "",
+          title: issue.title || "",
           summary: issue.summary || "",
           description: issue.description || "",
-          storyPoint: issue.story_point || 0,
-        });
-        setValueChangedByUser({
-          summary: false,
-          description: false,
-        });
-      }
-    }
-  }, [editingIssueId, propIssues]);
-
-  // Handle debounced updates
-  useEffect(() => {
-    if (editingIssueId && valueChangedByUser.summary) {
-      handleSummaryChange(editingIssueId, debouncedSummary);
-    }
-  }, [debouncedSummary, editingIssueId, valueChangedByUser.summary]);
+        }))
+      : []
+  );
 
   useEffect(() => {
-    if (editingIssueId && valueChangedByUser.description) {
-      handleDescriptionChange(editingIssueId, debouncedDescription);
-    }
-  }, [debouncedDescription, editingIssueId, valueChangedByUser.description]);
+    setInitTypeValues(
+      issues?.map((issue) => ({
+        id: issue.id,
+        title: issue.title,
+        summary: issue.summary,
+        description: issue.description,
+      })) || []
+    );
+    const issueProperties = Object.keys(issues?.[0] || {}) as Array<
+      keyof IIssue
+    >;
+    setVisibleColumns(
+      issueProperties.map((key) => ({
+        key: key as keyof IIssue,
+        visible: defaultVisibleColumns.includes(key as string),
+      }))
+    );
+  }, [issues]);
 
-  const handleStatusChange = async (issueId: string, newStatus: IssueStatus) => {
-    try {
-      await updateIssueAsync({
-        id: issueId,
-        data: { status: newStatus },
-      });
-      toast.success("Status updated successfully");
-    } catch {
-      toast.error("Failed to update status");
-    }
+  const handleFieldChange = async (
+    issueId: string,
+    field: string,
+    value: string
+  ) => {
+    setInitTypeValues((prev) =>
+      prev.map((item) =>
+        item.id === issueId ? { ...item, [field]: value } : item
+      )
+    );
   };
 
-  const handleSummaryChange = async (issueId: string, value: string) => {
-    try {
-      await updateIssueAsync({
-        id: issueId,
-        data: { summary: value },
-      });
-      toast.success("Summary updated successfully");
-    } catch {
-      toast.error("Failed to update summary");
-    }
+  const handleFieldBlur = async (
+    issueId: string,
+    field: string,
+    value: string
+  ) => {
+    await updateIssueAsync({
+      id: issueId,
+      data: { [field]: value },
+    });
   };
 
-  const handleDescriptionChange = async (issueId: string, value: string) => {
-    try {
-      await updateIssueAsync({
-        id: issueId,
-        data: { description: value },
-      });
-      toast.success("Description updated successfully");
-    } catch {
-      toast.error("Failed to update description");
-    }
+  const handleStatusChange = async (
+    issueId: string,
+    newStatus: IssueStatus
+  ) => {
+    await updateIssueAsync({
+      id: issueId,
+      data: { status: newStatus },
+    });
   };
-
-  const handleStoryPointChange = async (issueId: string, value: number) => {
-    try {
-      await updateIssueAsync({
-        id: issueId,
-        data: { story_point: value },
-      });
-      toast.success("Story points updated successfully");
-    } catch {
-      toast.error("Failed to update story points");
-    }
-  };
-
-  const handleCreateIssue = async (data: any) => {
-    try {
-      await createIssueAsync({
-        title: data.title,
-        status: "TO DO",
-        priority: data.priority || "Medium",
-        type: data.type || "Task",
-        project_id: projectId || "",
-        summary: data.summary,
-      });
-      setIsCreateModalOpen(false);
-      toast.success("Issue created successfully");
-    } catch (error) {
-      toast.error("Failed to create issue");
-    }
-  };
-
-  const handleCreateSubIssue = async (parentId: string) => {
-    selectIssue(parentId); // Open the parent issue in sidebar first
-    setIsCreateModalOpen(true);
-  };
-
-  const handleIssueClick = (issueId: string) => {
-    if (editingIssueId === issueId) {
-      return; // Don't interfere with editing
-    }
-    selectIssue(issueId);
-  };
-
-  const issues = propIssues || [];
 
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
+    <div className="p-4 bg-gray-100 min-h-screen flex-col gap-4">
       {/* Search and Filters */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search list"
-              className="pl-8 pr-3 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <button className="px-3 py-1 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-200">
-              Filter <FaChevronDown className="inline ml-1" />
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <button
-            className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            Create Issue
-          </button>
-        </div>
-      </div>
+      <ListFilter setIsCreateModalOpen={setIsCreateModalOpen} />
 
-      {/* Issues Table */}
-      <div className="bg-white border border-gray-200 rounded">
-        {/* Table Header */}
-        <div className="grid grid-cols-11 gap-2 p-2 text-sm font-medium text-gray-600 border-b border-gray-200">
-          <div className="col-span-1">Type</div>
-          <div className="col-span-1">Key</div>
-          <div className="col-span-2">Summary</div>
-          <div className="col-span-2">Description</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-1">Sprint</div>
-          <div className="col-span-1">Assignee</div>
-          <div className="col-span-1">Points</div>
-          <div className="col-span-1">Created</div>
-        </div>
-
-        {/* Table Rows */}
-        {issues.map((issue) => (
-          <div
-            key={issue.id}
-            className="grid grid-cols-11 gap-2 p-2 text-sm border-b border-gray-200 hover:bg-gray-50 cursor-pointer"
-            onMouseEnter={() => setHoveredIssueId(issue.id)}
-            onMouseLeave={() => setHoveredIssueId(null)}
-            onClick={() => handleIssueClick(issue.id)}
-          >
-            <div className="col-span-1 flex items-center space-x-1">
-              <FaFileAlt className="text-gray-500" />
-              {hoveredIssueId === issue.id && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCreateSubIssue(issue.id);
-                  }}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <FaPlus className="text-xs" />
-                </button>
-              )}
-            </div>
-            <div className="col-span-1">
-              <span className="text-blue-600 hover:underline">{issue.id}</span>
-            </div>
-            <div className="col-span-2" onClick={(e) => e.stopPropagation()}>
-              {editingIssueId === issue.id ? (
-                <input
-                  type="text"
-                  value={editValues.summary}
-                  onChange={(e) => {
-                    setEditValues((prev) => ({ ...prev, summary: e.target.value }));
-                    setValueChangedByUser((prev) => ({ ...prev, summary: true }));
-                  }}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                  onBlur={() => setEditingIssueId(null)}
-                />
-              ) : (
-                <div className="text-gray-800" onDoubleClick={() => setEditingIssueId(issue.id)}>
-                  {issue.summary || issue.title}
-                </div>
-              )}
-            </div>
-            <div className="col-span-2" onClick={(e) => e.stopPropagation()}>
-              {editingIssueId === issue.id ? (
-                <textarea
-                  value={editValues.description}
-                  onChange={(e) => {
-                    setEditValues((prev) => ({ ...prev, description: e.target.value }));
-                    setValueChangedByUser((prev) => ({ ...prev, description: true }));
-                  }}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded"
-                  onBlur={() => setEditingIssueId(null)}
-                />
-              ) : (
-                <div className="text-gray-800" onDoubleClick={() => setEditingIssueId(issue.id)}>
-                  {issue.description || "-"}
-                </div>
-              )}
-            </div>
-            <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
-              <StatusDropdown
-                status={issue.status}
-                columns={columns || []}
-                onChange={(newStatus) => handleStatusChange(issue.id, newStatus)}
-              />
-            </div>
-            <div className="col-span-1 text-gray-600">
-              {sprints?.find((s) => s.id === issue.sprint_id)?.name || "-"}
-            </div>
-            <div className="col-span-1 flex items-center space-x-1">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs">
-                {issue.assignee_id ? issue.assignee_id.substring(0, 2).toUpperCase() : "NA"}
-              </span>
-            </div>
-            <div className="col-span-1" onClick={(e) => e.stopPropagation()}>
-              <input
-                type="number"
-                value={issue.story_point || 0}
-                onChange={(e) => handleStoryPointChange(issue.id, Number(e.target.value))}
-                className="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
-                min="0"
-              />
-            </div>
-            <div className="col-span-1 text-gray-600">{formatDate(issue.created_at)}</div>
-          </div>
-        ))}
-      </div>
-
+    
+      <ListTable
+        issues={issues || []}
+        visibleColumns={visibleColumns}
+        setVisibleColumns={
+          setVisibleColumns as (
+            columns: { key: string; visible: boolean }[]
+          ) => void
+        }
+        rowSelection={rowSelection}
+        handleFieldChange={handleFieldChange}
+        handleFieldBlur={handleFieldBlur}
+        handleStatusChange={handleStatusChange}
+        keyword={keyword || ""}
+        projectId={projectId || ""}
+        initTypeValues={initTypeValues as IIssue[]}
+        sprints={sprints as unknown as Sprint[]}
+      />
       {/* Create Issue Modal */}
       <CreateIssueModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateIssue}
+        // onSubmit={handleCreateIssue}
         projectId={projectId || ""}
       />
     </div>
@@ -310,3 +154,41 @@ const List: React.FC<ListProps> = ({ projectId, issues: propIssues }) => {
 };
 
 export default List;
+
+// const renderDateCell = (date: string) => {
+//   return (
+//     <div className="px-2">
+//       <span className="bg-gray-300 text-gray-700 rounded-md py-1 px-2 font-medium text-center">
+//         {format(new Date(date), "MM/dd/yyyy")}
+//       </span>
+//     </div>
+//   );
+// };
+
+// const renderStatusCell = (status: IssueStatus) => {
+//   return (
+//     <button
+//       className={`text-xs rounded-md  p-1 hover:cursor-pointer ${
+//         statusOptions.find((option) => option.name === status)?.color
+//       } group-hover:bg-none`}
+//     >
+//       <p
+//         className={`text-xs
+// ${
+//   statusOptions.find((option) => option.name === status)?.textColor
+// } text-center font-bold
+// `}
+//       >
+//         {status ? status.toUpperCase() : "-"}
+//       </p>
+//     </button>
+//   );
+// };
+
+// const renderTypeCell = (type: IssueType) => {
+//   return (
+//     <div className="bg-gray-300 text-gray-700 rounded-md p-1 font-medium text-center">
+//       {type}
+//     </div>
+//   );
+// };

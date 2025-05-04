@@ -37,7 +37,13 @@ const issueSchema = z.object({
 
 type IssueFormData = z.infer<typeof issueSchema>;
 
-const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, projectId, isEditing, initialIssue }) => {
+const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
+  isOpen,
+  onClose,
+  projectId,
+  isEditing,
+  initialIssue,
+}) => {
   const { createIssue, isLoading: isCreating } = useCreateIssue({
     projectId,
     onClose: () => {
@@ -113,14 +119,19 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, pr
     <Modal
       title={isEditing ? "Update Issue" : "Create Issue"}
       onClose={onClose}
-      buttonContent={isLoading ? "Loading..." : isEditing ? "Update Issue" : "Create Issue"}
+      buttonContent={
+        isLoading ? "Loading..." : isEditing ? "Update Issue" : "Create Issue"
+      }
       onSubmit={handleSubmit(handleFormSubmit)}
       isLoadingButton={isLoading}
     >
       <div className="p-4">
         <form className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Issue Title <span className="text-red-500">*</span>
             </label>
             <input
@@ -130,11 +141,18 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, pr
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               placeholder="Enter issue title"
             />
-            {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
+            {errors.title && (
+              <p className="text-sm text-red-500 mt-1">
+                {errors.title.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="summary"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Summary
             </label>
             <input
@@ -147,7 +165,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, pr
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Description
             </label>
             <textarea
@@ -161,7 +182,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, pr
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="type"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Issue Type <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
@@ -175,12 +199,20 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, pr
                 rowClassName="w-full text-[15px]"
                 menuClassName="w-[180px]"
                 parent={<div className="w-full font-medium">{type}</div>}
-                onClickItem={(option) => setValue("type", option.value as "Bug" | "Task" | "Story" | "Epic")}
+                onClickItem={(option) =>
+                  setValue(
+                    "type",
+                    option.value as "Bug" | "Task" | "Story" | "Epic"
+                  )
+                }
               />
             </div>
 
             <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="priority"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Priority <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
@@ -201,7 +233,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onClose, pr
           </div>
 
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="status"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Status <span className="text-red-500">*</span>
             </label>
             <DropdownAntd

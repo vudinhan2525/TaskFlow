@@ -9,7 +9,7 @@ export function useProjectIssues(body: GetIssuesParams) {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["issues", body.project_id, body.sprint_id, body.keyword],
+    queryKey: ["issues", body.project_id, body.sprint_id, body.keyword,body.status],
     queryFn: async () => {
       const response = await issues.list(body);
       return response.data;
@@ -57,7 +57,7 @@ export function useCreateIssue({ projectId, onClose }: { projectId: string; onCl
   } = useMutation({
     mutationFn: (data: CreateIssueParams) => issues.create(projectId, data),
     onSuccess: (response) => {
-      toast.success("Issue created successfully!");
+      // toast.success("Issue created successfully!");
       // Invalidate the issues list
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
       // If the issue is created with a sprint_id, invalidate that sprint's issues too
@@ -92,7 +92,7 @@ export function useUpdateIssue({ projectId, onClose, isNotToasting }: { projectI
   } = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<CreateIssueParams> }) => issues.update(projectId, id, data),
     onSuccess: (response, variables) => {
-      if (!isNotToasting) toast.success("Issue updated successfully!");
+      // if (!isNotToasting) toast.success("Issue updated successfully!");
       // Invalidate the specific issue
       queryClient.invalidateQueries({ queryKey: ["issue", projectId, variables.id] });
       // Invalidate the issues list
@@ -128,7 +128,7 @@ export function useDeleteIssue({ projectId, onClose }: { projectId: string; onCl
   } = useMutation({
     mutationFn: (issueId: string) => issues.delete(projectId, issueId),
     onSuccess: () => {
-      toast.success("Issue deleted successfully!");
+      // toast.success("Issue deleted successfully!");
       // Invalidate all issue-related queries for this project
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
       if (onClose) onClose();

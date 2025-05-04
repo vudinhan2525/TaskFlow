@@ -14,7 +14,6 @@ export default function SearchHeader() {
     page: 1,
     limit: 4,
   });
-  console.log(issues);
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {

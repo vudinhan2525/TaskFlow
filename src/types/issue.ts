@@ -27,7 +27,7 @@ export interface GetIssuesParams {
   keyword?: string;
   sprint_id?: string;
   assignee_id?: string;
-  status?: IssueStatus;
+  status?: IssueStatus[];
   page?: number | string;
   limit?: number | string;
 }
