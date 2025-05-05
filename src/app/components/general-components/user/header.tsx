@@ -9,7 +9,7 @@ import Button from "../button";
 import { useSelector } from "react-redux";
 import { RootState } from "@libs/store";
 import { useNavigate } from "react-router-dom";
-import CreateIssueModal from "../../projects/modals/createIssueModal";
+import UnifiedIssueModal from "../../projects/modals/unifiedIssueModal";
 import { useUserProjects } from "@libs/hooks/useProject";
 import SearchHeader from "@libs/app/components/general-components/user/search";
 export const Header = () => {
@@ -87,7 +87,10 @@ export const Header = () => {
 
             {/* User Menu */}
             <div className="relative">
-              <p className="flex items-center space-x-2 text-red-500" onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}>
+              <p
+                className="flex items-center space-x-2 text-red-500"
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+              >
                 <img src={currentUser.avatar} alt={currentUser.name} className="w-8 h-8 rounded-full" />
               </p>
               {isUserDropdownOpen && (
@@ -99,7 +102,9 @@ export const Header = () => {
                   <div className="py-1">
                     <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Profile</button>
                     <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Settings</button>
-                    <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Sign out</button>
+                    <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                      Sign out
+                    </button>
                   </div>
                 </div>
               )}
@@ -115,7 +120,7 @@ export const Header = () => {
         )}
       </header>
 
-      <CreateIssueModal isOpen={isCreateIssueModalOpen} onClose={handleCloseIssueModal} />
+      <UnifiedIssueModal isOpen={isCreateIssueModalOpen} onClose={handleCloseIssueModal} />
     </>
   );
 };

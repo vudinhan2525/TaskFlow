@@ -9,11 +9,12 @@ import { useNavigate } from "react-router-dom";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { IssueStatus } from "@libs/types/issue";
 
-const ListFilter = ({
-  setIsCreateModalOpen,
-}: {
+interface ListFilterProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
-}) => {
+  onSprintSelect?: (sprintId: string) => void;
+}
+
+const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) => {
   const { projectId } = useParams<{ projectId: string }>();
   const { sprints } = useProjectSprints(projectId || "");
   const navigate = useNavigate();
@@ -39,10 +40,7 @@ const ListFilter = ({
     [navigate, projectId]
   );
 
-  const handleFilterChange = (
-    key: keyof typeof filters,
-    value: Partial<typeof filters>
-  ) => {
+  const handleFilterChange = (key: keyof typeof filters, value: Partial<typeof filters>) => {
     setFilters((prev) => ({ ...prev, [key]: value[key] }));
     navigate(`/projects/${projectId}/list?${key}=${value[key]}`);
   };
@@ -59,10 +57,8 @@ const ListFilter = ({
     }
 
     const queryString = queryParams.toString();
-    navigate(
-      `/projects/${projectId}/list${queryString ? `?${queryString}` : ""}`
-    );
-    console.log(queryString);
+    navigate(`/projects/${projectId}/list${queryString ? `?${queryString}` : ""}`);
+    console.log("string", queryString);
   }, [filters, navigate, projectId]);
 
   const handleKeywordChange = (value: string) => {
@@ -101,9 +97,7 @@ const ListFilter = ({
                 {/* Status Section */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-700">
-                      Status
-                    </p>
+                    <p className="text-sm font-medium text-gray-700">Status</p>
                     {filters.status.length > 0 && (
                       <IoIosClose
                         size={20}
@@ -125,21 +119,12 @@ const ListFilter = ({
                         <input
                           type="checkbox"
                           className="rounded text-emerald-500"
-                          checked={filters.status.includes(
-                            status.key as IssueStatus
-                          )}
+                          checked={filters.status.includes(status.key as IssueStatus)}
                           onChange={() =>
                             handleFilterChange("status", {
-                              status: filters.status.includes(
-                                status.key as IssueStatus
-                              )
-                                ? filters.status.filter(
-                                    (s) => s !== (status.key as IssueStatus)
-                                  )
-                                : [
-                                    ...filters.status,
-                                    status.key as IssueStatus,
-                                  ],
+                              status: filters.status.includes(status.key as IssueStatus)
+                                ? filters.status.filter((s) => s !== (status.key as IssueStatus))
+                                : [...filters.status, status.key as IssueStatus],
                             })
                           }
                         />
@@ -169,13 +154,18 @@ const ListFilter = ({
                     {sprints?.map((sprint) => (
                       <div
                         key={sprint.id}
-                        onClick={() =>
-                          handleFilterChange("sprint", {
-                            sprint: filters.sprint.includes(sprint.id)
-                              ? filters.sprint.filter((s) => s !== sprint.id)
-                              : [...filters.sprint, sprint.id],
-                          })
-                        }
+                        onClick={() => {
+                          const newSprintIds = filters.sprint.includes(sprint.id)
+                            ? filters.sprint.filter((s) => s !== sprint.id)
+                            : [...filters.sprint, sprint.id];
+                          handleFilterChange("sprint", { sprint: newSprintIds });
+
+                          if (newSprintIds.length === 1) {
+                            onSprintSelect?.(newSprintIds[0]);
+                          } else {
+                            onSprintSelect?.("");
+                          }
+                        }}
                         className="px-3 py-1 rounded-full cursor-pointer bg-gray-100 hover:bg-gray-200 text-sm"
                       >
                         {sprint.name}
@@ -216,9 +206,7 @@ const renderStatusCell = (status: IssueStatus) => {
     >
       <p
         className={`text-xs 
-  ${
-    statusOptions.find((option) => option.key === status)?.textColor
-  } text-center font-bold
+  ${statusOptions.find((option) => option.key === status)?.textColor} text-center font-bold
   `}
       >
         {status ? status.toUpperCase() : "-"}

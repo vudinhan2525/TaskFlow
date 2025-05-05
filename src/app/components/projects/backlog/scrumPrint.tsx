@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import Button from "@libs/app/components/general-components/button";
-import CreateIssueModalFromSprint from "@libs/app/components/projects/modals/createIssueModalFromSprint";
+import UnifiedIssueModal from "@libs/app/components/projects/modals/unifiedIssueModal";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import StatusDropdown from "./StatusDropdown";
 import { formatSprintDate } from "../../../../utils/date";
-import { useCreateIssue } from "@libs/hooks/useIssue";
 import {
   FaChevronDown,
   FaChevronRight,
@@ -49,10 +48,6 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [expandedIssues, setExpandedIssues] = useState<{ [key: string]: boolean }>({});
   const { columns } = useProjectColumns(projectId);
-  const { createIssueAsync } = useCreateIssue({
-    projectId,
-    onClose: () => setIsIssueModalOpen(false),
-  });
 
   // Group issues by their parent-child relationship
   const issueMap: { [key: string]: IIssue[] } = {};
@@ -256,32 +251,9 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
         </div>
       )}
 
-      <CreateIssueModalFromSprint
+      <UnifiedIssueModal
         isOpen={isIssueModalOpen}
         onClose={() => setIsIssueModalOpen(false)}
-        onSubmit={async (formData) => {
-          if (!formData.title || !formData.priority || !formData.type) {
-            console.error("Missing required fields");
-            return;
-          }
-          try {
-            await createIssueAsync({
-              title: formData.title,
-              summary: formData.summary || "",
-              description: formData.description || "",
-              status: formData.status || columns?.[0]?.name || "TO DO",
-              priority: formData.priority,
-              type: formData.type,
-              assignee_id: formData.assignee_id || undefined,
-              reporter_id: formData.reporter_id || undefined,
-              sprint_id: sprintId,
-              project_id: projectId,
-              attachments: [],
-            });
-          } catch (error) {
-            console.error("Failed to create issue:", error);
-          }
-        }}
         projectId={projectId}
         sprintId={sprintId}
       />
