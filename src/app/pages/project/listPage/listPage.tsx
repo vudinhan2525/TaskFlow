@@ -13,11 +13,11 @@ const ListPage = () => {
   const { issues } = useProjectIssues({
     project_id: projectId,
     keyword: keyword || undefined,
-    status: status ? status.split("-") as IssueStatus[] : [],
-    sprint_id: sprint ||'',
+    status: status ? (status.split("-") as IssueStatus[]) : [],
+    sprint_id: sprint || "",
   });
   return (
-    <div className="flex">  
+    <div className="flex">
       <div className="flex-1">
         <List projectId={projectId} issues={issues} />
       </div>

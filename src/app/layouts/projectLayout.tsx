@@ -4,9 +4,9 @@ import { Outlet } from "react-router-dom";
 
 const ProjectLayout = (): React.ReactElement => {
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex h-screen flex-col bg-white">
       <ProjectNavbar />
-      <div className="flex-1 overflow-auto">
+      <div className="">
         <Outlet />
       </div>
     </div>

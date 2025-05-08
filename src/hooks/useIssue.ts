@@ -122,15 +122,11 @@ export function useUpdateIssue({
     }) => {
       return issues.update(projectId, id, data);
     },
-    onSuccess: (response, variables) => {
-      // if (!isNotToasting) toast.success("Issue updated successfully!");
-      // Invalidate the specific issue
-      queryClient.invalidateQueries({
-        queryKey: ["issue", projectId, variables.id],
-      });
-      // Invalidate the issues list
+    onSuccess: (response) => {
+      // queryClient.invalidateQueries({
+      //   queryKey: ["issue", projectId, variables.id],
+      // });
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
-      // If the issue has a sprint_id, invalidate that sprint's issues too
       if (response.data.sprint_id) {
         queryClient.invalidateQueries({
           queryKey: ["issues", projectId, response.data.sprint_id],

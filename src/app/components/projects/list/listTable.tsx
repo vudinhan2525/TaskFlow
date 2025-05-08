@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FaCalendarAlt,
   FaListUl,
@@ -8,15 +8,13 @@ import {
 } from "react-icons/fa";
 import { CiAt } from "react-icons/ci";
 import {
-  // MdOutlineAssignmentInd,
-  // MdReportGmailerrorred,
   MdOutlineBedroomParent,
   MdLabelImportantOutline,
   MdOutlineSubtitles,
   MdOutlineSummarize,
   MdOutlineDescription,
 } from "react-icons/md";
-import { IoIosPrint, IoIosClose } from "react-icons/io";
+import { IoIosPrint } from "react-icons/io";
 import { Table, Dropdown } from "antd";
 import type { TableProps, TableColumnType, MenuProps } from "antd";
 import { RiTeamFill } from "react-icons/ri";
@@ -29,18 +27,10 @@ import ColumnDropdown from "./listTableColumns/ColumnDropdown";
 import { useUser } from "@libs/hooks/useUser";
 import { IProjectMember } from "@libs/types/projectMember";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
-const ListTable = ({
-  issues,
-  visibleColumns,
-  setVisibleColumns,
-  rowSelection,
-  handleChangeCellValue,
-  keyword,
-  projectId,
-}: {
+
+interface ListTableProps {
+  isLoading: boolean;
   issues: IIssue[];
-  visibleColumns: { key: string; visible: boolean }[];
-  setVisibleColumns: (columns: { key: string; visible: boolean }[]) => void;
   rowSelection: TableProps<IIssue>["rowSelection"];
   handleChangeCellValue: (
     id: string,
@@ -49,11 +39,22 @@ const ListTable = ({
   ) => void;
   keyword: string;
   projectId: string;
-}) => {
+}
+
+const ListTable = ({
+  isLoading,
+  issues,
+  rowSelection,
+  handleChangeCellValue,
+  keyword,
+  projectId,
+}: ListTableProps) => {
   const { columns } = useProjectColumns(projectId || "");
   const { sprints } = useProjectSprints(projectId || "");
   const { projectMembers } = useProjectMembers(projectId || "");
-
+  const [visibleColumns, setVisibleColumns] = useState<
+    { key: keyof IIssue; visible: boolean }[]
+  >([]);
   const statusOptions = columns.map((column) => ({
     ...column,
     bgColor:
@@ -69,6 +70,8 @@ const ListTable = ({
           ? "text-green-700"
           : "text-blue-700",
   }));
+  const issueProperties = Object.keys(issues?.[0] || {}) as Array<keyof IIssue>;
+  const tableContainerRef = useRef<HTMLDivElement>(null);
 
   const createColumn = (
     key: keyof IIssue,
@@ -103,13 +106,59 @@ const ListTable = ({
 
   const tableColumns: TableColumnType<IIssue>[] = [
     // Type
-    createColumn("type", "type", (type) => (
-      <div className="rounded-md bg-gray-300 p-1 text-center font-medium text-gray-700">
-        {type}
-      </div>
+    createColumn("type", "Type", (_, { id, type }) => (
+      <ColumnDropdown
+        items={typeOptions.map((option) => ({
+          value: option.name,
+          style: {
+            padding: 0,
+            background: "white",
+          },
+          label: (
+            <div
+              key={option.id}
+              className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-200 ${
+                option.name === type &&
+                "border-l-2 border-emerald-500 bg-gray-300"
+              }`}
+            >
+              <div
+                className={`flex min-w-[100px] items-center justify-center gap-1 rounded-md py-1 ${option.bgColor}`}
+              >
+                {option.icon}
+                <p className={`text-[13px] font-bold ${option.textColor}`}>
+                  {option.name}
+                </p>
+              </div>
+            </div>
+          ),
+          key: option.id,
+          onClick: () =>
+            handleChangeCellValue(id, "type" as keyof IIssue, option.name),
+        }))}
+        children={
+          <div className="flex justify-center">
+            <div
+              className={`flex min-w-[100px] items-center justify-center gap-1 rounded-md py-1 ${
+                typeOptions.find((option) => option.name === type)?.bgColor
+              }`}
+            >
+              {typeOptions.find((option) => option.name === type)?.icon}
+              <p
+                className={`text-[13px] font-bold ${
+                  typeOptions.find((option) => option.name === type)?.textColor
+                }`}
+              >
+                {type ? type : "-"}
+              </p>
+            </div>
+          </div>
+        }
+        currentItem={type}
+      />
     )),
     // Title
-    createColumn("title", "title", (_, { title }) => (
+    createColumn("title", "Title", (_, { title }) => (
       <p className="p-2">
         {keyword ? (
           <p>
@@ -128,7 +177,7 @@ const ListTable = ({
     // Summary
     createColumn(
       "summary",
-      "summary",
+      "Summary",
       (_, { id }) => (
         <ColumnInputFiled
           issueId={id}
@@ -139,7 +188,7 @@ const ListTable = ({
       { sorter: (a, b) => a.summary.localeCompare(b.summary) },
     ),
     // Description
-    createColumn("description", "description", (_, { id }) => (
+    createColumn("description", "Description", (_, { id }) => (
       <ColumnInputFiled
         issueId={id}
         field="description"
@@ -147,7 +196,7 @@ const ListTable = ({
       />
     )),
     // Status
-    createColumn("status", "status", (_, { id, status }) => (
+    createColumn("status", "Status", (_, { id, status }) => (
       <ColumnDropdown
         items={statusOptions.map((option) => ({
           value: option.name,
@@ -158,7 +207,7 @@ const ListTable = ({
           label: (
             <div
               key={option.id}
-              className={`flex items-center p-2 pr-12 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300 ${option.name === status && "border-l-2 border-emerald-500 bg-emerald-100"}`}
+              className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300 ${option.name === status && "border-l-2 border-emerald-500 bg-emerald-100"}`}
             >
               <button
                 className={`rounded-md p-1 text-xs hover:cursor-pointer ${option.bgColor} group-hover:bg-none`}
@@ -180,26 +229,28 @@ const ListTable = ({
             ),
         }))}
         children={
-          <button
-            className={`rounded-md p-1 text-xs hover:cursor-pointer ${
-              statusOptions.find((option) => option.name === status)?.bgColor
-            } group-hover:bg-none`}
-          >
-            <p
-              className={`text-xs ${
-                statusOptions.find((option) => option.name === status)
-                  ?.textColor
-              } text-center font-bold`}
+          <div className="flex justify-center">
+            <button
+              className={`rounded-md p-1 text-xs hover:cursor-pointer ${
+                statusOptions.find((option) => option.name === status)?.bgColor
+              } group-hover:bg-none`}
             >
-              {status ? status.toUpperCase() : "-"}
-            </p>
-          </button>
+              <p
+                className={`text-xs ${
+                  statusOptions.find((option) => option.name === status)
+                    ?.textColor
+                } text-center font-bold`}
+              >
+                {status ? status.toUpperCase() : "-"}
+              </p>
+            </button>
+          </div>
         }
         currentItem={status}
       />
     )),
     // Priority
-    createColumn("priority", "priority", (_, { id, priority }) => (
+    createColumn("priority", "Priority", (_, { id, priority }) => (
       <ColumnDropdown
         items={priorityOptions.map((option) => {
           return {
@@ -210,7 +261,9 @@ const ListTable = ({
               background: "white",
             },
             label: (
-              <div className="flex items-center gap-2 rounded-md p-1 text-center text-xs font-bold">
+              <div
+                className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+              >
                 {option.icon}
                 <p className="text-xs font-bold">{option.name}</p>
               </div>
@@ -226,23 +279,29 @@ const ListTable = ({
         })}
         currentItem={priority}
         children={
-          <button className="flex items-center gap-2 rounded-md p-1 hover:cursor-pointer">
+          <div className="flex items-center justify-center gap-2 rounded-md p-1 hover:cursor-pointer">
             {priorityOptions.find((option) => option.name === priority)?.icon}
             <p className="text-xs font-bold">{priority}</p>
-          </button>
+          </div>
         }
       />
     )),
     // Sprint
-    createColumn("sprint_id", "sprint_id", (_, { id, sprint_id }) => (
+    createColumn("sprint_id", "Sprint_id", (_, { id, sprint_id }) => (
       <ColumnDropdown
         items={sprints.map((sprint) => ({
           value: sprint.name,
           key: sprint.id,
+          style: {
+            padding: 0,
+            background: "white",
+          },
           label: (
-            <span className="rounded-sm bg-gray-100 p-2 text-center font-medium text-gray-700">
-              {sprint.name}
-            </span>
+            <div
+              className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+            >
+              <p className="font-bold">{sprint.name}</p>
+            </div>
           ),
           onClick: () => {
             handleChangeCellValue(
@@ -254,14 +313,18 @@ const ListTable = ({
         }))}
         currentItem={sprints.find((sprint) => sprint.id === sprint_id)?.name}
         children={
-          <div className="rounded-md bg-gray-300 text-center font-medium text-gray-700">
-            <p>{sprints.find((sprint) => sprint.id === sprint_id)?.name}</p>
+          <div className="flex justify-center">
+            <div className="rounded-md bg-gray-200 p-2">
+              <p className="font-bold">
+                {sprints.find((sprint) => sprint.id === sprint_id)?.name}
+              </p>
+            </div>
           </div>
         }
       />
     )),
     // Assignee
-    createColumn("assignee_id", "assignee_id", (_, { id, assignee_id }) => (
+    createColumn("assignee_id", "Assignee_id", (_, { id, assignee_id }) => (
       <ColumnDropdown
         items={
           projectMembers &&
@@ -301,14 +364,14 @@ const ListTable = ({
       />
     )),
     // Reporter
-    createColumn("reporter_id", "reporter_id", (_, { id, reporter_id }) => (
+    createColumn("reporter_id", "Reporter_id", (_, { id, reporter_id }) => (
       <ColumnDropdown
         items={
           projectMembers &&
           projectMembers
             .map((member: IProjectMember) => ({
               value: member.user_id,
-              key: member.user_id,  
+              key: member.user_id,
               label: <RenderUserCell userId={member.user_id} />,
               onClick: () => {
                 handleChangeCellValue(
@@ -326,7 +389,7 @@ const ListTable = ({
                 handleChangeCellValue(
                   id,
                   "reporter_id" as keyof IIssue,
-                    "" as string
+                  "" as string,
                 );
               },
             })
@@ -341,20 +404,20 @@ const ListTable = ({
       />
     )),
     // Team
-    createColumn("team_id", "team_id", (_, { team_id }) => (
+    createColumn("team_id", "Team", (_, { team_id }) => (
       <span className="inline-flex items-center gap-1">
         <RiTeamFill className="text-gray-500" />
         {team_id || "-"}
       </span>
     )),
     // Parent Issue
-    createColumn("parent_id", "parent_id", (_, { parent_id }) => (
+    createColumn("parent_id", "Parent Issue", (_, { parent_id }) => (
       <span className="text-sm text-gray-500">
         {parent_id ? parent_id.substring(0, 8) : "-"}
       </span>
     )),
     // Labels
-    createColumn("labels", "labels", (_, { labels }) => (
+    createColumn("labels", "Labels", (_, { labels }) => (
       <div className="flex flex-wrap gap-1">
         {labels?.map((label) => (
           <span
@@ -367,7 +430,7 @@ const ListTable = ({
       </div>
     )),
     // Attachments
-    createColumn("attachments", "attachments", (_, { attachments }) => (
+    createColumn("attachments", "Attachments", (_, { attachments }) => (
       <span className="text-gray-500">
         {attachments.length > 0 ? `📎 ${attachments.length}` : "-"}
       </span>
@@ -375,7 +438,7 @@ const ListTable = ({
     // Points
     createColumn(
       "story_point",
-      "story_point",
+      "Story Point",
       (_, { id }) => (
         <ColumnInputFiled
           issueId={id}
@@ -389,7 +452,7 @@ const ListTable = ({
     // Created
     createColumn(
       "created_at",
-      "created_at",
+      "Created At",
       (_, { created_at }) => renderDateCell(created_at),
       {
         sorter: (a, b) =>
@@ -399,7 +462,7 @@ const ListTable = ({
     // Updated
     createColumn(
       "updated_at",
-      "updated_at",
+      "Updated At",
       (_, { updated_at }) => renderDateCell(updated_at),
       {
         sorter: (a, b) =>
@@ -407,9 +470,54 @@ const ListTable = ({
       },
     ),
   ];
-  const issueProperties = Object.keys(issues?.[0] || {}) as Array<keyof IIssue>;
-  const tableContainerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const issueProperties = Object.keys(issues?.[0] || {}) as Array<
+      keyof IIssue
+    >;
+
+    // Get saved columns from localStorage
+    const savedColumns = localStorage.getItem("visibleColumns");
+    if (savedColumns) {
+      // If there are saved columns, use them
+      const previousVisibleColumns = savedColumns.split(",");
+      setVisibleColumns(
+        issueProperties.map((key) => ({
+          key: key as keyof IIssue,
+          visible: previousVisibleColumns.includes(key as string),
+        })),
+      );
+    } else {
+      const defaultVisibleColumns = [
+        "title",
+        "summary",
+        "description",
+        "status",
+        "sprint_id",
+        "assignee_id",
+        "story_point",
+        "created_at",
+        "updated_at",
+      ];
+      setVisibleColumns(
+        issueProperties.map((key) => ({
+          key: key as keyof IIssue,
+          visible: defaultVisibleColumns.includes(key as string),
+        })),
+      );
+    }
+  }, [issues]);
+
+  useEffect(() => {
+    if (!visibleColumns.length) return;
+    localStorage.setItem(
+      "visibleColumns",
+      visibleColumns
+        .filter((column) => column.visible)
+        .map((column) => column.key)
+        .join(","),
+    );
+  }, [visibleColumns]);
   return (
     <div ref={tableContainerRef} className="relative">
       <Table
@@ -418,6 +526,7 @@ const ListTable = ({
         bordered={true}
         rowSelection={{ ...rowSelection }}
         rowKey="id"
+        loading={isLoading}
         scroll={{ x: "max-content" }}
         style={{ padding: 0, width: tableContainerRef.current?.offsetWidth }}
       />
@@ -432,6 +541,7 @@ const ListTable = ({
                   !visibleColumns.find((column) => column.key === property)
                     ?.visible,
               )
+              // TODO: RENDER Label not field name
               .map((property) => ({
                 label: (
                   <div className="flex items-center gap-2">
@@ -453,7 +563,7 @@ const ListTable = ({
               })),
           ]}
           children={
-            <div className="cursor-pointer rounded-sm px-2 py-4 hover:bg-gray-100">
+            <div className="cursor-pointer rounded-sm px-4 py-3 hover:bg-gray-100">
               <FaPlus />
             </div>
           }
@@ -467,8 +577,8 @@ export default ListTable;
 
 const renderDateCell = (date: string) => {
   return (
-    <div className="px-2">
-      <span className="rounded-md bg-gray-300 px-2 py-1 text-center font-medium text-gray-700">
+    <div className="flex justify-center px-2">
+      <span className="rounded-md bg-gray-300 px-2 py-1 text-center text-[15px] font-medium text-gray-700">
         {format(new Date(date), "MM/dd/yyyy")}
       </span>
     </div>
@@ -478,7 +588,7 @@ const renderDateCell = (date: string) => {
 const RenderUserCell = ({ userId }: { userId?: string }) => {
   const { user } = useUser(userId || "");
   return (
-    <div className={``}>
+    <div className={`px-4`}>
       {userId ? (
         <div className="flex items-center gap-2">
           <img
@@ -516,7 +626,7 @@ const renderTableHeaderCell = ({
       label: (
         <div className="flex items-center gap-2">
           <FaArrowUp />
-          <p>Sort A {"A->"} Z</p>
+          <p>Sort {"A -> Z"}</p>
         </div>
       ),
       key: "0",
@@ -525,7 +635,7 @@ const renderTableHeaderCell = ({
       label: (
         <div className="flex items-center gap-2">
           <FaArrowDown />
-          <p>Sort Z {"Z->"} A</p>
+          <p>Sort {"Z -> A"}</p>
         </div>
       ),
       key: "1",
@@ -533,7 +643,7 @@ const renderTableHeaderCell = ({
     {
       label: (
         <div className="flex items-center gap-2">
-          <IoIosClose />
+          <LuX className="h-4 w-4 font-bold" />
           <p>Hide field</p>
         </div>
       ),
@@ -571,6 +681,13 @@ import {
   FcLowPriority,
   FcMediumPriority,
 } from "react-icons/fc";
+import {
+  LuBookmark,
+  LuBug,
+  LuClipboardCheck,
+  LuStar,
+  LuX,
+} from "react-icons/lu";
 
 const priorityOptions = [
   { name: "High", icon: <FcHighPriority size={20} /> },
@@ -598,3 +715,34 @@ const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   created_at: <FaCalendarAlt />,
   updated_at: <FaCalendarAlt />,
 };
+
+const typeOptions = [
+  {
+    id: "Bug",
+    name: "Bug",
+    icon: <LuBug className="h-4 w-4 text-red-500" />,
+    bgColor: "bg-red-100",
+    textColor: "text-red-700",
+  },
+  {
+    id: "Task",
+    name: "Task",
+    icon: <LuClipboardCheck className="h-4 w-4 text-blue-500" />,
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-700",
+  },
+  {
+    id: "Story",
+    name: "Story",
+    icon: <LuBookmark className="h-4 w-4 text-green-500" />,
+    bgColor: "bg-green-100",
+    textColor: "text-green-700",
+  },
+  {
+    id: "Epic",
+    name: "Epic",
+    icon: <LuStar className="h-4 w-4 text-purple-500" />,
+    bgColor: "bg-purple-100",
+    textColor: "text-purple-700",
+  },
+];
