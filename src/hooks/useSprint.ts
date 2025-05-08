@@ -45,7 +45,13 @@ export function useSprint(projectId: string, sprintId: string) {
   };
 }
 
-export function useCreateSprint({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+export function useCreateSprint({
+  projectId,
+  onClose,
+}: {
+  projectId: string;
+  onClose?: () => void;
+}) {
   const queryClient = useQueryClient();
 
   const {
@@ -55,7 +61,8 @@ export function useCreateSprint({ projectId, onClose }: { projectId: string; onC
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: (data: Omit<Sprint, "id" | "created_at" | "updated_at">) => sprints.create(projectId, data),
+    mutationFn: (data: Omit<Sprint, "id" | "created_at" | "updated_at">) =>
+      sprints.create(projectId, data),
     onSuccess: () => {
       toast.success("Sprint created successfully!");
       queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
@@ -75,7 +82,13 @@ export function useCreateSprint({ projectId, onClose }: { projectId: string; onC
   };
 }
 
-export function useUpdateSprint({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+export function useUpdateSprint({
+  projectId,
+  onClose,
+}: {
+  projectId: string;
+  onClose?: () => void;
+}) {
   const queryClient = useQueryClient();
 
   const {
@@ -84,11 +97,14 @@ export function useUpdateSprint({ projectId, onClose }: { projectId: string; onC
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Sprint> }) => sprints.update(projectId, id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Sprint> }) =>
+      sprints.update(projectId, id, data),
     onSuccess: (_, variables) => {
       toast.success("Sprint updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["sprints", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["sprint", projectId, variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["sprint", projectId, variables.id],
+      });
       if (onClose) onClose();
     },
     onError: () => {
@@ -104,7 +120,13 @@ export function useUpdateSprint({ projectId, onClose }: { projectId: string; onC
   };
 }
 
-export function useDeleteSprint({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+export function useDeleteSprint({
+  projectId,
+  onClose,
+}: {
+  projectId: string;
+  onClose?: () => void;
+}) {
   const queryClient = useQueryClient();
 
   const {

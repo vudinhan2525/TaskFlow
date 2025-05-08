@@ -4,7 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import { useCreateSprint, useUpdateSprint } from "@libs/hooks/useSprint";
-// import { Sprint } from "@libs/apis/sprint";
+
 interface CreateSprintModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -92,7 +92,9 @@ const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
       title={isEditing ? "Update Sprint" : "Create Sprint"}
       onClose={onClose}
       buttonContent={isLoading ? "Loading..." : isEditing ? "Update Sprint" : "Create Sprint"}
-      onSubmit={handleSubmit(handleFormSubmit)}
+      onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
+        handleSubmit(handleFormSubmit)(e)
+      }}
       isLoadingButton={isLoading}
     >
       <div className="p-4">

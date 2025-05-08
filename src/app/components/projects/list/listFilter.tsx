@@ -8,12 +8,11 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { IssueStatus } from "@libs/types/issue";
-
+import { CiUser } from "react-icons/ci";
 interface ListFilterProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
   onSprintSelect?: (sprintId: string) => void;
 }
-
 const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) => {
   const { projectId } = useParams<{ projectId: string }>();
   const { sprints } = useProjectSprints(projectId || "");
@@ -37,7 +36,7 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
 
         navigate(`/projects/${projectId}/list?keyword=${value}`);
       }, 500),
-    [navigate, projectId]
+    [navigate, projectId],
   );
 
   const handleFilterChange = (key: keyof typeof filters, value: Partial<typeof filters>) => {
@@ -57,8 +56,9 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
     }
 
     const queryString = queryParams.toString();
-    navigate(`/projects/${projectId}/list${queryString ? `?${queryString}` : ""}`);
-    console.log("string", queryString);
+    navigate(
+      `/projects/${projectId}/list${queryString ? `?${queryString}` : ""}`,
+    );
   }, [filters, navigate, projectId]);
 
   const handleKeywordChange = (value: string) => {
@@ -67,21 +67,21 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
   };
 
   return (
-    <div className="flex items-center justify-between mb-8">
+    <div className="mb-8 flex items-center justify-between">
       <div className="flex items-center space-x-2">
         {/* Search */}
-        <div className="flex items-center justify-between border border-gray-300 rounded outline-none focus-within:ring-1 focus-within:ring-emerald-500 px-4">
+        <div className="flex items-center justify-between rounded border border-gray-300 px-4 outline-none focus-within:ring-1 focus-within:ring-emerald-500">
           <input
             type="text"
             value={keyword}
             onChange={(e) => handleKeywordChange(e.target.value)}
             placeholder="Search list"
-            className=" py-1 text-sm flex-1 focus:outline-none"
+            className="flex-1 py-1 text-sm focus:outline-none"
           />
 
           {keyword ? (
             <IoIosClose
-              className="text-gray-500 cursor-pointer hover:scale-125 transition-all duration-100"
+              className="cursor-pointer text-gray-500 transition-all duration-100 hover:scale-125"
               onClick={() => handleKeywordChange("")}
             />
           ) : (
@@ -93,7 +93,7 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
         <div className="flex items-center space-x-1">
           <Dropdown
             dropdownRender={() => (
-              <div className="bg-white rounded-lg shadow-lg p-4 flex flex-col gap-8">
+              <div className="flex flex-col gap-8 rounded-lg bg-white p-4 shadow-lg">
                 {/* Status Section */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
                     {filters.status.length > 0 && (
                       <IoIosClose
                         size={20}
-                        className="text-gray-500 cursor-pointer hover:scale-125 transition-all duration-100"
+                        className="cursor-pointer text-gray-500 transition-all duration-100 hover:scale-125"
                         onClick={() =>
                           handleFilterChange("status", {
                             status: [],
@@ -114,7 +114,7 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
                     {statusOptions.map((status) => (
                       <div
                         key={status.key}
-                        className="px-3 py-1 rounded-full cursor-pointer border border-gray-200 hover:bg-gray-50 flex items-center gap-2"
+                        className="flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-1 hover:bg-gray-50"
                       >
                         <input
                           type="checkbox"
@@ -141,7 +141,7 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
                     {filters.sprint.length > 0 && (
                       <IoIosClose
                         size={20}
-                        className="text-gray-500 cursor-pointer hover:scale-125 transition-all duration-100"
+                        className="cursor-pointer text-gray-500 transition-all duration-100 hover:scale-125"
                         onClick={() =>
                           handleFilterChange("sprint", {
                             sprint: [],
@@ -177,16 +177,20 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
             )}
             trigger={["click"]}
           >
-            <button className="px-3 py-1 text-sm text-white bg-emerald-500 rounded hover:bg-emerald-600 cursor-pointer">
-              Filter <FaChevronDown className="inline ml-1" />
+            <button className="cursor-pointer rounded bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-600">
+              Filter <FaChevronDown className="ml-1 inline" />
             </button>
           </Dropdown>
+        </div>
+
+        <div className="cursor-pointer rounded-full border-3 border-transparent bg-gray-200 p-2 hover:border-emerald-500 hover:bg-gray-500">
+          <CiUser/>
         </div>
       </div>
 
       <div className="flex items-center space-x-2">
         <button
-          className="px-3 py-1 text-sm text-white bg-emerald-500 rounded hover:bg-emerald-600"
+          className="rounded bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-600"
           onClick={() => setIsCreateModalOpen(true)}
         >
           Create Issue
@@ -195,12 +199,11 @@ const ListFilter = ({ setIsCreateModalOpen, onSprintSelect }: ListFilterProps) =
     </div>
   );
 };
-
 export default ListFilter;
 const renderStatusCell = (status: IssueStatus) => {
   return (
     <button
-      className={`text-xs rounded-xl px-2 py-1 hover:cursor-pointer ${
+      className={`rounded-xl px-2 py-1 text-xs hover:cursor-pointer ${
         statusOptions.find((option) => option.key === status)?.bgColor
       } group-hover:bg-none`}
     >

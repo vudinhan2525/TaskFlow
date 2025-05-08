@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { issues, type CreateIssueParams } from "../apis/issue";
+import { issues } from "../apis/issue";
+import { CreateIssueParams } from "@libs/types/issue";
 import { toast } from "react-toastify";
 import { GetIssuesParams } from "@libs/types/issue";
 
@@ -9,7 +10,13 @@ export function useProjectIssues(body: GetIssuesParams) {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["issues", body.project_id, body.sprint_id, body.keyword,body.status],
+    queryKey: [
+      "issues",
+      body.project_id,
+      body.sprint_id,
+      body.keyword,
+      body.status,
+    ],
     queryFn: async () => {
       const response = await issues.list(body);
       return response.data;
@@ -45,7 +52,13 @@ export function useIssue(projectId: string, issueId: string) {
   };
 }
 
-export function useCreateIssue({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+export function useCreateIssue({
+  projectId,
+  onClose,
+}: {
+  projectId: string;
+  onClose?: () => void;
+}) {
   const queryClient = useQueryClient();
 
   const {
@@ -62,7 +75,9 @@ export function useCreateIssue({ projectId, onClose }: { projectId: string; onCl
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
       // If the issue is created with a sprint_id, invalidate that sprint's issues too
       if (response.data.sprint_id) {
-        queryClient.invalidateQueries({ queryKey: ["issues", projectId, response.data.sprint_id] });
+        queryClient.invalidateQueries({
+          queryKey: ["issues", projectId, response.data.sprint_id],
+        });
       }
       if (onClose) onClose();
     },
@@ -80,7 +95,15 @@ export function useCreateIssue({ projectId, onClose }: { projectId: string; onCl
   };
 }
 
-export function useUpdateIssue({ projectId, onClose, isNotToasting }: { projectId: string; onClose?: () => void; isNotToasting?: boolean }) {
+export function useUpdateIssue({
+  projectId,
+  onClose,
+  isNotToasting,
+}: {
+  projectId: string;
+  onClose?: () => void;
+  isNotToasting?: boolean;
+}) {
   const queryClient = useQueryClient();
 
   const {
@@ -90,16 +113,28 @@ export function useUpdateIssue({ projectId, onClose, isNotToasting }: { projectI
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<CreateIssueParams> }) => issues.update(projectId, id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<CreateIssueParams>;
+    }) => {
+      return issues.update(projectId, id, data);
+    },
     onSuccess: (response, variables) => {
       // if (!isNotToasting) toast.success("Issue updated successfully!");
       // Invalidate the specific issue
-      queryClient.invalidateQueries({ queryKey: ["issue", projectId, variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["issue", projectId, variables.id],
+      });
       // Invalidate the issues list
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
       // If the issue has a sprint_id, invalidate that sprint's issues too
       if (response.data.sprint_id) {
-        queryClient.invalidateQueries({ queryKey: ["issues", projectId, response.data.sprint_id] });
+        queryClient.invalidateQueries({
+          queryKey: ["issues", projectId, response.data.sprint_id],
+        });
       }
       if (onClose) onClose();
     },
@@ -117,7 +152,13 @@ export function useUpdateIssue({ projectId, onClose, isNotToasting }: { projectI
   };
 }
 
-export function useDeleteIssue({ projectId, onClose }: { projectId: string; onClose?: () => void }) {
+export function useDeleteIssue({
+  projectId,
+  onClose,
+}: {
+  projectId: string;
+  onClose?: () => void;
+}) {
   const queryClient = useQueryClient();
 
   const {

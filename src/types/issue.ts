@@ -31,3 +31,20 @@ export interface GetIssuesParams {
   page?: number | string;
   limit?: number | string;
 }
+
+export interface CreateIssueParams {
+  title: string;
+  summary?: string;
+  description?: string;
+  status: string;
+  priority: string;
+  type: "Bug" | "Task" | "Story" | "Epic";
+  sprint_id?: string;
+  assignee_id?: string;
+  team_id?: string;
+  attachments?: string[];
+  project_id: string;
+  reporter_id?: string;
+  parent_id?: string;
+  story_point?: number;
+}

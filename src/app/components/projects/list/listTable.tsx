@@ -1,475 +1,417 @@
-import React, { useRef } from "react";
-import { FaCalendarAlt, FaListUl, FaPlus } from "react-icons/fa";
-import { Table, Dropdown } from "antd";
-import type { TableProps, TableColumnType, MenuProps } from "antd";
+import { useRef } from "react";
 import {
+  FaCalendarAlt,
+  FaListUl,
+  FaPlus,
+  FaArrowUp,
+  FaArrowDown,
+} from "react-icons/fa";
+import { CiAt } from "react-icons/ci";
+import {
+  // MdOutlineAssignmentInd,
+  // MdReportGmailerrorred,
+  MdOutlineBedroomParent,
+  MdLabelImportantOutline,
   MdOutlineSubtitles,
   MdOutlineSummarize,
   MdOutlineDescription,
 } from "react-icons/md";
+import { IoIosPrint, IoIosClose } from "react-icons/io";
+import { Table, Dropdown } from "antd";
+import type { TableProps, TableColumnType, MenuProps } from "antd";
 import { RiTeamFill } from "react-icons/ri";
-import { IIssue, IssueStatus } from "@libs/types/issue";
+import { IIssue, IssuePriority, IssueStatus } from "@libs/types/issue";
 import { format } from "date-fns";
-import { Sprint } from "@libs/types/index";
+import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectColumns } from "@libs/hooks/useProject";
-import { IoIosPrint } from "react-icons/io";
-import { MdOutlineAssignmentInd } from "react-icons/md";
-import { MdReportGmailerrorred } from "react-icons/md";
-import { MdOutlineBedroomParent } from "react-icons/md";
-import { FcHighPriority } from "react-icons/fc";
-import { MdLabelImportantOutline } from "react-icons/md";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { IoIosClose } from "react-icons/io";
+import ColumnInputFiled from "./listTableColumns/ColumnInputFiled";
+import ColumnDropdown from "./listTableColumns/ColumnDropdown";
+import { useUser } from "@libs/hooks/useUser";
+import { IProjectMember } from "@libs/types/projectMember";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
 const ListTable = ({
   issues,
   visibleColumns,
   setVisibleColumns,
   rowSelection,
-  handleFieldChange,
-  handleFieldBlur,
-  handleStatusChange,
+  handleChangeCellValue,
   keyword,
   projectId,
-  initTypeValues,
-  sprints,
 }: {
   issues: IIssue[];
   visibleColumns: { key: string; visible: boolean }[];
   setVisibleColumns: (columns: { key: string; visible: boolean }[]) => void;
   rowSelection: TableProps<IIssue>["rowSelection"];
-  handleFieldChange: (id: string, field: string, value: string) => void;
-  handleFieldBlur: (id: string, field: string, value: string) => void;
-  handleStatusChange: (id: string, status: IssueStatus) => void;
+  handleChangeCellValue: (
+    id: string,
+    field: keyof IIssue,
+    value: string,
+  ) => void;
   keyword: string;
   projectId: string;
-  initTypeValues: IIssue[];
-  sprints: Sprint[];
 }) => {
   const { columns } = useProjectColumns(projectId || "");
+  const { sprints } = useProjectSprints(projectId || "");
+  const { projectMembers } = useProjectMembers(projectId || "");
+
   const statusOptions = columns.map((column) => ({
     ...column,
     bgColor:
       column.name == "TO DO"
         ? "bg-gray-100"
         : column.name == "DONE"
-        ? "bg-green-100"
-        : "bg-blue-100",
+          ? "bg-green-100"
+          : "bg-blue-100",
     textColor:
       column.name == "TO DO"
         ? "text-gray-700"
         : column.name == "DONE"
-        ? "text-green-700"
-        : "text-blue-700",
+          ? "text-green-700"
+          : "text-blue-700",
   }));
+
+  const createColumn = (
+    key: keyof IIssue,
+    title: string,
+    render: (value: string, record: IIssue) => React.ReactNode,
+    options: {
+      hidden?: boolean;
+      sorter?: (a: IIssue, b: IIssue) => number;
+      align?: "start" | "center" | "end";
+      colSpan?: number;
+    } = {},
+  ): TableColumnType<IIssue> => {
+    return {
+      title: renderTableHeaderCell({
+        title,
+        handleClick: () =>
+          setVisibleColumns(
+            visibleColumns.map((column) =>
+              column.key === key
+                ? { ...column, visible: !column.visible }
+                : column,
+            ),
+          ),
+      }),
+      dataIndex: key,
+      key,
+      hidden: !visibleColumns.find((column) => column.key === key)?.visible,
+      render,
+      ...options,
+    };
+  };
+
   const tableColumns: TableColumnType<IIssue>[] = [
     // Type
-    {
-      title: renderTableHeaderCell({
-        title: "type",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "type" ? { ...column, visible: !column.visible } : column
-            )
-          ),
-      }),
-      dataIndex: "type",
-      render: (type) => (
-        <div className="bg-gray-300 text-gray-700 rounded-md p-1 font-medium text-center">
-          {type}
-        </div>
-      ),
-    },
+    createColumn("type", "type", (type) => (
+      <div className="rounded-md bg-gray-300 p-1 text-center font-medium text-gray-700">
+        {type}
+      </div>
+    )),
     // Title
-    {
-      title: renderTableHeaderCell({
-        title: "title",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "title" ? { ...column, visible: !column.visible } : column
-            )
-          ),
-      }),
-      dataIndex: "title",
-      key: "title",
-      hidden: !visibleColumns.find((column) => column.key === "title")?.visible,
-      render: (_, { title }) => {
-        return (
-          <p className=" p-2">
-            {keyword ? (
-              <p>
-                {title.slice(
-                  0,
-                  title.toLowerCase().indexOf(keyword.toLowerCase())
-                )}
-                <span className="text-emerald-500">{keyword}</span>
-                {title.slice(
-                  title.toLowerCase().indexOf(keyword.toLowerCase()) +
-                    keyword.length
-                )}
-              </p>
-            ) : (
-              title
+    createColumn("title", "title", (_, { title }) => (
+      <p className="p-2">
+        {keyword ? (
+          <p>
+            {title.slice(0, title.toLowerCase().indexOf(keyword.toLowerCase()))}
+            <span className="text-emerald-500">{keyword}</span>
+            {title.slice(
+              title.toLowerCase().indexOf(keyword.toLowerCase()) +
+                keyword.length,
             )}
           </p>
-        );
-      },
-    },
+        ) : (
+          title
+        )}
+      </p>
+    )),
     // Summary
-    {
-      title: renderTableHeaderCell({
-        title: "summary",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "summary" ? { ...column, visible: !column.visible } : column
-            )
-          ),
-      }),
-      dataIndex: "summary",
-      key: "summary",
-      sorter: (a, b) => a.summary.localeCompare(b.summary),
-      render: (_, { id }) => {
-        return (
-          <input
-            onChange={(e) => handleFieldChange(id, "summary", e.target.value)}
-            onBlur={(e) => handleFieldBlur(id, "summary", e.target.value)}
-            value={
-              initTypeValues.find((issue) => issue.id === id)?.summary || ""
-            }
-            className="flex items-center gap-2 hover:bg-gray-100 rounded outline-none
-                p-2  border-transparent border-2 focus:border-emerald-500  
-                "
-          />
-        );
-      },
-    },
+    createColumn(
+      "summary",
+      "summary",
+      (_, { id }) => (
+        <ColumnInputFiled
+          issueId={id}
+          field="summary"
+          handleChangeCellValue={handleChangeCellValue}
+        />
+      ),
+      { sorter: (a, b) => a.summary.localeCompare(b.summary) },
+    ),
     // Description
-    {
-      title: renderTableHeaderCell({
-        title: "description",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "description" ? { ...column, visible: !column.visible } : column
-            )
-          ),
-      }),
-      dataIndex: "description",
-      key: "description",
-      hidden: !visibleColumns.find((column) => column.key === "description")
-        ?.visible,
-      render: (_, { id }) => {
-        return (
-          <input
-            onChange={(e) =>
-              handleFieldChange(id, "description", e.target.value)
-            }
-            onBlur={(e) => handleFieldBlur(id, "description", e.target.value)}
-            value={
-              initTypeValues.find((issue) => issue.id === id)?.description || ""
-            }
-            className="flex items-center gap-2 hover:bg-gray-100 rounded outline-none
-                p-2 border-transparent border-2 focus:border-emerald-500"
-          />
-        );
-      },
-    },
+    createColumn("description", "description", (_, { id }) => (
+      <ColumnInputFiled
+        issueId={id}
+        field="description"
+        handleChangeCellValue={handleChangeCellValue}
+      />
+    )),
     // Status
-    {
-      title: renderTableHeaderCell({
-        title: "status",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "status" ? { ...column, visible: !column.visible } : column
-            )
-          ),
-      }),
-      dataIndex: "status",
-      key: "status",
-      sorter: (a, b) => {
-        const aOrder =
-          statusOptions.find((option) => option.id === a.status)?.order || 0;
-        const bOrder =
-          statusOptions.find((option) => option.id === b.status)?.order || 0;
-        return aOrder - bOrder;
-      },
-      render: (_, { id, status }) => {
-        return (
-          <Dropdown
-            menu={{
-              style: {
-                padding: 0,
-                background: "",
-                border: "none",
-                borderRadius: "0px",
-              },
-              items: statusOptions.map((option) => ({
-                style: {
-                  padding: 0,
-                  background: "white",
-                  border: "none",
-                },
-                label: (
-                  <div
-                    key={option.id}
-                    className="flex items-center hover:bg-gray-300 p-2 pr-12"
-                  >
-                    <button
-                      className={`text-xs rounded-md  p-1 hover:cursor-pointer ${option.bgColor} group-hover:bg-none`}
-                    >
-                      <p
-                        className={`text-xs 
-    ${option.textColor} text-center font-bold
-    `}
-                      >
-                        {option.name}
-                      </p>
-                    </button>
-                  </div>
-                ),
-
-                key: option.id,
-                onClick: () =>
-                  handleStatusChange(id, option.name as IssueStatus),
-              })),
-            }}
-            trigger={["click"]}
-            className="cursor-pointer group"
-          >
-            <button
-              className={`text-xs rounded-md  p-1 hover:cursor-pointer ${
-                statusOptions.find((option) => option.name === status)?.bgColor
-              } group-hover:bg-none`}
+    createColumn("status", "status", (_, { id, status }) => (
+      <ColumnDropdown
+        items={statusOptions.map((option) => ({
+          value: option.name,
+          style: {
+            padding: 0,
+            background: "white",
+          },
+          label: (
+            <div
+              key={option.id}
+              className={`flex items-center p-2 pr-12 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300 ${option.name === status && "border-l-2 border-emerald-500 bg-emerald-100"}`}
             >
-              <p
-                className={`text-xs 
-    ${
-      statusOptions.find((option) => option.name === status)?.textColor
-    } text-center font-bold
-    `}
+              <button
+                className={`rounded-md p-1 text-xs hover:cursor-pointer ${option.bgColor} group-hover:bg-none`}
               >
-                {status ? status.toUpperCase() : "-"}
-              </p>
-            </button>
-          </Dropdown>
-        );
-      },
-    },
-    // Priority
-    {
-      title: renderTableHeaderCell({
-        title: "priority",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "priority" ? { ...column, visible: !column.visible } : column
-            )
+                <p
+                  className={`text-xs ${option.textColor} text-center font-bold`}
+                >
+                  {option.name}
+                </p>
+              </button>
+            </div>
           ),
-      }),
-      dataIndex: "priority",
-      key: "priority",
-      render: (_, { priority }) => {
-        return (
-          <div
-            className={`text-xs rounded-md p-1 text-center font-bold ${
-              priority === "High"
-                ? "bg-red-100 text-red-700"
-                : priority === "Medium"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-green-100 text-green-700"
-            }`}
+          key: option.id,
+          onClick: () =>
+            handleChangeCellValue(
+              id,
+              "status" as keyof IIssue,
+              option.name as IssueStatus,
+            ),
+        }))}
+        children={
+          <button
+            className={`rounded-md p-1 text-xs hover:cursor-pointer ${
+              statusOptions.find((option) => option.name === status)?.bgColor
+            } group-hover:bg-none`}
           >
-            {priority}
-          </div>
-        );
-      },
-    },
+            <p
+              className={`text-xs ${
+                statusOptions.find((option) => option.name === status)
+                  ?.textColor
+              } text-center font-bold`}
+            >
+              {status ? status.toUpperCase() : "-"}
+            </p>
+          </button>
+        }
+        currentItem={status}
+      />
+    )),
+    // Priority
+    createColumn("priority", "priority", (_, { id, priority }) => (
+      <ColumnDropdown
+        items={priorityOptions.map((option) => {
+          return {
+            value: option.name,
+            key: option.name,
+            style: {
+              padding: 0,
+              background: "white",
+            },
+            label: (
+              <div className="flex items-center gap-2 rounded-md p-1 text-center text-xs font-bold">
+                {option.icon}
+                <p className="text-xs font-bold">{option.name}</p>
+              </div>
+            ),
+            onClick: () => {
+              handleChangeCellValue(
+                id,
+                "priority" as keyof IIssue,
+                option.name as IssuePriority,
+              );
+            },
+          };
+        })}
+        currentItem={priority}
+        children={
+          <button className="flex items-center gap-2 rounded-md p-1 hover:cursor-pointer">
+            {priorityOptions.find((option) => option.name === priority)?.icon}
+            <p className="text-xs font-bold">{priority}</p>
+          </button>
+        }
+      />
+    )),
     // Sprint
-    {
-      title: renderTableHeaderCell({
-        title: "sprint_id",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "sprint_id" ? { ...column, visible: !column.visible } : column
-            )
+    createColumn("sprint_id", "sprint_id", (_, { id, sprint_id }) => (
+      <ColumnDropdown
+        items={sprints.map((sprint) => ({
+          value: sprint.name,
+          key: sprint.id,
+          label: (
+            <span className="rounded-sm bg-gray-100 p-2 text-center font-medium text-gray-700">
+              {sprint.name}
+            </span>
           ),
-      }),
-      dataIndex: "sprint_id",
-      key: "sprint_id",
-      render: (_, { sprint_id }) => {
-        return (
-          <span>{sprints.find((sprint) => sprint.id === sprint_id)?.name}</span>
-        );
-      },
-    },
-    // // Assignee
-    // {
-    //   title: renderTableHeaderCell("assignee_id", <FaPlus />),
-    //   dataIndex: "assignee_id",
-    //   key: "assignee_id",
-    //   hidden: !visibleColumns.find((column) => column.key === "assignee_id")
-    //     ?.visible,
-    //   render: (_, { assignee_id }) => {
-    //     return (
-    //       <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs">
-    //         {assignee_id.substring(0, 2).toUpperCase()}
-    //       </span>
-    //     );
-    //   },
-    // },
-    // // Reporter
-    // {
-    //   title: renderTableHeaderCell("reporter_id", <FaPlus />),
-    //   dataIndex: "reporter_id",
-    //   key: "reporter_id",
-    //   hidden: !visibleColumns.find((column) => column.key === "reporter_id")
-    //     ?.visible,
-    //   render: (_, { reporter_id }) => {
-    //     return (
-    //       <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs">
-    //         {reporter_id?.substring(0, 2).toUpperCase() || "-"}
-    //       </span>
-    //     );
-    //   },
-    // },
-    // // Team
-    // {
-    //   title: renderTableHeaderCell("team_id", <FaPlus />),
-    //   dataIndex: "team_id",
-    //   key: "team_id",
-    //   hidden: !visibleColumns.find((column) => column.key === "team_id")
-    //     ?.visible,
-    //   render: (_, { team_id }) => {
-    //     return (
-    //       <span className="inline-flex items-center gap-1">
-    //         <RiTeamFill className="text-gray-500" />
-    //         {team_id || "-"}
-    //       </span>
-    //     );
-    //   },
-    // },
-    // // Parent Issue
-    // {
-    //   title: renderTableHeaderCell("parent_id", <FaPlus />),
-    //   dataIndex: "parent_id",
-    //   key: "parent_id",
-    //   hidden: !visibleColumns.find((column) => column.key === "parent_id")
-    //     ?.visible,
-    //   render: (_, { parent_id }) => {
-    //     return (
-    //       <span className="text-gray-500 text-sm">
-    //         {parent_id ? parent_id.substring(0, 8) : "-"}
-    //       </span>
-    //     );
-    //   },
-    // },
-    // // Labels
-    // {
-    //   title: renderTableHeaderCell("labels", <FaPlus />),
-    //   dataIndex: "labels",
-    //   key: "labels",
-    //   hidden: !visibleColumns.find((column) => column.key === "labels")
-    //     ?.visible,
-    //   render: (_, { labels }) => {
-    //     return (
-    //       <div className="flex flex-wrap gap-1">
-    //         {labels?.map((label) => (
-    //           <span
-    //             key={label}
-    //             className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full"
-    //           >
-    //             {label}
-    //           </span>
-    //         )) || "-"}
-    //       </div>
-    //     );
-    //   },
-    // },
-    // // Attachments
-    // {
-    //   title: renderTableHeaderCell("attachments", <FaPlus />),
-    //   dataIndex: "attachments",
-    //   key: "attachments",
-    //   hidden: !visibleColumns.find((column) => column.key === "attachments")
-    //     ?.visible,
-    //   render: (_, { attachments }) => {
-    //     return (
-    //       <span className="text-gray-500">
-    //         {attachments.length > 0 ? `📎 ${attachments.length}` : "-"}
-    //       </span>
-    //     );
-    //   },
-    // },
-    // // Points
-    // {
-    //   title: renderTableHeaderCell("story_point", <FaPlus />),
-    //   dataIndex: "story_point",
-    //   key: "story_point",
-    //   hidden: !visibleColumns.find((column) => column.key === "story_point")
-    //     ?.visible,
-    //   align: "end",
-    //   colSpan: 1,
-    //   render: (_, { story_point }) => {
-    //     return (
-    //       <span className="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full">
-    //         {story_point || 0} {story_point === 1 ? "point" : "points"}
-    //       </span>
-    //     );
-    //   },
-    // },
+          onClick: () => {
+            handleChangeCellValue(
+              id,
+              "sprint_id" as keyof IIssue,
+              sprint.id as string,
+            );
+          },
+        }))}
+        currentItem={sprints.find((sprint) => sprint.id === sprint_id)?.name}
+        children={
+          <div className="rounded-md bg-gray-300 text-center font-medium text-gray-700">
+            <p>{sprints.find((sprint) => sprint.id === sprint_id)?.name}</p>
+          </div>
+        }
+      />
+    )),
+    // Assignee
+    createColumn("assignee_id", "assignee_id", (_, { id, assignee_id }) => (
+      <ColumnDropdown
+        items={
+          projectMembers &&
+          projectMembers
+            .map((member: IProjectMember) => ({
+              value: member.user_id,
+              key: member.user_id,
+              label: <RenderUserCell userId={member.user_id} />,
+              onClick: () => {
+                handleChangeCellValue(
+                  id,
+                  "assignee_id" as keyof IIssue,
+                  member.user_id as string,
+                );
+              },
+            }))
+            .concat({
+              value: "Unasigned",
+              key: "Unasigned",
+              label: <RenderUserCell />,
+              onClick: () => {
+                handleChangeCellValue(
+                  id,
+                  "assignee_id" as keyof IIssue,
+                  "" as string,
+                );
+              },
+            })
+        }
+        // currentItem={
+        //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
+        //     .first_name +
+        //   " " +
+        //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
+        //     .last_name}
+        children={<RenderUserCell userId={assignee_id || ""} />}
+      />
+    )),
+    // Reporter
+    createColumn("reporter_id", "reporter_id", (_, { id, reporter_id }) => (
+      <ColumnDropdown
+        items={
+          projectMembers &&
+          projectMembers
+            .map((member: IProjectMember) => ({
+              value: member.user_id,
+              key: member.user_id,  
+              label: <RenderUserCell userId={member.user_id} />,
+              onClick: () => {
+                handleChangeCellValue(
+                  id,
+                  "reporter_id" as keyof IIssue,
+                  member.user_id as string,
+                );
+              },
+            }))
+            .concat({
+              value: "Unasigned",
+              key: "Unasigned",
+              label: <RenderUserCell />,
+              onClick: () => {
+                handleChangeCellValue(
+                  id,
+                  "reporter_id" as keyof IIssue,
+                    "" as string
+                );
+              },
+            })
+        }
+        // currentItem={
+        //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
+        //     .first_name +
+        //   " " +
+        //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
+        //     .last_name}
+        children={<RenderUserCell userId={reporter_id || ""} />}
+      />
+    )),
+    // Team
+    createColumn("team_id", "team_id", (_, { team_id }) => (
+      <span className="inline-flex items-center gap-1">
+        <RiTeamFill className="text-gray-500" />
+        {team_id || "-"}
+      </span>
+    )),
+    // Parent Issue
+    createColumn("parent_id", "parent_id", (_, { parent_id }) => (
+      <span className="text-sm text-gray-500">
+        {parent_id ? parent_id.substring(0, 8) : "-"}
+      </span>
+    )),
+    // Labels
+    createColumn("labels", "labels", (_, { labels }) => (
+      <div className="flex flex-wrap gap-1">
+        {labels?.map((label) => (
+          <span
+            key={label}
+            className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+          >
+            {label}
+          </span>
+        )) || "-"}
+      </div>
+    )),
+    // Attachments
+    createColumn("attachments", "attachments", (_, { attachments }) => (
+      <span className="text-gray-500">
+        {attachments.length > 0 ? `📎 ${attachments.length}` : "-"}
+      </span>
+    )),
+    // Points
+    createColumn(
+      "story_point",
+      "story_point",
+      (_, { id }) => (
+        <ColumnInputFiled
+          issueId={id}
+          field="story_point"
+          inputType="number"
+          handleChangeCellValue={handleChangeCellValue}
+        />
+      ),
+      { align: "end", colSpan: 1 },
+    ),
     // Created
-    {
-      title: renderTableHeaderCell({
-        title: "created_at",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "created_at" ? { ...column, visible: !column.visible } : column
-            )
-          ),
-      }),
-      dataIndex: "created_at",
-      key: "created_at",
-      hidden: !visibleColumns.find((column) => column.key === "created_at")
-        ?.visible,
-      sorter: (a, b) => {
-        return (
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-        );
+    createColumn(
+      "created_at",
+      "created_at",
+      (_, { created_at }) => renderDateCell(created_at),
+      {
+        sorter: (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       },
-      render: (_, { created_at }) => renderDateCell(created_at),
-    },
+    ),
     // Updated
-    {
-      title: renderTableHeaderCell({
-        title: "updated_at",
-        handleClick: () =>
-          setVisibleColumns(
-            visibleColumns.map((column) =>
-              column.key === "updated_at" ? { ...column, visible: !column.visible } : column
-            )
-          ),
-      }),
-      dataIndex: "updated_at",
-      key: "updated_at",
-      colSpan: 1,
-      sorter: (a, b) => {
-        return (
-          new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime()
-        );
+    createColumn(
+      "updated_at",
+      "updated_at",
+      (_, { updated_at }) => renderDateCell(updated_at),
+      {
+        sorter: (a, b) =>
+          new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
       },
-      render: (_, { updated_at }) => renderDateCell(updated_at),
-    },
+    ),
   ];
   const issueProperties = Object.keys(issues?.[0] || {}) as Array<keyof IIssue>;
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div ref={tableContainerRef} className=" relative">
+    <div ref={tableContainerRef} className="relative">
       <Table
         columns={tableColumns}
         dataSource={issues}
@@ -480,43 +422,42 @@ const ListTable = ({
         style={{ padding: 0, width: tableContainerRef.current?.offsetWidth }}
       />
 
-      <div className="absolute top-0 z-50 right-0 bg-gray-100">
-        <Dropdown
-          menu={{
-            items: [
-              ...issueProperties
-                .filter(
-                  (property) =>
-                    !visibleColumns.find((column) => column.key === property)
-                      ?.visible
-                )
-                .map((property) => ({
-                  label: (
-                    <div className="flex items-center gap-2">
-                      {property in columnsIcon ? (
-                        columnsIcon[property]
-                      ) : (
-                        <FaPlus />
-                      )}
-                      {property}
-                    </div>
-                  ),
-                  key: property,
-                  onClick: () =>
-                    setVisibleColumns(
-                      visibleColumns.map((c) =>
-                        c.key === property ? { ...c, visible: !c.visible } : c
-                      )
+      <div className="absolute top-0 right-0 z-50 bg-gray-100">
+        <ColumnDropdown
+          currentItem={""}
+          items={[
+            ...issueProperties
+              .filter(
+                (property) =>
+                  !visibleColumns.find((column) => column.key === property)
+                    ?.visible,
+              )
+              .map((property) => ({
+                label: (
+                  <div className="flex items-center gap-2">
+                    {property in columnsIcon ? (
+                      columnsIcon[property]
+                    ) : (
+                      <FaPlus />
+                    )}
+                    {property}
+                  </div>
+                ),
+                key: property,
+                onClick: () =>
+                  setVisibleColumns(
+                    visibleColumns.map((c) =>
+                      c.key === property ? { ...c, visible: !c.visible } : c,
                     ),
-                })),
-            ],
-          }}
-          trigger={["click"]}
-        >
-          <div className="py-5 px-2 hover:bg-gray-100 rounded-sm cursor-pointer">
-            <FaPlus />
-          </div>
-        </Dropdown>
+                  ),
+              })),
+          ]}
+          children={
+            <div className="cursor-pointer rounded-sm px-2 py-4 hover:bg-gray-100">
+              <FaPlus />
+            </div>
+          }
+        ></ColumnDropdown>
       </div>
     </div>
   );
@@ -527,9 +468,38 @@ export default ListTable;
 const renderDateCell = (date: string) => {
   return (
     <div className="px-2">
-      <span className="bg-gray-300 text-gray-700 rounded-md py-1 px-2 font-medium text-center">
+      <span className="rounded-md bg-gray-300 px-2 py-1 text-center font-medium text-gray-700">
         {format(new Date(date), "MM/dd/yyyy")}
       </span>
+    </div>
+  );
+};
+
+const RenderUserCell = ({ userId }: { userId?: string }) => {
+  const { user } = useUser(userId || "");
+  return (
+    <div className={``}>
+      {userId ? (
+        <div className="flex items-center gap-2">
+          <img
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.first_name || "")}+${encodeURIComponent(user?.last_name || "")}&background=random&color=fff&size=32`}
+            alt={`${user?.first_name} ${user?.last_name}`}
+            className="h-7 w-7 rounded-full"
+          />
+          <span className="text-gray-600">
+            {user?.first_name + " " + user?.last_name}
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <img
+            src="https://ui-avatars.com/api/?name=U&background=e2e8f0&color=94a3b8&size=32"
+            alt="Unknown user"
+            className="h-7 w-7 rounded-full"
+          />
+          <span className="text-gray-400">Unassigned</span>
+        </div>
+      )}
     </div>
   );
 };
@@ -538,7 +508,7 @@ const renderTableHeaderCell = ({
   title,
   handleClick,
 }: {
-  title: string;    
+  title: string;
   handleClick?: () => void;
 }) => {
   const items: MenuProps["items"] = [
@@ -572,18 +542,22 @@ const renderTableHeaderCell = ({
     },
   ];
   return (
-    <div className="flex items-center gap-2 group justify-between item">
+    <div className="group item flex items-center justify-between gap-2">
       <div className="flex items-center gap-2">
-        <div className=" group-hover:block hidden rounded-md p-1">
+        <div className="hidden rounded-md p-1 group-hover:block">
           <FaListUl />
         </div>
-        <div className="group-hover:hidden rounded-md p-1">
-          {title in columnsIcon ? columnsIcon[title as keyof IIssue] : <FaPlus />}
+        <div className="rounded-md p-1 group-hover:hidden">
+          {title in columnsIcon ? (
+            columnsIcon[title as keyof IIssue]
+          ) : (
+            <FaPlus />
+          )}
         </div>
         {title}
       </div>
 
-      <div className="group-hover:opacity-100 opacity-0 cursor-pointer z-50">
+      <div className="z-50 cursor-pointer opacity-0 group-hover:opacity-100">
         <Dropdown menu={{ items }} trigger={["click"]}>
           <FaArrowDown />
         </Dropdown>
@@ -591,6 +565,19 @@ const renderTableHeaderCell = ({
     </div>
   );
 };
+
+import {
+  FcHighPriority,
+  FcLowPriority,
+  FcMediumPriority,
+} from "react-icons/fc";
+
+const priorityOptions = [
+  { name: "High", icon: <FcHighPriority size={20} /> },
+  { name: "Medium", icon: <FcMediumPriority size={20} /> },
+  { name: "Low", icon: <FcLowPriority size={20} /> },
+];
+
 const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   id: <FaPlus />,
   project_id: <FaPlus />,
@@ -602,8 +589,8 @@ const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   type: <FaPlus />,
   team_id: <RiTeamFill />,
   sprint_id: <IoIosPrint />,
-  assignee_id: <MdOutlineAssignmentInd />,
-  reporter_id: <MdReportGmailerrorred />,
+  assignee_id: <CiAt />,
+  reporter_id: <CiAt />,
   parent_id: <MdOutlineBedroomParent />,
   story_point: <FcHighPriority />,
   labels: <MdLabelImportantOutline />,
