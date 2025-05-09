@@ -6,7 +6,7 @@ const ProjectLayout = (): React.ReactElement => {
   return (
     <div className="flex h-screen flex-col bg-white">
       <ProjectNavbar />
-      <div className="">
+      <div>
         <Outlet />
       </div>
     </div>

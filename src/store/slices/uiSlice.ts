@@ -12,6 +12,7 @@ interface UIState {
     type: string[];
   };
   theme: "light" | "dark";
+  isOpenModal:boolean
 }
 
 const initialState: UIState = {
@@ -26,6 +27,7 @@ const initialState: UIState = {
     type: [],
   },
   theme: "light",
+  isOpenModal:false,
 };
 
 const uiSlice = createSlice({
@@ -53,6 +55,9 @@ const uiSlice = createSlice({
     toggleTheme: (state) => {
       state.theme = state.theme === "light" ? "dark" : "light";
     },
+    toggleModal: (state,action:PayloadAction<boolean>) => {
+      state.isOpenModal= action.payload
+    },
   },
 });
 
@@ -64,6 +69,7 @@ export const {
   updateFilters,
   clearFilters,
   toggleTheme,
+  toggleModal,
 } = uiSlice.actions;
 
 export const uiReducer = uiSlice.reducer;

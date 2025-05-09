@@ -10,6 +10,9 @@ import { IssueStatus } from "@libs/types/issue";
 import { CiUser } from "react-icons/ci";
 import Button from "@libs/app/components/general-components/button";
 import { LuSearch, LuX } from "react-icons/lu";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
+import AddProjectMemberModal from "@libs/app/components/projects/modals/addProjectMemberModal";
+import UserAvatar from "../../general-components/user/UserAvatar";
 interface ListFilterProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
   onSprintSelect?: (sprintId: string) => void;
@@ -29,6 +32,9 @@ const ListFilter = ({
     status: [],
     sprint: [],
   });
+  const [isOpenAddProjectMemberModal, setIsOpenAddProjectMemberModal] =
+    useState(true);
+  const { projectMembers } = useProjectMembers(projectId || "");
 
   const debouncedUpdate = useMemo(
     () =>
@@ -202,8 +208,18 @@ const ListFilter = ({
           </Dropdown>
         </div>
 
-        <div className="cursor-pointer rounded-full border-1 border-transparent bg-gray-200 p-2 transition-all hover:border-emerald-500 hover:bg-gray-300">
-          <CiUser />
+        <div className="flex flex-row items-center gap-4">
+          {projectMembers?.map((member) => (
+            <div key={member.id}>
+              <UserAvatar userId={member.user_id} isDisplayName={false} />
+            </div>
+          ))}
+          <button
+            onClick={() => setIsOpenAddProjectMemberModal(true)}
+            className="cursor-pointer rounded-full border-1 border-transparent bg-gray-200 p-2 transition-all hover:border-emerald-500 hover:bg-gray-300"
+          >
+            <CiUser />
+          </button>
         </div>
       </div>
 
@@ -215,6 +231,11 @@ const ListFilter = ({
           Create Issue
         </Button>
       </div>
+      <AddProjectMemberModal
+        isOpen={isOpenAddProjectMemberModal}
+        onClose={() => setIsOpenAddProjectMemberModal(false)}
+        projectId={projectId || ""}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { users } from "@libs/apis/user";
 
-export function useUser(userId: string) {
+export function useUserById(userId: string) {
  const {
     data:userData,
     isLoading,
@@ -22,3 +22,23 @@ export function useUser(userId: string) {
  }
 }
 
+export function useUserByEmail(email: string) {
+  const {
+    data: userData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user", email],
+    queryFn: async () => {
+      if (!email) throw new Error("Email is required");
+      const { data } = await users.getByEmail(email);
+      return data;
+    },
+    enabled: !!email,
+  });
+  return {
+    user: userData?.data,
+    isLoading,
+    error,
+  };
+}

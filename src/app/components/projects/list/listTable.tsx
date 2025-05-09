@@ -24,9 +24,9 @@ import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import ColumnInputFiled from "./listTableColumns/ColumnInputFiled";
 import ColumnDropdown from "./listTableColumns/ColumnDropdown";
-import { useUser } from "@libs/hooks/useUser";
 import { IProjectMember } from "@libs/types/projectMember";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
+import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 
 interface ListTableProps {
   isLoading: boolean;
@@ -332,7 +332,7 @@ const ListTable = ({
             .map((member: IProjectMember) => ({
               value: member.user_id,
               key: member.user_id,
-              label: <RenderUserCell userId={member.user_id} />,
+              label: <UserAvatar userId={member.user_id} />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -344,7 +344,7 @@ const ListTable = ({
             .concat({
               value: "Unasigned",
               key: "Unasigned",
-              label: <RenderUserCell />,
+              label: <UserAvatar />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -360,7 +360,7 @@ const ListTable = ({
         //   " " +
         //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
         //     .last_name}
-        children={<RenderUserCell userId={assignee_id || ""} />}
+        children={<UserAvatar userId={assignee_id || ""} />}
       />
     )),
     // Reporter
@@ -372,7 +372,7 @@ const ListTable = ({
             .map((member: IProjectMember) => ({
               value: member.user_id,
               key: member.user_id,
-              label: <RenderUserCell userId={member.user_id} />,
+              label: <UserAvatar userId={member.user_id} />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -384,7 +384,7 @@ const ListTable = ({
             .concat({
               value: "Unasigned",
               key: "Unasigned",
-              label: <RenderUserCell />,
+              label: <UserAvatar />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -400,7 +400,7 @@ const ListTable = ({
         //   " " +
         //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
         //     .last_name}
-        children={<RenderUserCell userId={reporter_id || ""} />}
+        children={<UserAvatar userId={reporter_id || ""} />}
       />
     )),
     // Team
@@ -585,34 +585,7 @@ const renderDateCell = (date: string) => {
   );
 };
 
-const RenderUserCell = ({ userId }: { userId?: string }) => {
-  const { user } = useUser(userId || "");
-  return (
-    <div className={`px-4`}>
-      {userId ? (
-        <div className="flex items-center gap-2">
-          <img
-            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.first_name || "")}+${encodeURIComponent(user?.last_name || "")}&background=random&color=fff&size=32`}
-            alt={`${user?.first_name} ${user?.last_name}`}
-            className="h-7 w-7 rounded-full"
-          />
-          <span className="text-gray-600">
-            {user?.first_name + " " + user?.last_name}
-          </span>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">
-          <img
-            src="https://ui-avatars.com/api/?name=U&background=e2e8f0&color=94a3b8&size=32"
-            alt="Unknown user"
-            className="h-7 w-7 rounded-full"
-          />
-          <span className="text-gray-400">Unassigned</span>
-        </div>
-      )}
-    </div>
-  );
-};
+
 
 const renderTableHeaderCell = ({
   title,
