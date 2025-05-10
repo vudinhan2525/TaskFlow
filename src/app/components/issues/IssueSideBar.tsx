@@ -8,8 +8,7 @@ import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { toast } from "react-toastify";
 import { formatDate } from "@libs/utils/date";
-import { CreateIssueParams } from "@libs/apis/issue";
-
+import { CreateIssueParams } from "@libs/types/issue";
 // Mock data for teams
 const MOCK_TEAMS = [
   { id: "1", name: "Team 1" },
@@ -112,7 +111,7 @@ const IssueSideBar: React.FC = () => {
       try {
         const newIssue: CreateIssueParams = {
           title: childIssueForm.title,
-          status: "TO DO",
+          column_id: "681f1494011a0f0114c92e1a",
           priority: "Medium",
           type: "Task",
           project_id: selectedIssue!.project_id,
@@ -135,9 +134,11 @@ const IssueSideBar: React.FC = () => {
 
   const handleStatusChange = async (newStatus: string) => {
     try {
+      console.log(newStatus)
+      // TODO: FIX COLLUMN ID
       await updateIssueAsync({
         id: selectedIssue.id,
-        data: { status: newStatus },
+        data: { column_id: "681f1494011a0f0114c92e1a" },
       });
       toast.success("Status updated successfully");
     } catch {
@@ -259,7 +260,7 @@ const IssueSideBar: React.FC = () => {
 
       {/* Status and Add button*/}
       <div className="mb-4 w-full">
-        <StatusDropdown status={selectedIssue.status} columns={columns || []} onChange={handleStatusChange} />
+        <StatusDropdown status={selectedIssue.column.name} columns={columns || []} onChange={handleStatusChange} />
         <select
           value={selectedDetailOption || ""}
           onChange={(e) => setSelectedDetailOption((e.target.value as DetailOption) || null)}

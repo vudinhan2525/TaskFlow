@@ -28,7 +28,7 @@ interface ScrumSprintProps {
   sprintId: string;
   selectedIssues: { [key: string]: boolean };
   onIssueSelect: (issueId: string, selected: boolean, issue?: IIssue) => void;
-  onStatusChange?: (issueId: string, newStatus: string) => void;
+  onStatusChange?: (issueId: string, newColumnId: string) => void;
 }
 
 const ScrumSprint: React.FC<ScrumSprintProps> = ({
@@ -150,9 +150,9 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
         </div>
         <div onClick={(e) => e.stopPropagation()}>
           <StatusDropdown
-            status={issue.status}
+            status={issue.column.id}
             columns={columns || []}
-            onChange={(newStatus) => onStatusChange?.(issue.id, newStatus)}
+            onStatusChange={(newColId) => onStatusChange?.(issue.id, newColId)}
           />
         </div>
       </div>
@@ -188,7 +188,7 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
                 <div key={column.id} className="text-center">
                   <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{column.name}</div>
                   <div className="text-base font-semibold text-gray-900">
-                    {issues.filter((issue) => issue.status === column.name).length}
+                    {issues.filter((issue) => issue.column.name === column.name).length}
                   </div>
                 </div>
               ))}

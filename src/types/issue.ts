@@ -1,3 +1,5 @@
+import { IColumn } from "@libs/types/project";
+
 export interface IIssue {
   id: string;
   title: string;
@@ -8,7 +10,7 @@ export interface IIssue {
   reporter_id?: string;
   team_id?: string;
   type: "Bug" | "Task" | "Story" | "Epic";
-  status: IssueStatus;
+  column: IColumn;
   priority: IssuePriority;
   summary: string;
   description: string;
@@ -36,7 +38,7 @@ export interface CreateIssueParams {
   title: string;
   summary?: string;
   description?: string;
-  status: string;
+  column_id: string;
   priority: string;
   type: "Bug" | "Task" | "Story" | "Epic";
   sprint_id?: string;

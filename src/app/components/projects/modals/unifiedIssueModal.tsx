@@ -11,8 +11,7 @@ import { useProject, useProjectColumns, useUserProjects } from "@libs/hooks/useP
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { RootState } from "@libs/store";
-import { IssueStatus, IssuePriority } from "@libs/types/issue";
-import { CreateIssueParams } from "@libs/apis/issue";
+import { IssueStatus, IssuePriority, CreateIssueParams } from "@libs/types/issue";
 
 interface UnifiedIssueModalProps {
   isOpen: boolean;
@@ -25,7 +24,7 @@ interface UnifiedIssueModalProps {
     title: string;
     summary?: string;
     description?: string;
-    status: string;
+    column_id: string;
     priority: string;
     type: "Bug" | "Task" | "Story" | "Epic";
     sprint_id?: string;
@@ -40,9 +39,9 @@ interface IssueFormInputs {
   title: string;
   summary: string;
   description?: string;
-  status: IssueStatus;
   priority: IssuePriority;
   type: IssueType;
+  column_id: string;
   sprint_id?: string;
   assignee_id?: string;
   attachments: File[];
@@ -52,7 +51,7 @@ const issueSchema = z.object({
   title: z.string().min(1, "Title is required"),
   summary: z.string().min(1, "Summary is required"),
   description: z.string().optional(),
-  status: z.enum(["TO DO", "IN PROGRESS", "DONE"] as const),
+  column_id: z.string().min(1),
   priority: z.enum(["Low", "Medium", "High"] as const),
   type: z.enum(ISSUE_TYPES),
   sprint_id: z.string().optional(),
@@ -97,7 +96,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
     title: "",
     summary: "",
     description: "",
-    status: "TO DO",
+    column_id: "",
     priority: "Medium",
     type: "Task",
     sprint_id: sprintId || "",
@@ -123,7 +122,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
         title: initialIssue.title,
         summary: initialIssue.summary || "",
         description: initialIssue.description || "",
-        status: initialIssue.status as IssueStatus,
+        column_id: initialIssue.column_id as IssueStatus,
         priority: initialIssue.priority as IssuePriority,
         type: initialIssue.type,
         sprint_id: initialIssue.sprint_id,
@@ -133,7 +132,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
   }, [isEditing, initialIssue, reset]);
 
   const type = watch("type");
-  const status = watch("status");
+  const column_id = watch("column_id");
   const priority = watch("priority");
   const files = watch("attachments");
 
@@ -179,7 +178,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
       title: data.title,
       summary: data.summary,
       description: data.description,
-      status: data.status,
+      column_id: data.column_id,
       priority: data.priority,
       type: data.type,
       sprint_id: data.sprint_id || "",
@@ -196,12 +195,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
         toast.error(`Failed to update issue: ${error instanceof Error ? error.message : "Unknown error"}`);
       }
     } else {
-      try {
-        await createIssue(issueData);
-        toast.success("Issue created successfully!");
-      } catch (error) {
-        toast.error(`Failed to create issue: ${error instanceof Error ? error.message : "Unknown error"}`);
-      }
+      await createIssue(issueData);
     }
   });
 
@@ -213,9 +207,10 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
       onClose={onClose}
       buttonContent={isLoading ? "Loading..." : isEditing ? "Update Issue" : "Create Issue"}
       onSubmit={onSubmit}
+      className={"w-[600px]"}
       isLoadingButton={isLoading}
     >
-      <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-4">
+      <div className="max-h-[calc(100vh-200px)] p-4">
         <form className="space-y-4">
           <div className="mb-6 space-y-4">
             {/* Project Selection/Display */}
@@ -382,27 +377,12 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
               Status <span className="text-red-500">*</span>
             </label>
-            {columns ? (
-              <StatusDropdown
-                status={status}
-                columns={columns}
-                onChange={(newStatus) => setValue("status", newStatus as IssueStatus)}
-              />
-            ) : (
-              <DropdownAntd
-                options={[
-                  { value: "TO DO", label: "To Do" },
-                  { value: "IN PROGRESS", label: "In Progress" },
-                  { value: "DONE", label: "Done" },
-                ]}
-                placement="bottom"
-                rowClassName="w-full text-[15px]"
-                menuClassName="w-[180px]"
-                parent={<div className="w-full font-medium">{status}</div>}
-                onClickItem={(option) => setValue("status", option.value as IssueStatus)}
-              />
-            )}
-            {errors.status && <p className="text-sm text-red-500 mt-1">{errors.status.message}</p>}
+            <StatusDropdown
+              status={column_id}
+              columns={columns}
+              onStatusChange={(newStatus) => setValue("column_id", newStatus as IssueStatus)}
+            />
+            {errors.column_id && <p className="text-sm text-red-500 mt-1">{errors.column_id.message}</p>}
           </div>
 
           <div>

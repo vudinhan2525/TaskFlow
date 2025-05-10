@@ -162,7 +162,7 @@ export default function KanbanBoard() {
         updateIssue({
           id: activeId,
           data: {
-            status: targetColumn.name,
+            column_id: targetColumn.id,
           },
         });
       }

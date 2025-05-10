@@ -4,10 +4,10 @@ import React from "react";
 interface StatusDropdownProps {
   status: string;
   columns: IColumn[];
-  onChange: (newStatus: string) => void;
+  onStatusChange: (newStatus: string) => void;
 }
 
-const StatusDropdown: React.FC<StatusDropdownProps> = ({ status, columns, onChange }) => {
+const StatusDropdown: React.FC<StatusDropdownProps> = ({ status, columns, onStatusChange }) => {
   const getStatusColor = (columnName: string) => {
     switch (columnName.toUpperCase()) {
       case "TO DO":
@@ -22,9 +22,9 @@ const StatusDropdown: React.FC<StatusDropdownProps> = ({ status, columns, onChan
   };
 
   return (
-    <select value={status} onChange={(e) => onChange(e.target.value)} className={`px-2 py-1 rounded border-0 ${getStatusColor(status)} cursor-pointer`}>
+    <select value={status} onChange={(e) => onStatusChange(e.target.value)} className={`px-2 py-1 rounded border-0 ${getStatusColor(status)} cursor-pointer`}>
       {columns.map((column) => (
-        <option key={column.id} value={column.name}>
+        <option key={column.id} value={column.id}>
           {column.name}
         </option>
       ))}

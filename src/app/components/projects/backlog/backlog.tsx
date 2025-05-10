@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import Button from "@libs/app/components/general-components/button";
 import CreateSprintModal from "../modals/createSprintModal";
 import ScrumSprint from "./scrumPrint";
-import { Issue, IssueStatus } from "@libs/types";
 import { Sprint } from "@libs/apis/sprint";
 import StatusDropdown from "./StatusDropdown";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
+import { IIssue } from "@libs/types/issue";
+import { useProjectColumns } from "@libs/hooks/useProject";
 
 export interface CreateSprintData {
   name: string;
@@ -19,16 +20,17 @@ export interface CreateSprintData {
 interface BacklogProps {
   projectId: string;
   sprints: Sprint[];
-  issues: Issue[];
+  issues: IIssue[];
   onCreateSprint: (data: CreateSprintData) => Promise<void>;
-  onStatusChange?: (issueId: string, newStatus: IssueStatus) => void;
+  onStatusChange?: (issueId: string, newColumnId: string) => void;
 }
 
-const Backlog: React.FC<BacklogProps> = ({ projectId, sprints, issues, onCreateSprint, onStatusChange }) => {
+const Backlog: React.FC<BacklogProps> = ({ projectId, sprints, issues, onStatusChange }) => {
   const { selectIssue } = useIssueSelection();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
   const [selectedIssues, setSelectedIssues] = useState<{ [key: string]: boolean }>({});
+  const { columns } = useProjectColumns("");
 
   const handleIssueSelect = (issueId: string, selected: boolean) => {
     setSelectedIssues((prev) => ({
@@ -37,10 +39,10 @@ const Backlog: React.FC<BacklogProps> = ({ projectId, sprints, issues, onCreateS
     }));
   };
 
-  const handleStatusChange = async (issueId: string, newStatus: IssueStatus) => {
+  const handleStatusChange = async (issueId: string, newColumnId: string) => {
     try {
       if (onStatusChange) {
-        await onStatusChange(issueId, newStatus);
+        await onStatusChange(issueId, newColumnId);
       }
     } catch (error) {
       console.error("Error updating issue status:", error);
@@ -122,14 +124,15 @@ const Backlog: React.FC<BacklogProps> = ({ projectId, sprints, issues, onCreateS
                   <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                     <span className="text-gray-600 text-sm">👤</span>
                   </div>
-                  <div className="flex-grow cursor-pointer" onClick={() => selectIssue(issue.id)}>
+                  <div className="flex-grow cursor-pointer" onClick={() => selectIssue(issue)}>
                     <div className="font-medium">{issue.title}</div>
                     <div className="text-sm text-gray-500">{issue.id}</div>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
                     <StatusDropdown
-                      status={issue.status}
+                      status={issue.column.name}
                       onChange={(newStatus) => handleStatusChange(issue.id, newStatus)}
+                      columns={columns}
                     />
                   </div>
                 </div>
@@ -142,23 +145,6 @@ const Backlog: React.FC<BacklogProps> = ({ projectId, sprints, issues, onCreateS
           isOpen={isCreateSprintModalOpen}
           onClose={() => setIsCreateSprintModalOpen(false)}
           projectId={projectId}
-          onSubmit={async (data) => {
-            try {
-              await onCreateSprint({
-                name: data.name,
-                date_started: data.dateStarted,
-                date_ended: data.dateEnded,
-                duration: Math.ceil(
-                  (new Date(data.dateEnded).getTime() - new Date(data.dateStarted).getTime()) / (1000 * 3600 * 24)
-                ),
-                goal: "",
-                project_id: projectId,
-              });
-              setIsCreateSprintModalOpen(false);
-            } catch (error) {
-              console.error("Failed to create sprint:", error);
-            }
-          }}
         />
       </div>
     </div>
