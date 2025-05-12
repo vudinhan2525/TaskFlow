@@ -6,12 +6,11 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
-import StatusDropdown from "../backlog/StatusDropdown";
 import { useProject, useProjectColumns, useUserProjects } from "@libs/hooks/useProject";
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { RootState } from "@libs/store";
-import { IssueStatus, IssuePriority, CreateIssueParams } from "@libs/types/issue";
+import { IssuePriority, CreateIssueParams } from "@libs/types/issue";
 
 interface UnifiedIssueModalProps {
   isOpen: boolean;
@@ -91,6 +90,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
   });
 
   const isLoading = isCreating || isUpdating;
+  const { isLoading: isColumnsLoading } = useProjectColumns(selectedProjectId);
 
   const defaultValues: IssueFormInputs = {
     title: "",
@@ -122,7 +122,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
         title: initialIssue.title,
         summary: initialIssue.summary || "",
         description: initialIssue.description || "",
-        column_id: initialIssue.column_id as IssueStatus,
+        column_id: initialIssue.column_id,
         priority: initialIssue.priority as IssuePriority,
         type: initialIssue.type,
         sprint_id: initialIssue.sprint_id,
@@ -135,6 +135,19 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
   const column_id = watch("column_id");
   const priority = watch("priority");
   const files = watch("attachments");
+
+  React.useEffect(() => {
+    if (columns?.length > 0 && !column_id) {
+      setValue("column_id", columns[0].id);
+    }
+  }, [columns, setValue, column_id]);
+
+  // console.log("Form values:", {
+  //   type,
+  //   column_id,
+  //   priority,
+  //   columns
+  // });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -205,10 +218,11 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
     <Modal
       title={isEditing ? "Update Issue" : "Create Issue"}
       onClose={onClose}
-      buttonContent={isLoading ? "Loading..." : isEditing ? "Update Issue" : "Create Issue"}
+      buttonContent={isLoading || isColumnsLoading ? "Loading..." : isEditing ? "Update Issue" : "Create Issue"}
       onSubmit={onSubmit}
       className={"w-[600px]"}
-      isLoadingButton={isLoading}
+      isLoadingButton={isLoading || isColumnsLoading}
+      isSubmitDisabled={isColumnsLoading || !columns?.length}
     >
       <div className="max-h-[calc(100vh-200px)] p-4">
         <form className="space-y-4">
@@ -374,13 +388,23 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
           </div>
 
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="column" className="block text-sm font-medium text-gray-700 mb-1">
               Status <span className="text-red-500">*</span>
             </label>
-            <StatusDropdown
-              status={column_id}
-              columns={columns}
-              onStatusChange={(newStatus) => setValue("column_id", newStatus as IssueStatus)}
+            <DropdownAntd
+              options={columns?.map(column => ({
+                value: column.id,
+                label: column.name
+              })) || []}
+              placement="bottom"
+              rowClassName="w-full text-[15px]"
+              menuClassName="w-[180px]"
+              parent={
+                <div className="w-full font-medium">
+                  {columns?.find(c => c.id === column_id)?.name || 'Select Status'}
+                </div>
+              }
+              onClickItem={(option) => setValue("column_id", option.value)}
             />
             {errors.column_id && <p className="text-sm text-red-500 mt-1">{errors.column_id.message}</p>}
           </div>

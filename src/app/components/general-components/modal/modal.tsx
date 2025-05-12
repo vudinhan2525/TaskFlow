@@ -6,6 +6,7 @@ interface BaseModalProps {
   title: string;
   buttonContent: string;
   isLoadingButton?: boolean;
+  isSubmitDisabled?: boolean;
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: any;
@@ -13,7 +14,16 @@ interface BaseModalProps {
   className?: string;
 }
 
-export default function Modal({ title, buttonContent = "Accept", onClose, isLoadingButton, onSubmit, children, className }: BaseModalProps) {
+export default function Modal({
+  title,
+  buttonContent = "Accept",
+  onClose,
+  isLoadingButton,
+  isSubmitDisabled,
+  onSubmit,
+  children,
+  className
+}: BaseModalProps) {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -44,7 +54,8 @@ export default function Modal({ title, buttonContent = "Accept", onClose, isLoad
             onClick={() => {
               if (onSubmit) onSubmit();
             }}
-            className="px-4 py-2 cursor-pointer text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            disabled={isSubmitDisabled}
+            className="px-4 py-2 cursor-pointer text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {buttonContent}
           </Button>
