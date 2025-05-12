@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { mockUser } from "./mockData";
 import { FaGear } from "react-icons/fa6";
 import { FaBell } from "react-icons/fa";
+import { useAuth } from "@libs/hooks/useAuth";
 import DropdownAntd from "../dropdown";
 import Image from "../image";
 import logo from "@libs/assets/taskflow.png";
@@ -16,10 +16,8 @@ export const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
-  // Using mock data
-  const currentUser = mockUser;
 
   const { projects } = useUserProjects();
 
@@ -91,18 +89,33 @@ export const Header = () => {
                 className="flex items-center space-x-2 text-red-500"
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
               >
-                <img src={currentUser.avatar} alt={currentUser.name} className="w-8 h-8 rounded-full" />
+                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-sm font-medium text-gray-600">
+                    {user?.data?.first_name?.[0]}
+                  </span>
+                </div>
               </p>
               {isUserDropdownOpen && (
                 <div className="absolute right-0 z-10 mt-2 w-48 bg-white rounded-md shadow-lg">
                   <div className="px-4 py-3 border-b">
-                    <p className="text-sm font-medium">{currentUser.name}</p>
-                    <p className="text-sm text-gray-600">{currentUser.email}</p>
+                    <p className="text-sm font-medium">{`${user?.data?.first_name} ${user?.data?.last_name}`}</p>
+                    <p className="text-sm text-gray-600">{user?.data?.email}</p>
                   </div>
                   <div className="py-1">
                     <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Profile</button>
                     <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Settings</button>
-                    <button className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                    <button
+                      onClick={async () => {
+                        try {
+                          setIsUserDropdownOpen(false);
+                          await logout();
+                          navigate('/login', { replace: true });
+                        } catch (error) {
+                          console.error('Logout failed:', error);
+                        }
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
                       Sign out
                     </button>
                   </div>
