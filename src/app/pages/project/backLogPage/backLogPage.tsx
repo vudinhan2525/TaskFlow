@@ -23,9 +23,10 @@ const BackLogPage: React.FC = () => {
   const { columns, isLoading: isLoadingColumns } = useProjectColumns(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-  const handleStatusChange = async (issueId: string, newStatus: string) => {
+  const handleStatusChange = async (issueId: string, newColumnId: string) => {
+    // TODO: FIX COLUMN ID
     try {
-      await updateIssueAsync({ id: issueId, data: { status: newStatus } });
+      await updateIssueAsync({ id: issueId, data: { column_id: newColumnId } });
     } catch (error) {
       console.error("Failed to update issue status:", error);
     }
@@ -99,7 +100,7 @@ const BackLogPage: React.FC = () => {
                       <p className="text-sm text-gray-500">{issue.description}</p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <select value={issue.status} onChange={(e) => handleStatusChange(issue.id, e.target.value)} className="p-1 border rounded text-sm">
+                      <select value={issue.column.name} onChange={(e) => handleStatusChange(issue.id, e.target.value)} className="p-1 border rounded text-sm">
                         {columns.map((column) => (
                           <option key={column.id} value={column.name}>
                             {column.name}

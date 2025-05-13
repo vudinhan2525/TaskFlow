@@ -5,7 +5,7 @@ import { IIssue } from "@libs/types/issue";
 import { useSearchParams } from "react-router-dom";
 import ListTable from "./listTable";
 import { TableRowSelection } from "antd/es/table/interface";
-import CreateIssueModal from "@libs/app/components/projects/modals/createIssueModal";
+import UnifiedIssueModal from "@libs/app/components/projects/modals/unifiedIssueModal";
 
 const List = ({
   projectId,
@@ -56,7 +56,7 @@ const List = ({
       />
 
       {/* Create Issue Modal */}
-      <CreateIssueModal
+      <UnifiedIssueModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         // onSubmit={handleCreateIssue}

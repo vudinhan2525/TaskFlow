@@ -1,3 +1,5 @@
+import { IColumn } from "@libs/types/project";
+
 export interface IIssue {
   id: string;
   title: string;
@@ -8,7 +10,7 @@ export interface IIssue {
   reporter_id?: string;
   team_id?: string;
   type: "Bug" | "Task" | "Story" | "Epic";
-  status: IssueStatus;
+  column: IColumn;
   priority: IssuePriority;
   summary: string;
   description: string;
@@ -33,18 +35,20 @@ export interface GetIssuesParams {
 }
 
 export interface CreateIssueParams {
+  // Required fields from proto definition
   title: string;
-  summary?: string;
-  description?: string;
-  status: string;
-  priority: string;
+  summary: string;           // Required per proto
   type: "Bug" | "Task" | "Story" | "Epic";
+  column_id: string;
+  priority: IssuePriority;   // Use proper type
+  project_id: string;
+
+  // Optional fields
+  description?: string;
   sprint_id?: string;
   assignee_id?: string;
-  team_id?: string;
-  attachments?: string[];
-  project_id: string;
   reporter_id?: string;
   parent_id?: string;
   story_point?: number;
+  attachments?: string[];
 }

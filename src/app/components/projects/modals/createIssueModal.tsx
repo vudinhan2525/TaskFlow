@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
+import { useProjectColumns } from "@libs/hooks/useProject";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
@@ -16,7 +17,10 @@ interface CreateIssueModalProps {
     title: string;
     summary?: string;
     description?: string;
-    status: string;
+    column: {
+      id: string;
+      name: string;
+    };
     priority: string;
     type: "Bug" | "Task" | "Story" | "Epic";
     sprint_id?: string;
@@ -28,7 +32,7 @@ const issueSchema = z.object({
   title: z.string().min(1, "Title is required"),
   summary: z.string().optional(),
   description: z.string().optional(),
-  status: z.string().min(1, "Status is required"),
+  column_id: z.string().min(1, "Column is required"),
   priority: z.string().min(1, "Priority is required"),
   type: z.enum(["Bug", "Task", "Story", "Epic"]),
   sprint_id: z.string().optional(),
@@ -75,7 +79,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
       title: "",
       summary: "",
       description: "",
-      status: "To Do",
+      column_id: columns?.[0]?.id || "", // Set default to first column if available
       priority: "Medium",
       type: "Task",
     },
@@ -87,7 +91,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
         title: initialIssue.title,
         summary: initialIssue.summary || "",
         description: initialIssue.description || "",
-        status: initialIssue.status,
+        column_id: initialIssue.column?.id || "",
         priority: initialIssue.priority,
         type: initialIssue.type,
         sprint_id: initialIssue.sprint_id,
@@ -97,10 +101,21 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   }, [isEditing, initialIssue, reset]);
 
   const handleFormSubmit: SubmitHandler<IssueFormData> = async (data) => {
+    console.log("Form data:", data);
+    console.log("Project columns:", columns);
+    
+    // Ensure column_id is set
+    if (!data.column_id && columns.length > 0) {
+      // Default to first column if none selected
+      data.column_id = columns[0].id;
+    }
+
     const issueData = {
       ...data,
       project_id: projectId,
     };
+
+    console.log("Issue data to submit:", issueData);
 
     if (isEditing && initialIssue) {
       updateIssue({ id: initialIssue.id, data: issueData });
@@ -111,7 +126,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
 
   const type = watch("type");
   const priority = watch("priority");
-  const status = watch("status");
+  const column_id = watch("column_id");
+
+  // Fetch project columns
+  const { columns = [] } = useProjectColumns(projectId);
 
   if (!isOpen) return null;
 
@@ -234,22 +252,25 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
 
           <div>
             <label
-              htmlFor="status"
+              htmlFor="column"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Status <span className="text-red-500">*</span>
             </label>
             <DropdownAntd
-              options={[
-                { value: "ToDo", label: "To Do" },
-                { value: "InProgress", label: "In Progress" },
-                { value: "Done", label: "Done" },
-              ]}
+              options={columns.map(column => ({
+                value: column.id,
+                label: column.name
+              }))}
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[180px]"
-              parent={<div className="w-full font-medium">{status}</div>}
-              onClickItem={(option) => setValue("status", option.value)}
+              parent={
+                <div className="w-full font-medium">
+                  {columns.find(c => c.id === column_id)?.name || 'Select Status'}
+                </div>
+              }
+              onClickItem={(option) => setValue("column_id", option.value)}
             />
           </div>
         </form>

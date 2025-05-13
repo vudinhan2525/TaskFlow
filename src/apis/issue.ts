@@ -9,21 +9,7 @@ const config = {
 // Issues endpoints
 export const issues = {
   list: (params: GetIssuesParams) => {
-    const url = new URL(`/issues`, window.location.origin);
-
-    if (params.project_id)
-      url.searchParams.append("project_id", params.project_id);
-    if (params.keyword) url.searchParams.append("keyword", params.keyword);
-    if (params.page) url.searchParams.append("page", params.page.toString());
-    if (params.limit) url.searchParams.append("limit", params.limit.toString());
-    if (params.assignee_id)
-      url.searchParams.append("assignee_id", params.assignee_id);
-    if (params.sprint_id)
-      url.searchParams.append("sprint_id", params.sprint_id);
-    if (params.status)
-      url.searchParams.append("status", params.status.join(","));
-
-    return api.get<ResponseApi<IIssue[]>>(url.pathname + url.search, {
+    return api.post<ResponseApi<IIssue[]>>("/issues/list-issue", params, {
       ...config,
     });
   },

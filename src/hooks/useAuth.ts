@@ -49,10 +49,15 @@ export function useAuth() {
     },
   });
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    dispatch(setUser(null));
-    queryClient.clear();
+  const logout = async () => {
+    try {
+      await auth.logout();  // Call the server to clear cookies
+      localStorage.removeItem("token");
+      dispatch(setUser(null));
+      queryClient.clear();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
   return {
     user: currentUser,

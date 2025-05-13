@@ -6,6 +6,16 @@ export const auth = {
     api.post<ResponseApi<IUser>>("/users/login", credentials, {
       withCredentials: true,
     }),
-  register: (data: CreateUserRequest) => api.post<ResponseApi<IUser>>("/users/register", data),
-  getCurrentUser: () => api.get<ResponseApi<IUser>>("/users/get-me", { withCredentials: true }),
+  register: (data: CreateUserRequest) =>
+    api.post<ResponseApi<IUser>>("/users/register", data, {
+      withCredentials: true,
+    }),
+  getCurrentUser: () =>
+    api.get<ResponseApi<IUser>>("/users/get-me", {
+      withCredentials: true
+    }),
+  logout: () =>
+    api.post<ResponseApi<void>>("/users/logout", {}, {
+      withCredentials: true
+    }),
 };
