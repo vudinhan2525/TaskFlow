@@ -26,8 +26,9 @@ import ColumnInputFiled from "./listTableColumns/ColumnInputFiled";
 import ColumnDropdown from "./listTableColumns/ColumnDropdown";
 import { IProjectMember } from "@libs/types/projectMember";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 
+import { ISprint } from "@libs/types";
+import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 interface ListTableProps {
   isLoading: boolean;
   issues: IIssue[];
@@ -51,6 +52,7 @@ const ListTable = ({
 }: ListTableProps) => {
   const { columns } = useProjectColumns(projectId || "");
   const { sprints } = useProjectSprints(projectId || "");
+
   const { projectMembers } = useProjectMembers(projectId || "");
   const [visibleColumns, setVisibleColumns] = useState<
     { key: keyof IIssue; visible: boolean }[]
@@ -196,7 +198,7 @@ const ListTable = ({
       />
     )),
     // Status
-    createColumn("status", "Status", (_, { id, status }) => (
+    createColumn("column", "Status", (_, { id, column }) => (
       <ColumnDropdown
         items={statusOptions.map((option) => ({
           value: option.name,
@@ -241,12 +243,12 @@ const ListTable = ({
                     ?.textColor
                 } text-center font-bold`}
               >
-                {status ? status.toUpperCase() : "-"}
+                {column ? column.name.toUpperCase() : "-"}
               </p>
             </button>
           </div>
         }
-        currentItem={status}
+        currentItem={column.name}
       />
     )),
     // Priority
@@ -289,7 +291,7 @@ const ListTable = ({
     // Sprint
     createColumn("sprint_id", "Sprint_id", (_, { id, sprint_id }) => (
       <ColumnDropdown
-        items={sprints.map((sprint) => ({
+        items={sprints.map((sprint: ISprint) => ({
           value: sprint.name,
           key: sprint.id,
           style: {
@@ -311,12 +313,12 @@ const ListTable = ({
             );
           },
         }))}
-        currentItem={sprints.find((sprint) => sprint.id === sprint_id)?.name}
+        currentItem={sprints.find((sprint: ISprint) => sprint.id === sprint_id)?.name}
         children={
           <div className="flex justify-center">
             <div className="rounded-md bg-gray-200 p-2">
               <p className="font-bold">
-                {sprints.find((sprint) => sprint.id === sprint_id)?.name}
+                {sprints.find((sprint: ISprint) => sprint.id === sprint_id)?.name}
               </p>
             </div>
           </div>
@@ -332,7 +334,8 @@ const ListTable = ({
             .map((member: IProjectMember) => ({
               value: member.user_id,
               key: member.user_id,
-              label: <UserAvatar userId={member.user_id} />,
+
+              label: <UserAvatar userId={member.user_id} isDisplayName={true} />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -344,7 +347,8 @@ const ListTable = ({
             .concat({
               value: "Unasigned",
               key: "Unasigned",
-              label: <UserAvatar />,
+
+              label: <UserAvatar userId={""} isDisplayName={true} />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -360,7 +364,8 @@ const ListTable = ({
         //   " " +
         //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
         //     .last_name}
-        children={<UserAvatar userId={assignee_id || ""} />}
+
+        children={<UserAvatar userId={assignee_id || ""} isDisplayName={true} />}
       />
     )),
     // Reporter
@@ -372,7 +377,7 @@ const ListTable = ({
             .map((member: IProjectMember) => ({
               value: member.user_id,
               key: member.user_id,
-              label: <UserAvatar userId={member.user_id} />,
+              label: <UserAvatar userId={member.user_id} isDisplayName={true} />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -384,7 +389,8 @@ const ListTable = ({
             .concat({
               value: "Unasigned",
               key: "Unasigned",
-              label: <UserAvatar />,
+
+              label: <UserAvatar userId={""} isDisplayName={true} />,
               onClick: () => {
                 handleChangeCellValue(
                   id,
@@ -400,7 +406,8 @@ const ListTable = ({
         //   " " +
         //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
         //     .last_name}
-        children={<UserAvatar userId={reporter_id || ""} />}
+
+        children={<UserAvatar userId={reporter_id || ""} isDisplayName={true} />}
       />
     )),
     // Team
@@ -585,8 +592,6 @@ const renderDateCell = (date: string) => {
   );
 };
 
-
-
 const renderTableHeaderCell = ({
   title,
   handleClick,
@@ -640,7 +645,7 @@ const renderTableHeaderCell = ({
         {title}
       </div>
 
-      <div className="z-50 cursor-pointer opacity-0 group-hover:opacity-100">
+      <div className="z-10 cursor-pointer opacity-0 group-hover:opacity-100">
         <Dropdown menu={{ items }} trigger={["click"]}>
           <FaArrowDown />
         </Dropdown>
@@ -674,7 +679,7 @@ const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   title: <MdOutlineSubtitles />,
   summary: <MdOutlineSummarize />,
   description: <MdOutlineDescription />,
-  status: <FaPlus />,
+  column: <FaPlus />,
   priority: <FaPlus />,
   type: <FaPlus />,
   team_id: <RiTeamFill />,

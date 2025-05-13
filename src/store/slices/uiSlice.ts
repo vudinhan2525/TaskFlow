@@ -12,7 +12,11 @@ interface UIState {
     type: string[];
   };
   theme: "light" | "dark";
+<<<<<<< Updated upstream
   isOpenModal:boolean
+=======
+  isOpenModal: boolean;
+>>>>>>> Stashed changes
 }
 
 const initialState: UIState = {
@@ -27,7 +31,11 @@ const initialState: UIState = {
     type: [],
   },
   theme: "light",
+<<<<<<< Updated upstream
   isOpenModal:false,
+=======
+  isOpenModal: false,
+>>>>>>> Stashed changes
 };
 
 const uiSlice = createSlice({
@@ -55,8 +63,13 @@ const uiSlice = createSlice({
     toggleTheme: (state) => {
       state.theme = state.theme === "light" ? "dark" : "light";
     },
+<<<<<<< Updated upstream
     toggleModal: (state,action:PayloadAction<boolean>) => {
       state.isOpenModal= action.payload
+=======
+    toggleModal: (state, action: PayloadAction<boolean>) => {
+      state.isOpenModal = action.payload;
+>>>>>>> Stashed changes
     },
   },
 });

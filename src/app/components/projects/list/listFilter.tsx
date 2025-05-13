@@ -6,13 +6,15 @@ import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useProjectSprints } from "@libs/hooks/useSprint";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import { IssueStatus } from "@libs/types/issue";
 import { CiUser } from "react-icons/ci";
 import Button from "@libs/app/components/general-components/button";
 import { LuSearch, LuX } from "react-icons/lu";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import AddProjectMemberModal from "@libs/app/components/projects/modals/addProjectMemberModal";
-import UserAvatar from "../../general-components/user/UserAvatar";
+
+import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
+import AddProjectMemberModal from "../modals/adProjectMemberModel/addProjectMemberModal";
+import { ISprint } from "@libs/types";
 interface ListFilterProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
   onSprintSelect?: (sprintId: string) => void;
@@ -23,6 +25,7 @@ const ListFilter = ({
 }: ListFilterProps) => {
   const { projectId } = useParams<{ projectId: string }>();
   const { sprints } = useProjectSprints(projectId || "");
+  const { projectMembers } = useProjectMembers(projectId || "");
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [filters, setFilters] = useState<{
@@ -32,9 +35,8 @@ const ListFilter = ({
     status: [],
     sprint: [],
   });
-  const [isOpenAddProjectMemberModal, setIsOpenAddProjectMemberModal] =
-    useState(true);
-  const { projectMembers } = useProjectMembers(projectId || "");
+
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
 
   const debouncedUpdate = useMemo(
     () =>
@@ -54,7 +56,6 @@ const ListFilter = ({
     value: Partial<typeof filters>,
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value[key] }));
-    navigate(`/projects/${projectId}/list?${key}=${value[key]}`);
   };
 
   useEffect(() => {
@@ -109,7 +110,9 @@ const ListFilter = ({
                 {/* Status Section */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-700">Status</p>
+                    <div className="text-sm font-medium text-gray-700">
+                      Status
+                    </div>
                     {filters.status.length > 0 && (
                       <IoIosClose
                         size={20}
@@ -158,7 +161,9 @@ const ListFilter = ({
                 {/* Sprint Section */}
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-700">Sprint</p>
+                    <div className="text-sm font-medium text-gray-700">
+                      Sprint
+                    </div>
                     {filters.sprint.length > 0 && (
                       <IoIosClose
                         size={20}
@@ -172,7 +177,7 @@ const ListFilter = ({
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {sprints?.map((sprint) => (
+                    {sprints?.map((sprint: ISprint) => (
                       <div
                         key={sprint.id}
                         onClick={() => {
@@ -208,19 +213,38 @@ const ListFilter = ({
           </Dropdown>
         </div>
 
-        <div className="flex flex-row items-center gap-4">
-          {projectMembers?.map((member) => (
-            <div key={member.id}>
-              <UserAvatar userId={member.user_id} isDisplayName={false} />
-            </div>
-          ))}
-          <button
-            onClick={() => setIsOpenAddProjectMemberModal(true)}
-            className="cursor-pointer rounded-full border-1 border-transparent bg-gray-200 p-2 transition-all hover:border-emerald-500 hover:bg-gray-300"
-          >
-            <CiUser />
-          </button>
+
+        <div className="flex flex-row items-center">
+
+        {/* Member */}  
+        <div className="flex flex-row items-center">
+          {projectMembers?.length &&
+            projectMembers.map((member, index) => (
+              <div
+                key={member.user_id}
+                style={{
+                  transform: `translateX(-${index * 12}px)`,
+                }}
+                className={`cursor-pointer rounded-full border-2 border-transparent p-[1px] hover:z-50 hover:border-emerald-500`}
+              >
+                <UserAvatar
+                  userId={member.user_id}
+                  size={28}
+                  isDisplayName={false}
+                />
+              </div>
+            ))}
         </div>
+
+        {/* Add member */}
+        <div
+          onClick={() => setIsAddMemberModalOpen(true)}
+          className="cursor-pointer rounded-full border-1 border-transparent bg-gray-200 p-2 transition-all hover:border-emerald-500 hover:bg-gray-300"
+        >
+          <CiUser />
+        </div>
+        </div>
+
       </div>
 
       <div className="flex items-center space-x-2">
@@ -232,8 +256,8 @@ const ListFilter = ({
         </Button>
       </div>
       <AddProjectMemberModal
-        isOpen={isOpenAddProjectMemberModal}
-        onClose={() => setIsOpenAddProjectMemberModal(false)}
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
         projectId={projectId || ""}
       />
     </div>

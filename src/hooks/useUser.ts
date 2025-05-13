@@ -22,22 +22,22 @@ export function useUserById(userId: string) {
  }
 }
 
-export function useUserByEmail(email: string) {
+
+export function useListUser(keyword: string) {
   const {
-    data: userData,
+    data,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["user", email],
+    queryKey: ["users", keyword],
     queryFn: async () => {
-      if (!email) throw new Error("Email is required");
-      const { data } = await users.getByEmail(email);
+      const { data } = await users.list(keyword);
       return data;
     },
-    enabled: !!email,
+    enabled: keyword.length > 0,
   });
   return {
-    user: userData?.data,
+    users: data?.data,
     isLoading,
     error,
   };
