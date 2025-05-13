@@ -101,7 +101,6 @@ const IssueSideBar: React.FC = () => {
     if (!selectedDetailOption) return;
 
     if (selectedDetailOption === "Attachment") {
-      console.log("Adding attachment feature not implemented yet");
       toast.info("Attachment upload not implemented yet");
     } else if (selectedDetailOption === "Child Issue") {
       if (!childIssueForm.title) {
