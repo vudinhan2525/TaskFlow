@@ -11,13 +11,13 @@ import UserAvatar from "@libs/app/components/general-components/user/UserAvatar"
 import { useAddProjectMember } from "@libs/hooks/useProjectMember";
 import { useListUser } from "@libs/hooks/useUser";
 import { toast } from "react-toastify";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
 interface AddProjectMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
 }
 
-// Define the member role type
 type MemberRole = "ADMIN" | "MEMBER" | "OWNER";
 const MemberRoleOptions = [
   {
@@ -54,14 +54,20 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
   const [keyword, setKeyword] = useState("");
   const debouncedKeyword = useDebounce(keyword, 300);
   const [role, setRole] = useState<MemberRole>("MEMBER");
+  
   const [isFocus, setIsFocus] = useState(false);
   const [value, setValue] = useState<string[]>([]);
   const { users, isLoading } = useListUser(debouncedKeyword);
+  const { projectMembers } = useProjectMembers(projectId);
   const {  addProjectMemberAsync, isLoading: isAddLoading } = useAddProjectMember(projectId);
 
   const handleAddProjectMember= async ()=>{
     if(value.length === 0){ 
       toast.error("Please select a user");
+      return
+    }
+    if(projectMembers?.some((member) => member.user_id === value[0])){
+      toast.error("User already in the project");
       return
     }
     addProjectMemberAsync({
