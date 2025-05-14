@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaPlus, FaTasks, FaGlobe } from "react-icons/fa";
+import { FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaTasks, FaGlobe, FaUserPlus } from "react-icons/fa";
 import {
   DndContext,
   closestCenter,
@@ -14,6 +14,7 @@ import { arrayMove, SortableContext, useSortable, horizontalListSortingStrategy 
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";
 import { useProject } from "../../../hooks/useProject";
+import AddProjectMemberModal from "./modals/addProjectMemberModal";
 
 interface NavItem {
   id: string;
@@ -66,6 +67,7 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({ item, isActive }) => 
 const ProjectNavbar = (): React.ReactElement => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   useProject(projectId || ""); // Keep project synchronized
 
   const getNavItems = (currentProjectId: string): NavItem[] => [
@@ -144,10 +146,19 @@ const ProjectNavbar = (): React.ReactElement => {
             ))}
           </SortableContext>
         </DndContext>
-        <div className="flex items-center px-2 py-2 bg-emerald-100 rounded hover:bg-emerald-200 cursor-pointer">
-          <FaPlus className="text-emerald-600" />
+        <div
+          onClick={() => setIsAddMemberModalOpen(true)}
+          className="flex items-center ml-2 px-2 py-2 bg-emerald-100 rounded hover:bg-emerald-200 cursor-pointer"
+          title="Add Project Member"
+        >
+          <FaUserPlus className="text-emerald-600" />
         </div>
       </nav>
+      <AddProjectMemberModal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        projectId={projectId || ""}
+      />
     </div>
   );
 };

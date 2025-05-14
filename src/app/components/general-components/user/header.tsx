@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FaGear } from "react-icons/fa6";
 import { FaBell } from "react-icons/fa";
+import ProjectInvitationsPopover from "@libs/app/components/projects/projectInvitationsPopover";
 import { useAuth } from "@libs/hooks/useAuth";
 import DropdownAntd from "../dropdown";
 import Image from "../image";
@@ -78,6 +79,8 @@ export const Header = () => {
             <div className="p-2 hover:bg-gray-100 rounded-full cursor-pointer text-gray-600">
               <FaBell />
             </div>
+            {/* Project Invitations */}
+            <ProjectInvitationsPopover userId={user?.data?.id || ""} />
             {/* Settings Icon */}
             <div className="p-2 hover:bg-gray-100 rounded-full cursor-pointer text-gray-600">
               <FaGear />

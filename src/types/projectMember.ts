@@ -5,7 +5,7 @@ export interface IProjectMember {
   id: string;
   project_id: string;
   user_id: string;
-  temm_member_role: TeamMemberRole;
+  role: TeamMemberRole;
   is_pending: boolean;
   created_at: string;
   updated_at: string;
@@ -15,4 +15,4 @@ export interface IProjectMember {
   project: IProject;
 }
 
-export type TeamMemberRole = "ADMIN" | "MEMBER" | "OWNE ";
+export type TeamMemberRole = "ADMIN" | "MEMBER" | "OWNER";
