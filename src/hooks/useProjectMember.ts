@@ -18,3 +18,25 @@ export function useProjectMembers(projectId: string) {
     error,
   };
 }
+
+export function useUserMemberships(userId: string) {
+  const {
+    data: membershipsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user-memberships", userId],
+    queryFn: async () => {
+      if (!userId) throw new Error("User ID is required");
+      return projectMembers.getUserMemberships(userId);
+    },
+    enabled: !!userId,
+  });
+
+  return {
+    memberships: membershipsData?.data.data || [],
+    pagination: membershipsData?.data.pagination,
+    isLoading,
+    error,
+  };
+}

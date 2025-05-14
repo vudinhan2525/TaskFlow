@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
+import { useUserMemberships } from "@libs/hooks/useProjectMember";
 import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
 import { CreateColumnProjectParams, IColumn, UpdateColumnOrderParams, UpdateColumnProjectParams } from "@libs/types/project";
@@ -12,26 +13,14 @@ export function useUserProjects() {
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
   const userId = user?.id;
 
-  const {
-    data: projectsData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["userProjects", userId],
-    queryFn: async () => {
-      // TODO : TOAST DONT THROW
-      if (!userId) throw new Error("User ID is required");
+  const { memberships, isLoading, error } = useUserMemberships(userId || "");
 
-      const response = await projects.getUserProjects(userId);
-      const data = response.data;
-      return data;
-    },
-    enabled: isAuthenticated && !!userId,
-  });
+  // Filter out pending memberships and map to project info
+  const validMemberships = memberships.filter(membership => !membership.is_pending);
+  const projects = validMemberships.map(membership => membership.project);
 
   return {
-    projects: projectsData?.data || [],
-    pagination: projectsData?.pagination,
+    projects: isAuthenticated ? projects : [],
     isLoading,
     error,
   };
@@ -71,6 +60,9 @@ export function useCreateProject({ onClose }: { onClose?: () => void }) {
       queryClient.invalidateQueries({
         queryKey: ["userProjects"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["user-memberships"],
+      });
       if (onClose) onClose();
     },
     onError: () => {
@@ -98,6 +90,7 @@ export function useUpdateProject({ onClose }: { onClose?: () => void }) {
     onSuccess: () => {
       toast.success("Project updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["userProjects"] });
+      queryClient.invalidateQueries({ queryKey: ["user-memberships"] });
       if (onClose) onClose();
     },
     onError: () => {
@@ -125,6 +118,7 @@ export function useDeleteProject({ onClose }: { onClose?: () => void }) {
     onSuccess: () => {
       toast.success("Project deleted successfully!");
       queryClient.invalidateQueries({ queryKey: ["userProjects"] });
+      queryClient.invalidateQueries({ queryKey: ["user-memberships"] });
       if (onClose) onClose();
     },
     onError: () => {
