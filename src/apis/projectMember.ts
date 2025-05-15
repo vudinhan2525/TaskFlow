@@ -9,9 +9,17 @@ const config = {
   }
 };
 
+export interface AddProjectMemberParams {
+  project_id: string;
+  user_id: string;
+  role: string;
+}
+
 export const projectMembers = {
-  add: (projectId: string, userId: string, role: string) =>
-    api.post<ResponseApi<IProjectMember>>(`/projects/${projectId}/members`, { userId, role }, config),
+  add: (
+    projectId: string,
+    data: AddProjectMemberParams,
+  ) => api.post<IProjectMember>(`/projects/${projectId}/members`, data, config),
 
   getUserByEmail: (email: string) =>
     api.get<ResponseApi<IUser>>(`/users/by-email/${email}`, config),
@@ -34,4 +42,5 @@ export const projectMembers = {
 
   rejectInvitation: (projectId: string) =>
     api.put<ResponseApi<void>>(`/projects/${projectId}/invitations/reject`, {}, config),
+
 };

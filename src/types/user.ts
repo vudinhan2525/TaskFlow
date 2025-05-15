@@ -9,6 +9,13 @@ export interface IUser {
   updated_at: string;
   role: UserRole;
 }
+
+export interface GetUserParams {
+  keyword?: string;
+  page?: number;
+  limit?: number;
+}
+
 export interface CreateUserRequest {
   first_name: string;
   last_name: string;

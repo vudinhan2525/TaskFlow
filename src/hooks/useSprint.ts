@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { sprints, type Sprint } from "../apis/sprint";
+import { sprints } from "../apis/sprint";
 import { toast } from "react-toastify";
+import { Sprint } from "@libs/types/sprint";
 
 export function useProjectSprints(projectId: string) {
   const {
