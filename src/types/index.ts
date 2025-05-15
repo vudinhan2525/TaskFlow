@@ -27,15 +27,14 @@ export interface Column {
   issues: IIssue[];
 }
 
-export interface Sprint {
+export interface ISprint {
   id: string;
   name: string;
-  projectId: string;
-  dateStarted: string;
-  dateEnded: string;
+  date_started: string;
+  date_ended: string;
+  project_id: string;
+  created_at: string;
   duration: number;
-  goal?: string;
-  issues: IIssue[];
-  createdAt: string;
-  updatedAt: string;
+  goal: string;
+  updated_at: string;
 }

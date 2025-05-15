@@ -1,0 +1,25 @@
+.custom-select .ant-select-selector {
+  border: none !important;
+  outline: none !important;
+  padding: 4px;
+
+}
+
+.custom-select .ant-select-selection-item {
+  height: 100% !important;
+}
+ .ant-select-dropdown {
+  margin-top: 8px;
+  padding:8px 0px !important;
+}
+.ant-select-item{
+  padding: 8px !important;
+  border-left: 2px solid transparent !important;
+  border-radius: 0px !important;
+}
+.ant-select-item:hover{
+  background-color: oklch(0.95 0.01 270.00) !important;
+  border-left: 2px solid oklch(0.696 0.17 162.48) !important;
+
+}
+
