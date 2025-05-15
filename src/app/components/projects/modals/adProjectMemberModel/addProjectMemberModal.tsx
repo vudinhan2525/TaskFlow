@@ -121,7 +121,7 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
                 filterOption={false}
                 options={
                   keyword.length
-                    ? users?.map((user) => ({
+                    ? users?.map((user:any) => ({
                         label: (
                           <div>
                             <UserAvatar userId={user.id} isDisplayName={true} />
