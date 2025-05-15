@@ -10,6 +10,8 @@ import { LuSearch, LuX } from "react-icons/lu";
 import ListFilterDropDown from "./listFilter/ListFilterDropDown";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import AddProjectMemberModal from "../modals/adProjectMemberModel/addProjectMemberModal";
+
+import "react-datepicker/dist/react-datepicker.css";
 interface ListFilterProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
   onSprintSelect?: (sprintId: string) => void;
@@ -35,6 +37,7 @@ const ListFilter = ({
   });
 
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+
   const debouncedUpdate = useMemo(
     () =>
       debounce((value: string) => {
@@ -100,7 +103,6 @@ const ListFilter = ({
         </div>
 
         {/* Filter */}
-
         <ListFilterDropDown
           filters={filters}
           handleFilterChange={handleFilterChange}
@@ -137,21 +139,21 @@ const ListFilter = ({
             <CiUser />
           </div>
         </div>
-
-        <div className="flex items-center space-x-2">
-          <Button
-            className="rounded bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-600"
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            Create Issue
-          </Button>
-        </div>
-        <AddProjectMemberModal
-          isOpen={isAddMemberModalOpen}
-          onClose={() => setIsAddMemberModalOpen(false)}
-          projectId={projectId || ""}
-        />
       </div>
+
+      <div className="flex items-center space-x-2">
+        <Button
+          className="rounded bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-600"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          Create Issue
+        </Button>
+      </div>
+      <AddProjectMemberModal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        projectId={projectId || ""}
+      />
     </div>
   );
 };
