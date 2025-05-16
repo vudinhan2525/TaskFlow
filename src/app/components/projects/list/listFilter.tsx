@@ -3,14 +3,13 @@ import { debounce } from "lodash";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import { IssueStatus } from "@libs/types/issue";
 import { CiUser } from "react-icons/ci";
 import Button from "@libs/app/components/general-components/button";
 import { LuSearch, LuX } from "react-icons/lu";
 import ListFilterDropDown from "./listFilter/ListFilterDropDown";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import AddProjectMemberModal from "../modals/adProjectMemberModel/addProjectMemberModal";
-
+import { parseFiltersSearchParams,FiltersSearchParams } from "@libs/utils/parseFiltersSearchParams";
 interface ListFilterProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
   onSprintSelect?: (sprintId: string) => void;
@@ -22,33 +21,46 @@ const ListFilter = ({
   const { projectId } = useParams<{ projectId: string }>();
   const { projectMembers } = useProjectMembers(projectId || "");
   const navigate = useNavigate();
-  const [keyword, setKeyword] = useState("");
-  const [filters, setFilters] = useState<{
-    status: IssueStatus[];
-    sprint: string[];
-    assignee: string[];
-    reporter: string[];
-  }>({
-    status: [],
-    sprint: [],
-    assignee: [],
-    reporter: [],
-  });
+  const searchParams = new URLSearchParams(window.location.search);
+  const [keyword, setKeyword] = useState<string>(searchParams.get("keyword")||"");
+  const [filters, setFilters] = useState<FiltersSearchParams>(parseFiltersSearchParams(searchParams.get("filters")||""));
 
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-
   const debouncedUpdate = useMemo(
     () =>
-      debounce((value: string) => {
-        if (!value) {
-          navigate(`/projects/${projectId}/list`);
-          return;
-        }
-
-        navigate(`/projects/${projectId}/list?keyword=${value}`);
+      debounce((value: string,filtersSearchParams:string) => {
+        const keywordSearchParams = value;
+        handleNavigate(keywordSearchParams, filtersSearchParams);
       }, 500),
+
     [navigate, projectId],
   );
+
+  
+
+  useEffect(() => {
+    const keywordSearchParams = searchParams.get("keyword");
+
+    let filterCategoryExist = Object.keys(filters).filter(
+      (filter) => filters[filter as keyof typeof filters].length > 0,
+    );
+    const filtersSearchParams = filterCategoryExist.reduce(
+      (acc, key, index) => {
+        return (
+          acc +
+          `${key} ${filters[key as keyof typeof filters].length == 1 ? `= ${filters[key as keyof typeof filters][0]}` : "IN (" + filters[key as keyof typeof filters].join(",") + ")"}` +
+          (index < filterCategoryExist.length - 1 ? " AND " : "")
+        );
+      },
+      "",
+    );
+    handleNavigate(keywordSearchParams, filtersSearchParams);
+  }, [filters, navigate, projectId]);
+
+  const handleKeywordChange = (value: string) => {
+    setKeyword(value);
+    debouncedUpdate(value,searchParams.get("filters")||"");
+  };
 
   const handleFilterChange = (
     key: keyof typeof filters,
@@ -57,26 +69,25 @@ const ListFilter = ({
     setFilters((prev) => ({ ...prev, [key]: value[key] }));
   };
 
-  useEffect(() => {
-    const queryParams = new URLSearchParams();
+  const handleNavigate = (
+    keywordSearchParams: string | null,
+    filtersSearchParams: string | null,
+  ) => {
+    let url =
+      `/projects/${projectId}/list` +
+      `${filtersSearchParams || keywordSearchParams ? "?" : ""}`;
 
-    if (filters.status.length > 0) {
-      queryParams.set("status", filters.status.join("-"));
+    if (keywordSearchParams) {
+      url += `keyword=${keywordSearchParams}`;
+    }
+    if(keywordSearchParams&&filtersSearchParams){
+      url+="&"
+    }
+    if (filtersSearchParams) {
+      url += `filters=${filtersSearchParams}`;
     }
 
-    if (filters.sprint.length > 0) {
-      queryParams.set("sprint", filters.sprint.join("-"));
-    }
-
-    const queryString = queryParams.toString();
-    navigate(
-      `/projects/${projectId}/list${queryString ? `?${queryString}` : ""}`,
-    );
-  }, [filters, navigate, projectId]);
-
-  const handleKeywordChange = (value: string) => {
-    setKeyword(value);
-    debouncedUpdate(value);
+    navigate(url);
   };
 
   return (

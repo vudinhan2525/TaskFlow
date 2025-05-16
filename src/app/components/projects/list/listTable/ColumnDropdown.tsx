@@ -1,5 +1,5 @@
 import { Dropdown, MenuProps } from "antd";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
 import React from "react";
 const ColumnDropdown = ({
   items,
@@ -13,6 +13,7 @@ const ColumnDropdown = ({
   const [searchText, setSearchText] = useState("");
   const [visible, setVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(items);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (searchText.length == 0) {
@@ -34,9 +35,10 @@ const ColumnDropdown = ({
   }, [searchText, items]);
 
   return (
-    <Dropdown
-      menu={{
-        style: {
+    <div ref={dropdownRef}>
+      <Dropdown
+        menu={{
+          style: {
           marginTop: "8px",
           padding: "4px 0px",
           borderRadius: "0px",
@@ -54,12 +56,14 @@ const ColumnDropdown = ({
           autoFocus={true}
           onChange={(e) => setSearchText(e.target.value)}
           onClick={(e) => e.stopPropagation()}
-          className="rounded-none border-2 border-emerald-500 p-2 text-gray-800 outline-none"
+          className="rounded-none border-2 border-emerald-500 
+          px-2 py-1 text-gray-800 outline-none text-xs"
         />
       ) : (
         <div className="py-2">{children}</div>
-      )}
-    </Dropdown>
+        )}
+      </Dropdown>
+    </div>
   );
 };
 

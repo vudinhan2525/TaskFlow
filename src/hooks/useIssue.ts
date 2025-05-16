@@ -13,16 +13,17 @@ export function useProjectIssues(body: GetIssuesParams) {
     queryKey: [
       "issues",
       body.project_id,
-      body.sprint_id,
+      body.sprint_ids,
       body.keyword,
       body.status,
+      body.assignee_ids,  
+      body.column_ids,
     ],
     queryFn: async () => {
       const response = await issues.list(body);
       return response.data;
     },
   });
-
   return {
     issues: issuesData?.data || [],
     pagination: issuesData?.pagination,

@@ -27,12 +27,19 @@ export type IssuePriority = "Low" | "Medium" | "High";
 export interface GetIssuesParams {
   project_id?: string;
   keyword?: string;
-  sprint_id?: string;
-  assignee_id?: string;
-  status?: IssueStatus[];
+  sprint_ids?: string[];
+  assignee_ids?: string[];
   page?: number | string;
   limit?: number | string;
+  column_ids?: string[];
+  status?: IssueStatus[];   
 }
+
+
+
+
+
+
 
 export interface CreateIssueParams {
   // Required fields from proto definition
