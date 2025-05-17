@@ -29,6 +29,16 @@ export default {
           900: "#0f172a",
         },
       },
+      fontSize: {
+        "xxs": "10rem",
+        "3xs": "40px",
+        "2xs": "0.625rem",
+        "xs": "10rem",
+      },
+      padding: {
+        "0.5": "0.125rem",
+        "1.5": "0.375rem",
+      },
     },
   },
   plugins: [],

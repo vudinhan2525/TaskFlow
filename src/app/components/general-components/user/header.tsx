@@ -88,16 +88,16 @@ export const Header = () => {
 
             {/* User Menu */}
             <div className="relative">
-              <p
+              <div
                 className="flex items-center space-x-2 text-red-500"
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
               >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <p className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
                   <span className="text-sm font-medium text-gray-600">
                     {user?.data?.first_name?.[0]}
                   </span>
-                </div>
-              </p>
+                </p>
+              </div>
               {isUserDropdownOpen && (
                 <div className="absolute right-0 z-10 mt-2 w-48 bg-white rounded-md shadow-lg">
                   <div className="px-4 py-3 border-b">
