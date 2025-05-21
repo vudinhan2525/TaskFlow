@@ -5,12 +5,14 @@ import { ISprint } from "@libs/types";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import { FaChevronDown } from "react-icons/fa";
 import { DatePicker } from "antd";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { FiltersSearchParams } from "@libs/utils/parseFiltersSearchParams";
 import { MoveRight } from "lucide-react";
 import RenderStatusCell from "../common/RenderStatusCell";
+import { IoFilterOutline } from "react-icons/io5";
+import dayjs from "dayjs";
+
 const ListFilterDropDown = ({
   filters,
   handleFilterChange,
@@ -28,31 +30,47 @@ const ListFilterDropDown = ({
   const { sprints } = useProjectSprints(projectId);
   const { projectMembers } = useProjectMembers(projectId);
   const { columns } = useProjectColumns(projectId);
+
+  const ListFilterDropdownHeader = ({
+    title,
+    listFilterKey,
+  }: {
+    title: string;
+    listFilterKey: keyof typeof filters;
+  }) => {
+    return (
+      <div className="flex w-full items-center justify-between px-4 py-2">
+        <h1 className="text-sm font-medium text-gray-700">{title}</h1>
+        {filters[listFilterKey] && filters[listFilterKey].length > 0 && (
+          <IoIosClose
+            size={20}
+            className="cursor-pointer text-gray-500 transition-all duration-100 hover:scale-125"
+            onClick={() =>
+              handleFilterChange(listFilterKey, {
+                [listFilterKey]: [],
+              })
+            }
+          />
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex items-center space-x-1">
       <Dropdown
         dropdownRender={() => (
-          <div className="z-50 flex-col rounded-xs bg-white shadow-2xl">
+          <div className="z-50 w-96 flex-col rounded-xs bg-white shadow-2xl">
             <div className="flex w-full items-center justify-between px-4 py-2 shadow-2xl">
               <h1 className="text-sm font-medium text-gray-700">Filters</h1>
             </div>
             <div className="flex max-h-60 flex-col gap-6 overflow-y-auto p-4">
               {/* Status Section */}
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-gray-700">Status</p>
-                  {filters.status.length > 0 && (
-                    <IoIosClose
-                      size={20}
-                      className="cursor-pointer text-gray-500 transition-all duration-100 hover:scale-125"
-                      onClick={() =>
-                        handleFilterChange("status", {
-                          status: [],
-                        })
-                      }
-                    />
-                  )}
-                </div>
+                <ListFilterDropdownHeader
+                  title="Status"
+                  listFilterKey="status"
+                />
                 <div className="flex flex-wrap gap-2">
                   {columns?.map((column) => (
                     <div
@@ -85,20 +103,10 @@ const ListFilterDropDown = ({
 
               {/* Sprint Section */}
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-gray-700">Sprint</p>
-                  {filters.sprint_ids.length > 0 && (
-                    <IoIosClose
-                      size={20}
-                      className="cursor-pointer text-gray-500 transition-all duration-100 hover:scale-125"
-                      onClick={() =>
-                        handleFilterChange("sprint_ids", {
-                          sprint_ids: [],
-                        })
-                      }
-                    />
-                  )}
-                </div>
+                <ListFilterDropdownHeader
+                  title="Sprint"
+                  listFilterKey="sprint_ids"
+                />
                 <div className="flex flex-wrap gap-2">
                   {sprints?.map((sprint: ISprint) => (
                     <div
@@ -132,34 +140,45 @@ const ListFilterDropDown = ({
                 <p className="text-sm font-medium text-gray-700">
                   Created Date
                 </p>
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-row items-end justify-between">
                   <div className="flex flex-col">
-                    <p>From</p>
-                    <DatePicker />
+                    <p className="text-sm font-medium text-gray-700">From</p>
+                    <DatePicker
+                      // value={dayjs(filters.created_at[0])}
+                      onChange={(date) => {
+                        handleFilterChange("created_at", {
+                          created_at: [
+                            dayjs(date).format("YYYY-MM-DD"),
+                            filters.created_at[1],
+                          ],
+                        });
+                      }}
+                    />
                   </div>
+                  <MoveRight className="pb-3 text-gray-500" size={28} />
                   <div className="flex flex-col">
-                    <p>To</p>
-                    <DatePicker />
+                    <p className="text-sm font-medium text-gray-700">To</p>
+                    <DatePicker
+                      // value={dayjs(filters.created_at[1])}
+                      onChange={(date) => {
+                        handleFilterChange("created_at", {
+                          created_at: [
+                            filters.created_at[0],
+                            dayjs(date).format("YYYY-MM-DD"),
+                          ],
+                        });
+                      }}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Assignee */}
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-gray-700">Assignee</p>
-                  {filters.assignee_ids.length > 0 && (
-                    <IoIosClose
-                      size={20}
-                      className="cursor-pointer text-gray-500 transition-all duration-100 hover:scale-125"
-                      onClick={() =>
-                        handleFilterChange("assignee_ids", {
-                          assignee_ids: [],
-                        })
-                      }
-                    />
-                  )}
-                </div>
+                <ListFilterDropdownHeader
+                  title="Assignee"
+                  listFilterKey="assignee_ids"
+                />
                 <div className="flex flex-row flex-wrap items-center gap-1">
                   {projectMembers?.map((member) => (
                     <div
@@ -175,7 +194,7 @@ const ListFilterDropDown = ({
                         });
                       }}
                       key={member.user_id}
-                      className={`cursor-pointer rounded-full border-2 border-transparent p-[1px] ${filters.assignee_ids.includes(member.user_id) ? "border-emerald-500 text-blue-500" : "border-transparent"} hover:z-50 hover:border-emerald-500`}
+                      className={`cursor-pointer rounded-full border-2 p-[1px] ${filters.assignee_ids.includes(member.user_id) ? "border-emerald-500" : "border-transparent"} hover:border-emerald-500`}
                     >
                       <UserAvatar
                         userId={member.user_id}
@@ -190,12 +209,13 @@ const ListFilterDropDown = ({
               {/*Date range */}
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-gray-700">Date Range</p>
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-row items-end justify-between">
                   <div className="flex flex-col">
                     <p>Start Date</p>
                     <DatePicker />
                   </div>
-                  <MoveRight className="h-6 w-6" />
+
+                  <MoveRight className="pb-3 text-gray-500" size={28} />
                   <div className="flex flex-col">
                     <p>End Date</p>
                     <DatePicker />
@@ -227,7 +247,7 @@ const ListFilterDropDown = ({
         trigger={["click"]}
       >
         <button className="cursor-pointer rounded bg-emerald-500 px-3 py-2 text-sm text-white hover:bg-emerald-600">
-          Filter <FaChevronDown className="ml-1 inline" />
+          Filter <IoFilterOutline className="ml-1 inline" />
         </button>
       </Dropdown>
     </div>
@@ -235,4 +255,3 @@ const ListFilterDropDown = ({
 };
 
 export default ListFilterDropDown;
-

@@ -6,7 +6,7 @@ import { FaArrowDown, FaListUl } from "react-icons/fa";
 import { FaArrowUp } from "react-icons/fa";
 import { LuX } from "react-icons/lu";
 import { columnsIcon } from "../../../../../constants/list";
-import { SortOrder } from "antd/es/table/interface";
+
 const TableColumn = (
   key: keyof IIssue,
   title: string,
@@ -71,7 +71,10 @@ const TableColumn = (
 
   return {
     title: (
-      <div className="group item flex items-center justify-between gap-2">
+      <div
+        id={key}
+        className="group item flex items-center justify-between gap-2"
+      >
         <div className="flex items-center gap-2">
           <div className="hidden rounded-md p-1 group-hover:block">
             <FaListUl />
@@ -83,7 +86,7 @@ const TableColumn = (
               <FaPlus className="h-3 w-3" />
             )}
           </div>
-          <span className="text-xs font-bold text-[#626f86]">{title}</span>
+          <span className="text-xs font-bold text-[#6c757d]">{title}</span>
         </div>
 
         <div className="z-10 cursor-pointer opacity-0 group-hover:opacity-100">
@@ -98,8 +101,7 @@ const TableColumn = (
     sortOrder: options.sortOrder,
     hidden: !visibleColumns.find((column) => column.key === key)?.visible,
     render,
-    sortIcon: (props: { sortOrder: SortOrder }) => {
-      console.log(props);
+    sortIcon: () => {
       if (options.sortOrder === null) return <div></div>;
       if (options.sortOrder === "ascend") return <FaArrowUp />;
       if (options.sortOrder === "descend") return <FaArrowDown />;
@@ -110,17 +112,14 @@ const TableColumn = (
         if (options.sortOrder === null) {
           return 0;
         }
-        if (options.sortOrder === "ascend" && key in a && key in b) {
-          const aValue = a[key as keyof IIssue];
-          const bValue = b[key as keyof IIssue];
-          if (typeof aValue === "number" && typeof bValue === "number") {
-            return aValue - bValue;
-          } else if (typeof aValue === "string" && typeof bValue === "string") {
-            return aValue.localeCompare(bValue);
-          }
-          return 0;
+        const aValue = a[key as keyof IIssue];
+        const bValue = b[key as keyof IIssue];
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          return aValue - bValue;
+        } else if (typeof aValue === "string" && typeof bValue === "string") {
+          return aValue.localeCompare(bValue);
         }
-        return 1;
+        return 0;
       },
     },
   };

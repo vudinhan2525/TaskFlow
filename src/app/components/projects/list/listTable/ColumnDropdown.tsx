@@ -54,6 +54,9 @@ const ColumnDropdown = ({
           placeholder={currentItem}
           value={searchText}
           autoFocus={true}
+          style={{
+            width:dropdownRef.current?.clientWidth,
+          }}
           onChange={(e) => setSearchText(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           className="rounded-none border-2 border-emerald-500 

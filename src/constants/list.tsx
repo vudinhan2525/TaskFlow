@@ -16,6 +16,7 @@ import { FaCalendarAlt, FaPlus } from "react-icons/fa";
 import { IIssue } from "@libs/types/issue";
 import { RiTeamFill } from "react-icons/ri";
 import { IoIosPrint } from "react-icons/io";
+
 export const priorityOptions = [
   { name: "High", icon: <FcHighPriority size={20} /> },
   { name: "Medium", icon: <FcMediumPriority size={20} /> },
@@ -23,24 +24,24 @@ export const priorityOptions = [
 ];
 
 export const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
-  id: <FaPlus color='#626f86' />,
-  project_id: <FaPlus color='#626f86' />,
-  title: <MdOutlineSubtitles color='#626f86' />,
-  summary: <MdOutlineSummarize color='#626f86' />,
-  description: <MdOutlineDescription color='#626f86' />,
-  column: <FaPlus color='#626f86' />,
-  priority: <FaPlus color='#626f86' />,
-  type: <FaPlus color='#626f86' />,
-  team_id: <RiTeamFill color='#626f86' />,
-  sprint_id: <IoIosPrint color='#626f86' />,
-  assignee_id: <CiAt color='#626f86' />,
-  reporter_id: <CiAt color='#626f86' />,
-  parent_id: <MdOutlineBedroomParent color='#626f86' />,
-  story_point: <FcHighPriority color='#626f86' />,
-  labels: <MdLabelImportantOutline color='#626f86' />,
-  attachments: <FaPlus color='#626f86' />,
-  created_at: <FaCalendarAlt color='#626f86' />,
-  updated_at: <FaCalendarAlt color='#626f86' />,
+  id: <FaPlus color="#626f86" />,
+  project_id: <FaPlus color="#626f86" />,
+  title: <MdOutlineSubtitles color="#626f86" />,
+  summary: <MdOutlineSummarize color="#626f86" />,
+  description: <MdOutlineDescription color="#626f86" />,
+  column: <FaPlus color="#626f86" />,
+  priority: <FaPlus color="#626f86" />,
+  type: <FaPlus color="#626f86" />,
+  team_id: <RiTeamFill color="#626f86" />,
+  sprint_id: <IoIosPrint color="#626f86" />,
+  assignee_id: <CiAt color="#626f86" />,
+  reporter_id: <CiAt color="#626f86" />,
+  parent_id: <MdOutlineBedroomParent color="#626f86" />,
+  story_point: <FcHighPriority color="#626f86" />,
+  labels: <MdLabelImportantOutline color="#626f86" />,
+  attachments: <FaPlus color="#626f86" />,
+  created_at: <FaCalendarAlt color="#626f86" />,
+  updated_at: <FaCalendarAlt color="#626f86" />,
 };
 
 export const typeOptions = [
