@@ -21,7 +21,9 @@ export default function UserAvatar({
         >
           <FaUserAltSlash />
         </div>
-        <span className="text-sm font-medium text-gray-700">Unasigned</span>
+        {isDisplayName && (
+          <span className="text-sm font-medium text-gray-700">Unasigned</span>
+        )}
       </div>
     );
   }

@@ -221,7 +221,7 @@ const ListTable = ({
           label: (
             <div
               key={column.id}
-              className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300 ${column.name === status && "border-l-2 border-emerald-500 bg-emerald-100"}`}
+              className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300 `}
             >
               <RenderStatusCell column={column} />
             </div>
@@ -235,7 +235,7 @@ const ListTable = ({
             ),
         }))}
         children={
-          <div className="flex justify-center">
+          <div className="flex justify-start px-2">
             <RenderStatusCell column={column} />  
           </div>
         }
@@ -279,7 +279,7 @@ const ListTable = ({
         })}
         currentItem={priority}
         children={
-          <div className="flex items-center justify-center gap-2 rounded-md p-1 hover:cursor-pointer">
+          <div className="flex items-center justify-start gap-2 rounded-md p-2 hover:cursor-pointer">
             {priorityOptions.find((option) => option.name === priority)?.icon}
             <p className="text-xs font-bold">{priority}</p>
           </div>
@@ -292,7 +292,7 @@ const ListTable = ({
     },
   ),
     // Sprint
-    TableColumn("sprint_id", "Sprint_id",
+    TableColumn("sprint_id", "Sprint",
       visibleColumns,
       handleVisible,
       handleSort,
@@ -324,9 +324,9 @@ const ListTable = ({
           sprints.find((sprint: ISprint) => sprint.id === sprint_id)?.name
         }
         children={
-          <div className="flex justify-center">
+          <div className="flex justify-start px-2">
             <div className="rounded-md bg-gray-200 px-2 py-1  ">
-              <p className="font-bold text-xs">
+              <p className="font-bold text-xs text-gray-600">
                 {
                   sprints.find((sprint: ISprint) => sprint.id === sprint_id)
                     ?.name

@@ -44,7 +44,7 @@ const Button = ({
   type = "button",
 }: ButtonProps): React.ReactElement => {
   const baseStyles =
-    "px-4 py-2 rounded-md transition-all duration-200 font-medium text-sm outline-none ring-emerald-500 focus:ring-2 focus:ring-offset-2 select-none flex items-center justify-center gap-2";
+    "px-2 py-1 rounded-md transition-all duration-200 font-medium text-sm outline-none ring-emerald-500 focus:ring-2 focus:ring-offset-2 select-none flex items-center justify-center gap-2";
 
   const variantStyle = variantStyles[variant];
   const disabledStyles = disabled || isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer";

@@ -7,7 +7,7 @@ const config = {
 export const users = {
   list: (keyword: string) => {
     return api.get<ResponseApi<IUser[]>>(
-      `/users/list-users?name=${keyword}&email=${keyword}`,
+      `/users/list-users?name=${keyword}`,
       {
         ...config,
       },

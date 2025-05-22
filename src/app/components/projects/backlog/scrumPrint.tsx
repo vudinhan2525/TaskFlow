@@ -4,56 +4,74 @@ import { useProjectColumns } from "@libs/hooks/useProject";
 import Button from "@libs/app/components/general-components/button";
 import UnifiedIssueModal from "@libs/app/components/projects/modals/unifiedIssueModal";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
-import StatusDropdown from "./StatusDropdown";
 import { formatSprintDate } from "../../../../utils/date";
+import { FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { ISprint } from "@libs/types/index";
+import IssueCard from "./IssueCard";
+import { statusOptions } from "@libs/constants/list";
+import { MenuProps, Dropdown } from "antd";
+import { BsThreeDots } from "react-icons/bs";
+import { FaPlus } from "react-icons/fa6";
+import ConfirmDeleteModal from "@libs/app/components/general-components/modal/modalDeleteConfirm";
+import CreateIssueModal from "@libs/app/components/projects/modals/createIssueModal";
 import {
-  FaChevronDown,
-  FaChevronRight,
-  FaBug,
-  FaCheckSquare,
-  FaStar,
-  FaLightbulb,
-  FaExclamationCircle,
-  FaArrowDown,
-  FaArrowUp,
-} from "react-icons/fa";
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
+import { useDeleteSprint } from "@libs/hooks/useSprint";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
+interface ISprintIssues extends ISprint {
+  issues: IIssue[];
+}
 
 interface ScrumSprintProps {
-  sprintName: string;
-  startDate: string;
-  endDate: string;
-  issues: IIssue[];
-  issueCount: number;
+  sprint: ISprintIssues;
   projectId: string;
-  sprintId: string;
   selectedIssues: { [key: string]: boolean };
   onIssueSelect: (issueId: string, selected: boolean, issue?: IIssue) => void;
-  onStatusChange?: (issueId: string, newColumnId: string) => void;
 }
 
 const ScrumSprint: React.FC<ScrumSprintProps> = ({
-  sprintName,
-  startDate,
-  endDate,
-  issues,
-  issueCount,
+  sprint,
   projectId,
-  sprintId,
   selectedIssues,
   onIssueSelect,
-  onStatusChange,
 }) => {
-  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
-  const [isSprintModalOpen, setIsSprintModalOpen] = useState(false);
+  const { setNodeRef } = useDroppable({
+    id: sprint.id,
+    data: {
+      type: "Sprint",
+      sprint,
+    },
+  });
+
+  const { deleteSprint } = useDeleteSprint({
+    projectId,
+    onClose: () => {
+      setIsDeleteSprintModalOpen(false);
+    },
+  });
+  const { updateIssueAsync } = useUpdateIssue({
+    projectId,
+    onClose: () => {
+      setIsUpdateSprintModalOpen(false);
+    },
+  });
+
+  const [isOpenButtonMenu, setIsOpenButtonMenu] = useState(false);
+  const [isUpdateSprintModalOpen, setIsUpdateSprintModalOpen] = useState(false);
+  const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
+  const [isDeleteSprintModalOpen, setIsDeleteSprintModalOpen] = useState(false);
+  const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
-  const [expandedIssues, setExpandedIssues] = useState<{ [key: string]: boolean }>({});
   const { columns } = useProjectColumns(projectId);
 
   // Group issues by their parent-child relationship
   const issueMap: { [key: string]: IIssue[] } = {};
   const parentIssues: IIssue[] = [];
 
-  issues.forEach((issue) => {
+  sprint.issues.forEach((issue) => {
     if (!issue.parent_id) {
       parentIssues.push(issue);
     } else {
@@ -64,211 +82,200 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
     }
   });
 
-  const getIssueTypeIcon = (type: string) => {
-    switch (type.toLowerCase()) {
-      case "bug":
-        return <FaBug className="text-red-600" />;
-      case "task":
-        return <FaCheckSquare className="text-blue-600" />;
-      case "story":
-        return <FaLightbulb className="text-green-600" />;
-      default:
-        return <FaStar className="text-purple-600" />;
+  const buttonItems: MenuProps["items"] = [
+    {
+      label: "Complete Sprint",
+      key: "complete-sprint",
+    },
+    {
+      label: "Edit Sprint",
+      key: "edit-sprint",
+      onClick: () => setIsCreateSprintModalOpen(true),
+    },
+    {
+      label: "Delete Sprint",
+      key: "delete-sprint",
+      onClick: () => setIsDeleteSprintModalOpen(true),
+    },
+  ];
+
+  const handleDeleteSprint = async () => {
+    try {
+      // Update all issues in the sprint to have null sprint_id
+      for (const issue of sprint.issues) {
+        await updateIssueAsync({
+          id: issue.id,
+          data: {
+            sprint_id: undefined,
+          },
+        });
+      }
+      // Delete the sprint after all issues are updated
+      await deleteSprint(sprint?.id);
+    } catch (error) {
+      console.log(error);
     }
   };
-
-  const getPriorityIcon = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case "high":
-        return <FaArrowUp className="text-red-600" />;
-      case "low":
-        return <FaArrowDown className="text-green-600" />;
-      default:
-        return <FaExclamationCircle className="text-yellow-600" />;
-    }
-  };
-
-  const toggleIssueExpansion = (issueId: string) => {
-    setExpandedIssues((prev) => ({
-      ...prev,
-      [issueId]: !prev[issueId],
-    }));
-  };
-
-  const IssueCard = ({ issue, isChild = false }: { issue: IIssue; isChild?: boolean }) => (
-    <div
-      className={`px-4 py-3 bg-white rounded-lg shadow-sm transition-all duration-200 hover:bg-gray-50 ${
-        isChild ? "ml-6 border-l-2 border-gray-200" : ""
-      }`}
-    >
-      <div className="flex items-center space-x-3">
-        <input
-          type="checkbox"
-          checked={selectedIssues[issue.id] || false}
-          onClick={(e) => e.stopPropagation()}
-          onChange={(e) => onIssueSelect(issue.id, e.target.checked, issue)}
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
-        />
-        <div className="flex items-center space-x-2 min-w-[100px]">
-          {getIssueTypeIcon(issue.type)}
-          {getPriorityIcon(issue.priority)}
-          <div
-            className={`${
-              isChild ? "w-6 h-6 text-xs" : "w-8 h-8 text-sm"
-            } bg-blue-100 rounded-full flex items-center justify-center font-medium text-blue-700`}
-          >
-            {issue.assignee_id ? issue.assignee_id.substring(0, 2).toUpperCase() : "NA"}
-          </div>
-        </div>
-        {!isChild && issueMap[issue.id]?.length > 0 && (
-          <button
-            className="text-gray-500 hover:text-gray-700 min-w-[20px]"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleIssueExpansion(issue.id);
-            }}
-          >
-            {expandedIssues[issue.id] ? <FaChevronDown size={14} /> : <FaChevronRight size={14} />}
-          </button>
-        )}
-        <div
-          className="flex-grow cursor-pointer"
-          onClick={() => onIssueSelect(issue.id, !selectedIssues[issue.id], issue)}
-        >
-          <div className={`font-semibold ${isChild ? "text-sm" : "text-base"} text-gray-900`}>
-            {isChild && <span className="text-gray-400 mr-2">↳</span>}
-            {issue.title}
-          </div>
-          <div className="flex items-center space-x-2 mt-1">
-            <span className={`${isChild ? "text-xs" : "text-sm"} text-gray-500`}>{issue.id}</span>
-            {issue.story_point && (
-              <span className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
-                {issue.story_point} SP
-              </span>
-            )}
-          </div>
-        </div>
-        <div onClick={(e) => e.stopPropagation()}>
-          <StatusDropdown
-            status={issue.column.id}
-            columns={columns || []}
-            onStatusChange={(newColId) => onStatusChange?.(issue.id, newColId)}
-          />
-        </div>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="mb-6 border border-gray-200 rounded-xl shadow-sm bg-white overflow-hidden">
-      <div className="bg-gradient-to-r from-gray-50 to-white p-5 border-b border-gray-200">
+    <div
+      ref={setNodeRef}
+      className="overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm"
+    >
+      {/* Header */}
+      <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-2 py-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <button
-              className="text-gray-600 hover:text-gray-800 transition-colors"
+              className="scale-110 text-gray-500 transition-colors hover:cursor-pointer hover:text-gray-900"
               onClick={() => setIsExpanded(!isExpanded)}
             >
-              {isExpanded ? <FaChevronDown size={18} /> : <FaChevronRight size={18} />}
+              {isExpanded ? (
+                <FaChevronDown size={12} />
+              ) : (
+                <FaChevronRight size={12} />
+              )}
             </button>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">{sprintName}</h3>
-              <div className="flex items-center space-x-3 mt-1">
+            <div className="flex flex-row items-center space-x-4">
+              <h3 className="text-md font-semibold text-gray-900">
+                {sprint?.name}
+              </h3>
+              <div className="flex items-center space-x-3 text-sm">
                 <span className="text-sm text-gray-600">
-                  {formatSprintDate(startDate)} - {formatSprintDate(endDate)}
+                  {formatSprintDate(sprint?.date_started)} -{" "}
+                  {formatSprintDate(sprint?.date_ended)}
                 </span>
-                <span className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-1 rounded-full">
-                  {issueCount} issues
+                <span className="text-xs font-medium text-gray-700">
+                  {sprint.issues.length} issues
                 </span>
               </div>
             </div>
           </div>
+
           <div className="flex items-center space-x-6">
-            <div className="grid grid-cols-4 gap-4 text-sm">
+            {/* Column Count */}
+            <div className="flex flex-row items-center space-x-3">
               {columns?.map((column) => (
-                <div key={column.id} className="text-center">
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">{column.name}</div>
-                  <div className="text-base font-semibold text-gray-900">
-                    {issues.filter((issue) => issue.column.name === column.name).length}
+                <div
+                  key={column.id}
+                  className={`rounded-sm px-1.5 py-0.5 text-center ${statusOptions.find((option) => option.key === column.name)?.bgColor}`}
+                >
+                  <div className="text-xs font-semibold text-gray-900">
+                    {
+                      sprint.issues.filter(
+                        (issue) => issue.column.name === column.name,
+                      ).length
+                    }
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Add Issue Button */}
             <div className="flex items-center space-x-3">
               <Button
-                variant="primary"
-                className="text-sm bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg shadow-sm transition-colors"
-                onClick={() => setIsIssueModalOpen(true)}
-              >
-                Create Issue
-              </Button>
-              <Button
                 variant="secondary"
-                className="text-sm text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 px-4 py-2 rounded-lg shadow-sm transition-colors"
+                className="rounded-lg border border-gray-300 bg-white px-1 py-1 text-sm text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
               >
                 Complete Sprint
               </Button>
-              <Button
-                variant="secondary"
-                className="text-sm text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 px-4 py-2 rounded-lg shadow-sm transition-colors"
-                onClick={() => setIsSprintModalOpen(true)}
+
+              <Dropdown
+                menu={{
+                  items: buttonItems,
+                }}
+                trigger={["click"]}
+                onOpenChange={setIsOpenButtonMenu}
+                open={isOpenButtonMenu}
               >
-                Edit Sprint
-              </Button>
+                <div
+                  className={`rounded-sm border-2 p-1 text-gray-500 transition-colors hover:cursor-pointer hover:bg-gray-100 hover:text-gray-900 ${
+                    isOpenButtonMenu
+                      ? "border-emerald-500"
+                      : "border-transparent"
+                  } `}
+                >
+                  <BsThreeDots size={16} />
+                </div>
+              </Dropdown>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Body */}
       {isExpanded && (
-        <div className="divide-y divide-gray-100 bg-gray-50">
-          <div className="p-4 bg-white border-b border-gray-200">
-            <label className="flex items-center space-x-3 select-none">
-              <input
-                type="checkbox"
-                checked={issues.length > 0 && issues.every((issue) => selectedIssues[issue.id])}
-                onChange={(e) => {
-                  issues.forEach((issue) => onIssueSelect(issue.id, e.target.checked));
-                }}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
-              />
-              <span className="text-sm font-medium text-gray-700">Select All Sprint Issues</span>
-              <span className="text-xs text-gray-500">({issues.length} issues)</span>
-            </label>
-          </div>
-
-          {parentIssues.map((parentIssue) => (
-            <div key={parentIssue.id} className="group">
-              <IssueCard issue={parentIssue} />
-              {issueMap[parentIssue.id]?.length > 0 && expandedIssues[parentIssue.id] && (
-                <div className="ml-6 space-y-2">
-                  {issueMap[parentIssue.id].map((childIssue) => (
-                    <IssueCard key={childIssue.id} issue={childIssue} isChild={true} />
-                  ))}
+        <div className="flex flex-col gap-2 divide-y divide-gray-100 bg-[#f8f8f8] p-2">
+          <div>
+            <SortableContext
+              strategy={verticalListSortingStrategy}
+              items={parentIssues.map((issue) => issue.id)}
+            >
+              {parentIssues.length > 0 ? (
+                parentIssues.map((parentIssue) => (
+                  <div key={parentIssue.id} className="group">
+                    <IssueCard
+                      issue={parentIssue}
+                      selectedIssues={selectedIssues}
+                      onIssueSelect={onIssueSelect}
+                      projectId={projectId}
+                      issueMap={issueMap}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="border-2 border-dashed border-gray-400 py-3 text-center text-sm text-gray-800">
+                  No issues in this sprint
                 </div>
               )}
-            </div>
-          ))}
+            </SortableContext>
+          </div>
+
+          <div
+            onClick={() => {
+              setIsCreateIssueModalOpen(true);
+            }}
+            className="flex items-center space-x-2 rounded-sm bg-transparent p-2 hover:cursor-pointer hover:bg-gray-200"
+          >
+            <FaPlus size={16} />
+            <span className="text-sm font-medium text-gray-700">
+              Create Issue
+            </span>
+          </div>
         </div>
       )}
 
       <UnifiedIssueModal
-        isOpen={isIssueModalOpen}
-        onClose={() => setIsIssueModalOpen(false)}
+        isOpen={isUpdateSprintModalOpen}
+        onClose={() => setIsUpdateSprintModalOpen(false)}
         projectId={projectId}
-        sprintId={sprintId}
+        sprintId={sprint?.id}
+      />
+
+      <ConfirmDeleteModal
+        title={`Delete Sprint ${sprint?.name}`}
+        description={`Are you sure you want to delete "${sprint?.name}"?`}
+        open={isDeleteSprintModalOpen}
+        onClose={() => setIsDeleteSprintModalOpen(false)}
+        onConfirm={handleDeleteSprint}
       />
 
       <CreateSprintModal
-        isOpen={isSprintModalOpen}
-        onClose={() => setIsSprintModalOpen(false)}
+        isOpen={isCreateSprintModalOpen}
+        onClose={() => setIsCreateSprintModalOpen(false)}
         projectId={projectId}
         isEditing={true}
         initialSprint={{
-          id: sprintId,
-          name: sprintName,
-          date_started: startDate,
-          date_ended: endDate,
+          id: sprint?.id,
+          name: sprint?.name,
+          date_started: sprint?.date_started,
+          date_ended: sprint?.date_ended,
         }}
+      />
+      <CreateIssueModal
+        isOpen={isCreateIssueModalOpen}
+        onClose={() => setIsCreateIssueModalOpen(false)}
+        projectId={projectId}
       />
     </div>
   );

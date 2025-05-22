@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sprints } from "../apis/sprint";
 import { toast } from "react-toastify";
-import { Sprint } from "@libs/types/sprint";
+import { ISprint } from "@libs/types/index";
 
 export function useProjectSprints(projectId: string) {
   const {
@@ -62,7 +62,7 @@ export function useCreateSprint({
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: (data: Omit<Sprint, "id" | "created_at" | "updated_at">) =>
+    mutationFn: (data: Omit<ISprint, "id" | "created_at" | "updated_at">) =>
       sprints.create(projectId, data),
     onSuccess: () => {
       toast.success("Sprint created successfully!");
@@ -98,7 +98,7 @@ export function useUpdateSprint({
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Sprint> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<ISprint> }) =>
       sprints.update(projectId, id, data),
     onSuccess: (_, variables) => {
       toast.success("Sprint updated successfully!");

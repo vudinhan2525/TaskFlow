@@ -17,3 +17,6 @@
 .ant-table-cell{
   padding: 8px 4px !important;
 }
+.ant-dropdown-trigger{
+  padding: 0px 0px !important;
+}

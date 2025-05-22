@@ -1,16 +1,17 @@
 import { IColumn } from "@libs/types/project";
 const RenderStatusCell = ({ column }: { column: IColumn }) => {
+  const selectedStatus = statusOptions.find((option) => option.key === column.name) || statusOptions[1];
   return (
     <button
       className={`rounded-2xl p-1 px-2 py-0.5 hover:cursor-pointer ${
-        statusOptions.find((option) => option.key === column.name)?.bgColor
+        selectedStatus.bgColor
       } flex items-center  group-hover:bg-none gap-1`}
     >
       <div
-        className={`rounded-full p-0.5 ${statusOptions.find((option) => option.key === column.name)?.dotColor} `}
+        className={`rounded-full p-0.5 ${selectedStatus.dotColor} `}
       ></div>
       <p
-        className={`text-xs ${statusOptions.find((option) => option.key === column.name)?.textColor} text-center font-semibold`}
+        className={`text-xs ${selectedStatus.textColor} text-center font-semibold`}
       >
         {column.name && column.name.toUpperCase()}
       </p>

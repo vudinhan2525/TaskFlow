@@ -1,28 +1,51 @@
-import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import IssueCard from "@libs/app/components/projects/board/issueCard";
 import DeleteColumnModal from "@libs/app/components/projects/modals/deleteColumnModal";
 import RenameColumnModal from "@libs/app/components/projects/modals/renameColumnModal";
-import { useDeleteColumn, useUpdateColumn, useUpdateProjectOrderColumn } from "@libs/hooks/useProject";
+import {
+  useDeleteColumn,
+  useUpdateColumn,
+  useUpdateProjectOrderColumn,
+} from "@libs/hooks/useProject";
 import { IIssue } from "@libs/types/issue";
 import { IColumn } from "@libs/types/project";
 import { Popover } from "antd";
 import { ReactNode, useState } from "react";
 import { LuEllipsisVertical } from "react-icons/lu";
 
-const Issue = ({ issue, isDragging }: { issue: IIssue; isDragging?: boolean }) => {
+const Issue = ({
+  issue,
+  isDragging,
+}: {
+  issue: IIssue;
+  isDragging?: boolean;
+}) => {
   return <IssueCard issue={issue} isDragging={isDragging} />;
 };
 
 const SortableIssue = ({ issue }: { issue: IIssue }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: issue.id });
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: issue.id });
 
   const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
     transition,
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="cursor-grab">
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="cursor-grab"
+    >
       <Issue issue={issue} />
     </div>
   );
@@ -64,12 +87,16 @@ export const KanbanColumn = ({
   });
   const handleMove = (direction: "left" | "right") => {
     const currentIndex = columns.findIndex((c) => c.id === column.id);
-    const targetIndex = direction === "left" ? currentIndex - 1 : currentIndex + 1;
+    const targetIndex =
+      direction === "left" ? currentIndex - 1 : currentIndex + 1;
 
     if (targetIndex < 0 || targetIndex >= columns.length) return;
 
     const newColumns = [...columns];
-    [newColumns[currentIndex], newColumns[targetIndex]] = [newColumns[targetIndex], newColumns[currentIndex]];
+    [newColumns[currentIndex], newColumns[targetIndex]] = [
+      newColumns[targetIndex],
+      newColumns[currentIndex],
+    ];
 
     const reordered = newColumns.map((col, index) => ({
       ...col,
@@ -111,10 +138,16 @@ export const KanbanColumn = ({
   };
   const content: ReactNode = (
     <div className="">
-      <div onClick={() => handleMove("left")} className="px-2 py-1 hover:bg-gray-100 rounded-md cursor-pointer">
+      <div
+        onClick={() => handleMove("left")}
+        className="cursor-pointer rounded-md px-2 py-1 hover:bg-gray-100"
+      >
         Move to left
       </div>
-      <div onClick={() => handleMove("right")} className="px-2 py-1 hover:bg-gray-100 rounded-md cursor-pointer">
+      <div
+        onClick={() => handleMove("right")}
+        className="cursor-pointer rounded-md px-2 py-1 hover:bg-gray-100"
+      >
         Move to right
       </div>
       <div
@@ -122,7 +155,7 @@ export const KanbanColumn = ({
           setShowRenameColumnModal(true);
           setPopoverOpen(false);
         }}
-        className="px-2 py-1 hover:bg-gray-100 rounded-md cursor-pointer"
+        className="cursor-pointer rounded-md px-2 py-1 hover:bg-gray-100"
       >
         Change column name
       </div>
@@ -131,23 +164,32 @@ export const KanbanColumn = ({
           setShowDeleteColumnModal(true);
           setPopoverOpen(false);
         }}
-        className="px-2 py-1 hover:bg-gray-100 rounded-md cursor-pointer"
+        className="cursor-pointer rounded-md px-2 py-1 hover:bg-gray-100"
       >
         Delete column
       </div>
     </div>
   );
   return (
-    <div ref={setNodeRef} className="w-80 p-2 mx-2 bg-gray-100 rounded">
-      <div className="flex p-2  mb-3  justify-between items-center">
+    <div ref={setNodeRef} className="mx-2 w-80 rounded bg-gray-100 p-2">
+      <div className="mb-3 flex items-center justify-between p-2">
         <h2 className="text-lg font-bold">{column.name}</h2>
-        <Popover content={content} trigger="click" placement="bottomRight" open={popoverOpen} onOpenChange={setPopoverOpen}>
-          <div className="p-2 cursor-pointer hover:bg-gray-200 transition-all rounded-md">
+        <Popover
+          content={content}
+          trigger="click"
+          placement="bottomRight"
+          open={popoverOpen}
+          onOpenChange={setPopoverOpen}
+        >
+          <div className="cursor-pointer rounded-md p-2 transition-all hover:bg-gray-200">
             <LuEllipsisVertical />
           </div>
         </Popover>
       </div>
-      <SortableContext items={column.issues.map((issue) => issue.id)} strategy={verticalListSortingStrategy}>
+      <SortableContext
+        items={column.issues.map((issue) => issue.id)}
+        strategy={verticalListSortingStrategy}
+      >
         <div className="min-h-40">
           {column.issues.map((issue) => {
             if (issue.parent_id === "") {

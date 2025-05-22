@@ -6,6 +6,7 @@ import Modal from "@libs/app/components/general-components/modal/modal";
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import { useProjectColumns } from "@libs/hooks/useProject";
+import { CreateIssueParams, IIssue } from "@libs/types/issue";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
@@ -48,6 +49,8 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   isEditing,
   initialIssue,
 }) => {
+  const { columns = [] } = useProjectColumns(projectId);
+
   const { createIssue, isLoading: isCreating } = useCreateIssue({
     projectId,
     onClose: () => {
@@ -63,6 +66,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
       reset();
     },
   });
+
 
   const isLoading = isCreating || isUpdating;
 
@@ -115,12 +119,12 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
       project_id: projectId,
     };
 
-    console.log("Issue data to submit:", issueData);
+    
 
     if (isEditing && initialIssue) {
-      updateIssue({ id: initialIssue.id, data: issueData });
+      updateIssue({ id: initialIssue.id, data: issueData as Partial<IIssue> });
     } else {
-      createIssue(issueData);
+      createIssue(issueData as CreateIssueParams);
     }
   };
 
@@ -129,7 +133,6 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   const column_id = watch("column_id");
 
   // Fetch project columns
-  const { columns = [] } = useProjectColumns(projectId);
 
   if (!isOpen) return null;
 

@@ -39,7 +39,7 @@ const ColumnDropdown = ({
       <Dropdown
         menu={{
           style: {
-          marginTop: "8px",
+          marginTop: "0px",
           padding: "4px 0px",
           borderRadius: "0px",
         },
@@ -54,6 +54,9 @@ const ColumnDropdown = ({
           placeholder={currentItem}
           value={searchText}
           autoFocus={true}
+          style={{
+            width:dropdownRef.current?.clientWidth,
+          }}
           onChange={(e) => setSearchText(e.target.value)}
           onClick={(e) => e.stopPropagation()}
           className="rounded-none border-2 border-emerald-500 

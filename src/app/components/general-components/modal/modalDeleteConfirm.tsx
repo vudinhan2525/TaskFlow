@@ -27,7 +27,11 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
       onClose={onClose}
       onSubmit={onConfirm}
       isLoadingButton={loading}
-      className="w-[450px]"
+      className="w-[400px]"
+      style={{
+        textColor: "text-red-700",
+        confirmButtonColor: "bg-red-700",
+      }}
     >
       <div className="mb-6 text-start text-base font-semibold">{description}</div>
     </Modal>
