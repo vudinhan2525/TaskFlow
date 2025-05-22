@@ -1,11 +1,11 @@
 import { IIssue } from "@libs/types/issue";
 import { Dropdown, MenuProps, TableColumnType } from "antd";
 import React from "react";
-import { FaAngleDown, FaPlus } from "react-icons/fa";
-import { FaArrowDown, FaListUl } from "react-icons/fa";
-import { FaArrowUp } from "react-icons/fa";
+import { FaAngleDown, FaPlus, FaArrowDown, FaListUl, FaArrowUp } from "react-icons/fa";
 import { LuX } from "react-icons/lu";
 import { columnsIcon } from "../../../../../constants/list";
+import { FaCheck } from "react-icons/fa6";
+import { MdHideSource } from "react-icons/md";
 
 const TableColumn = (
   key: keyof IIssue,
@@ -29,8 +29,11 @@ const TableColumn = (
     {
       label: (
         <div className="flex items-center gap-2">
-          <FaArrowUp />
-          <p>Sort {"A -> Z"}</p>
+          <FaArrowUp className="h-3 w-3" />
+          <p className="text-xs text-[#6c757d]">Sort {"A -> Z"}</p>
+          {options.sortOrder === "ascend" && (
+            <FaCheck className="h-3 w-3 text-emerald-500" />
+          )}
         </div>
       ),
       key: "sort-asc",
@@ -39,8 +42,11 @@ const TableColumn = (
     {
       label: (
         <div className="flex items-center gap-2">
-          <FaArrowDown />
-          <p>Sort {"Z -> A"}</p>
+          <FaArrowDown className="h-3 w-3" />
+          <p className="text-xs text-[#6c757d]">Sort {"Z -> A"}</p>
+          {options.sortOrder === "descend" && (
+            <FaCheck className="h-3 w-3 text-emerald-500" />
+          )}
         </div>
       ),
       key: "sort-desc",
@@ -49,8 +55,8 @@ const TableColumn = (
     {
       label: (
         <div className={`flex items-center gap-2`}>
-          <LuX className="h-4 w-4 font-bold" />
-          <p>Clear Sort</p>
+          <LuX className="h-3 w-3" />
+          <p className="text-xs text-[#6c757d]">Clear Sort</p>
         </div>
       ),
       disabled: options.sortOrder === null,
@@ -60,8 +66,9 @@ const TableColumn = (
     {
       label: (
         <div className="flex items-center gap-2">
-          <LuX className="h-4 w-4 font-bold" />
-          <p>Hide field</p>
+          <MdHideSource className="h-3 w-3" />
+          <p className="text-xs text-[#6c757d]">Hide field</p>
+         
         </div>
       ),
       key: "hide-field",
@@ -76,14 +83,14 @@ const TableColumn = (
         className="group item flex items-center justify-between gap-2"
       >
         <div className="flex items-center gap-2">
-          <div className="hidden rounded-md p-1 group-hover:block">
-            <FaListUl />
+          <div className="hidden rounded-md p-1 group-hover:block ">
+            <FaListUl className="h-3 w-3 text-[#6c757d]" />
           </div>
           <div className="rounded-md p-1 group-hover:hidden">
             {key in columnsIcon ? (
               columnsIcon[key as keyof IIssue]
             ) : (
-              <FaPlus className="h-3 w-3" />
+              <FaPlus className="h-3 w-3 text-[#6c757d]" />
             )}
           </div>
           <span className="text-xs font-bold text-[#6c757d]">{title}</span>
@@ -91,7 +98,7 @@ const TableColumn = (
 
         <div className="z-10 cursor-pointer opacity-0 group-hover:opacity-100">
           <Dropdown menu={{ items }} trigger={["click"]}>
-            <FaAngleDown />
+            <FaAngleDown className="h-3 w-3 text-[#6c757d]" />
           </Dropdown>
         </div>
       </div>

@@ -16,12 +16,9 @@ import { FaCalendarAlt, FaPlus } from "react-icons/fa";
 import { IIssue } from "@libs/types/issue";
 import { RiTeamFill } from "react-icons/ri";
 import { IoIosPrint } from "react-icons/io";
+import { LuCircleArrowRight } from "react-icons/lu";
+import { CiCircleChevUp } from "react-icons/ci";
 
-export const priorityOptions = [
-  { name: "High", icon: <FcHighPriority size={20} /> },
-  { name: "Medium", icon: <FcMediumPriority size={20} /> },
-  { name: "Low", icon: <FcLowPriority size={20} /> },
-];
 
 export const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   id: <FaPlus color="#626f86" />,
@@ -29,9 +26,9 @@ export const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   title: <MdOutlineSubtitles color="#626f86" />,
   summary: <MdOutlineSummarize color="#626f86" />,
   description: <MdOutlineDescription color="#626f86" />,
-  column: <FaPlus color="#626f86" />,
-  priority: <FaPlus color="#626f86" />,
-  type: <FaPlus color="#626f86" />,
+  column: <LuCircleArrowRight color="#626f86" />,
+  priority: <CiCircleChevUp color="#626f86" />,
+  type:<div/>,
   team_id: <RiTeamFill color="#626f86" />,
   sprint_id: <IoIosPrint color="#626f86" />,
   assignee_id: <CiAt color="#626f86" />,
@@ -72,5 +69,39 @@ export const typeOptions = [
     icon: <LuStar className="h-4 w-4 text-purple-500" />,
     bgColor: "bg-purple-100",
     textColor: "text-purple-700",
+  },
+];
+
+export const priorityOptions = [
+  { name: "High", icon: <FcHighPriority size={20} /> },
+  { name: "Medium", icon: <FcMediumPriority size={20} /> },
+  { name: "Low", icon: <FcLowPriority size={20} /> },
+];
+
+export 
+const statusOptions = [
+  {
+    label: "TO DO",
+    key: "TO DO",
+    order: 1,
+    textColor: "text-gray-600",
+    dotColor: "bg-gray-400",
+    bgColor: "bg-gray-100",
+  },
+  {
+    label: "IN PROGRESS",
+    key: "IN PROGRESS",
+    order: 2,
+    textColor: "text-blue-600",
+    dotColor: "bg-blue-400",
+    bgColor: "bg-blue-100",
+  },
+  {
+    label: "DONE",
+    key: "DONE",
+    order: 3,
+    textColor: "text-green-600",
+    dotColor: "bg-green-400",
+    bgColor: "bg-green-100",
   },
 ];

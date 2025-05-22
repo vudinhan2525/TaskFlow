@@ -39,7 +39,7 @@ const ColumnDropdown = ({
       <Dropdown
         menu={{
           style: {
-          marginTop: "8px",
+          marginTop: "0px",
           padding: "4px 0px",
           borderRadius: "0px",
         },

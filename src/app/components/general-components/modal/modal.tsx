@@ -12,6 +12,10 @@ interface BaseModalProps {
   onSubmit: any;
   children: ReactNode;
   className?: string;
+  style?:{
+    'textColor':string
+    'confirmButtonColor':string
+  }
 }
 
 export default function Modal({
@@ -22,7 +26,8 @@ export default function Modal({
   isSubmitDisabled,
   onSubmit,
   children,
-  className
+  className,
+  style
 }: BaseModalProps) {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -34,7 +39,7 @@ export default function Modal({
     <div onMouseDown={handleBackdropClick} className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50">
       <div className={`bg-white rounded-lg shadow-xl min-w-[500px] p-6 animate-fade-in ${className}`}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-green-700">{title}</h2>
+          <h2 className={`text-2xl font-semibold ${style?.textColor}`}>{title}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 focus:outline-none">
             <LuX className="w-7 h-7 cursor-pointer" />
           </button>
@@ -55,7 +60,7 @@ export default function Modal({
               if (onSubmit) onSubmit();
             }}
             disabled={isSubmitDisabled}
-            className="px-4 py-2 cursor-pointer text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`px-4 py-2 cursor-pointer text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed ${style?.confirmButtonColor}`}
           >
             {buttonContent}
           </Button>

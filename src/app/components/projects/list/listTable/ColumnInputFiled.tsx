@@ -31,12 +31,10 @@ const ColumnInputFiled = ({
   }, [field]);
 
   return (
-   
-
     <input
-    style={{
-      width:width,
-    }}
+      style={{
+        width: width,
+      }}
       onChange={(e) => setNewValue(e.target.value)}
       type={inputType}
       onBlur={(e) => {
@@ -45,9 +43,8 @@ const ColumnInputFiled = ({
         }
       }}
       value={newValue?.toString()}
-      className={`flex items-center gap-2 rounded border-2 border-transparent px-2 py-1 outline-none whover:bg-gray-100 focus:border-emerald-500 ${inputType === "number" ? "text-right" : ""} w-full`}
-      />
-      
+      className={`whover:bg-gray-100 flex items-center gap-2 rounded border-2 border-transparent px-2 py-1 outline-none focus:border-emerald-500 ${inputType === "number" ? "text-right" : ""} w-full`}
+    />
   );
 };
 

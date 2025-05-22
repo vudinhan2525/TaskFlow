@@ -1,6 +1,21 @@
 import { useEffect, useState } from "react";
-import { DndContext, DragEndEvent, DragOverEvent, DragStartEvent, KeyboardSensor, PointerSensor, rectIntersection, useSensor, useSensors } from "@dnd-kit/core";
-import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  rectIntersection,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { IColumn } from "@libs/types/project";
 import { IIssue } from "@libs/types/issue";
 import { useParams } from "react-router-dom";
@@ -27,7 +42,7 @@ export default function KanbanBoard() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // When drag starts, set the active issue
@@ -59,26 +74,35 @@ export default function KanbanBoard() {
     // Check if we're hovering over a column
     const isOverColumn = columns.some((col) => col.id === overId);
     if (isOverColumn) {
+      console.log("Dropped onto a column");
       // We're dropping onto a column directly
       setColumns((prevColumns) => {
         // Find which column the active issue belongs to
-        const sourceColumnIndex = prevColumns.findIndex((column) => column.issues.some((issue) => issue.id === activeId));
+        const sourceColumnIndex = prevColumns.findIndex((column) =>
+          column.issues.some((issue) => issue.id === activeId),
+        );
 
         if (sourceColumnIndex === -1) return prevColumns;
 
         // Remove from the source column
         const newColumns = [...prevColumns];
-        const activeIssue = newColumns[sourceColumnIndex].issues.find((issue) => issue.id === activeId);
+        const activeIssue = newColumns[sourceColumnIndex].issues.find(
+          (issue) => issue.id === activeId,
+        );
 
         if (!activeIssue) return prevColumns;
 
         newColumns[sourceColumnIndex] = {
           ...newColumns[sourceColumnIndex],
-          issues: newColumns[sourceColumnIndex].issues.filter((issue) => issue.id !== activeId),
+          issues: newColumns[sourceColumnIndex].issues.filter(
+            (issue) => issue.id !== activeId,
+          ),
         };
 
         // Add to the target column (at the end)
-        const targetColumnIndex = prevColumns.findIndex((column) => column.id === overId);
+        const targetColumnIndex = prevColumns.findIndex(
+          (column) => column.id === overId,
+        );
 
         if (targetColumnIndex === -1) return prevColumns;
 
@@ -111,15 +135,22 @@ export default function KanbanBoard() {
     if (activeColumn !== overColumnId) {
       const prevColumns = [...columns];
 
-      const sourceColumnIndex = prevColumns.findIndex((column) => column.issues.some((issue) => issue.id === activeId));
+      const sourceColumnIndex = prevColumns.findIndex((column) =>
+        column.issues.some((issue) => issue.id === activeId),
+      );
 
       // Find the target column index
-      const targetColumnIndex = prevColumns.findIndex((column) => column.id === overColumnId);
+      const targetColumnIndex = prevColumns.findIndex(
+        (column) => column.id === overColumnId,
+      );
 
-      if (sourceColumnIndex === -1 || targetColumnIndex === -1) return prevColumns;
+      if (sourceColumnIndex === -1 || targetColumnIndex === -1)
+        return prevColumns;
 
       // Get the active issue
-      const issueToMove = prevColumns[sourceColumnIndex].issues.find((issue) => issue.id === activeId);
+      const issueToMove = prevColumns[sourceColumnIndex].issues.find(
+        (issue) => issue.id === activeId,
+      );
 
       if (!issueToMove) return prevColumns;
 
@@ -129,15 +160,23 @@ export default function KanbanBoard() {
       // Remove from source
       newColumns[sourceColumnIndex] = {
         ...newColumns[sourceColumnIndex],
-        issues: newColumns[sourceColumnIndex].issues.filter((issue) => issue.id !== activeId),
+        issues: newColumns[sourceColumnIndex].issues.filter(
+          (issue) => issue.id !== activeId,
+        ),
       };
 
       // Find where to insert in target
-      const overIssueIndex = newColumns[targetColumnIndex].issues.findIndex((issue) => issue.id === overId);
+      const overIssueIndex = newColumns[targetColumnIndex].issues.findIndex(
+        (issue) => issue.id === overId,
+      );
       // Insert in target
       newColumns[targetColumnIndex] = {
         ...newColumns[targetColumnIndex],
-        issues: [...newColumns[targetColumnIndex].issues.slice(0, overIssueIndex + 1), issueToMove, ...newColumns[targetColumnIndex].issues.slice(overIssueIndex + 1)],
+        issues: [
+          ...newColumns[targetColumnIndex].issues.slice(0, overIssueIndex + 1),
+          issueToMove,
+          ...newColumns[targetColumnIndex].issues.slice(overIssueIndex + 1),
+        ],
       };
       setColumns(newColumns);
     }
@@ -157,7 +196,9 @@ export default function KanbanBoard() {
 
     // Update issue status in backend
     if (projectId) {
-      const targetColumn = columns.find((col) => col.issues.some((issue) => issue.id === overId));
+      const targetColumn = columns.find((col) =>
+        col.issues.some((issue) => issue.id === overId),
+      );
       if (targetColumn) {
         updateIssue({
           id: activeId,
@@ -177,18 +218,27 @@ export default function KanbanBoard() {
     // We're dropping onto another issue
     setColumns((prevColumns) => {
       // Find the column containing our active issue
-      const activeColumnIndex = prevColumns.findIndex((column) => column.issues.some((issue) => issue.id === activeId));
+      const activeColumnIndex = prevColumns.findIndex((column) =>
+        column.issues.some((issue) => issue.id === activeId),
+      );
 
       // Find the column containing the issue we're dropping onto
-      const overColumnIndex = prevColumns.findIndex((column) => column.issues.some((issue) => issue.id === overId));
+      const overColumnIndex = prevColumns.findIndex((column) =>
+        column.issues.some((issue) => issue.id === overId),
+      );
 
-      if (activeColumnIndex === -1 || overColumnIndex === -1) return prevColumns;
+      if (activeColumnIndex === -1 || overColumnIndex === -1)
+        return prevColumns;
 
       // Same column reordering
       if (activeColumnIndex === overColumnIndex) {
         const column = prevColumns[activeColumnIndex];
-        const oldIndex = column.issues.findIndex((issue) => issue.id === activeId);
-        const newIndex = column.issues.findIndex((issue) => issue.id === overId);
+        const oldIndex = column.issues.findIndex(
+          (issue) => issue.id === activeId,
+        );
+        const newIndex = column.issues.findIndex(
+          (issue) => issue.id === overId,
+        );
 
         const newColumns = [...prevColumns];
         newColumns[activeColumnIndex] = {
@@ -212,12 +262,27 @@ export default function KanbanBoard() {
     <div className="p-4">
       <h1 className="mb-6 p-2 text-2xl font-bold">Kanban Board</h1>
       <div className="flex">
-        <DndContext sensors={sensors} collisionDetection={rectIntersection} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
-          <SortableContext items={columns.map((col) => col.id)} strategy={verticalListSortingStrategy}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={rectIntersection}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={columns.map((col) => col.id)}
+            strategy={verticalListSortingStrategy}
+          >
             {columns.map((column) => (
-              <KanbanColumn key={column.id} column={column} setColumns={setColumns} columns={columns} projectId={projectId} />
+              <KanbanColumn
+                key={column.id}
+                column={column}
+                setColumns={setColumns}
+                columns={columns}
+                projectId={projectId}
+              />
             ))}
-            <div className="bg-gray-100 rounded-lg h-[200px] p-4 w-80 relative ">
+            <div className="relative h-[200px] w-80 rounded-lg bg-gray-100 p-4">
               <input
                 id="email-address"
                 autoComplete="email"
@@ -225,11 +290,11 @@ export default function KanbanBoard() {
                   setNewColumnText(e.target.value);
                 }}
                 placeholder="New Stage"
-                className={`appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm`}
+                className={`relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
               />
-              <div className="flex items-center justify-center absolute left-[50%] translate-y-[-50%] translate-x-[-50%] top-[60%]">
+              <div className="absolute top-[60%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] items-center justify-center">
                 <LuCirclePlus
-                  className="text-4xl text-gray-600 cursor-pointer"
+                  className="cursor-pointer text-4xl text-gray-600"
                   onClick={() => {
                     if (!newColumnText || !projectId) {
                       return;
