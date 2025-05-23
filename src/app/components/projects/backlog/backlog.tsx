@@ -303,55 +303,54 @@ const BackLog = ({
   return (
     // <PanelGroup autoSaveId="backlog-panel-group" direction="horizontal">
     //   <Panel defaultSize={25}>
-        <div className="flex">
-
-        <div className="flex-1 p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Backlog</h1>
-            <Button
-              onClick={() => setIsCreateSprintModalOpen(true)}
-              variant="primary"
-            >
-              Create Sprint
-            </Button>
-          </div>
-
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
+    <div className="flex">
+      <div className="flex-1 p-4">
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">Backlog</h1>
+          <Button
+            onClick={() => setIsCreateSprintModalOpen(true)}
+            variant="primary"
           >
-            <SortableContext
-              strategy={verticalListSortingStrategy}
-              items={sprints.map((sprint: ISprintIssues) => sprint.id)}
-            >
-              {/* Sprint List */}
-
-              <div className="flex flex-col gap-2">
-                {sprints?.map((sprint: ISprintIssues) => (
-                  <ScrumSprint
-                    key={sprint.id}
-                    sprint={sprint}
-                    projectId={projectId}
-                    selectedIssues={selectedIssues}
-                    onIssueSelect={handleIssueSelect}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-
-          {/* Create Sprint Modal */}
-          <CreateSprintModal
-            isOpen={isCreateSprintModalOpen}
-            onClose={() => setIsCreateSprintModalOpen(false)}
-            projectId={projectId}
-          />
+            Create Sprint
+          </Button>
         </div>
-        <IssueSideBar />
-        </div>
+
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            strategy={verticalListSortingStrategy}
+            items={sprints.map((sprint: ISprintIssues) => sprint.id)}
+          >
+            {/* Sprint List */}
+
+            <div className="flex flex-col gap-2">
+              {sprints?.map((sprint: ISprintIssues) => (
+                <ScrumSprint
+                  key={sprint.id}
+                  sprint={sprint}
+                  projectId={projectId}
+                  selectedIssues={selectedIssues}
+                  onIssueSelect={handleIssueSelect}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+
+        {/* Create Sprint Modal */}
+        <CreateSprintModal
+          isOpen={isCreateSprintModalOpen}
+          onClose={() => setIsCreateSprintModalOpen(false)}
+          projectId={projectId}
+        />
+      </div>
+      <IssueSideBar />
+    </div>
 
     //   </Panel>
     //   <PanelResizeHandle className="w-1 cursor-col-resize bg-gray-300" />

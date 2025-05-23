@@ -1,6 +1,7 @@
 import { useUserById } from "@libs/hooks/useUser";
-import Avatar from "react-avatar";
+import { Avatar } from "antd";
 import { FaUserAltSlash } from "react-icons/fa";
+
 export default function UserAvatar({
   userId,
   size = 28,
@@ -11,13 +12,13 @@ export default function UserAvatar({
   isDisplayName?: boolean;
 }) {
   const { user } = useUserById(userId || "");
-  
+
   if (!userId) {
     return (
       <div className="flex flex-row items-center justify-start gap-2">
         <div
           style={{ width: size, height: size }}
-          className="rounded-full bg-gray-200 p-1 flex items-center justify-center"
+          className="flex items-center justify-center rounded-full bg-gray-200 p-1"
         >
           <FaUserAltSlash />
         </div>
@@ -30,10 +31,22 @@ export default function UserAvatar({
   return (
     <div className="flex flex-row items-center gap-2">
       <Avatar
-        name={user?.first_name + " " + user?.last_name}
-        size={`${size}`}
-        round={true}
-      />
+        size={size}
+        shape="circle"
+        // style={{
+        //   backgroundColor: "#007bff",
+        //   color: "#ffffff",
+        //   display: "flex",
+        //   alignItems: "center",
+        //   justifyContent: "center",
+        //   fontSize: `${Math.floor(size / 2.5)}px`,
+        //   fontWeight: 500,
+        //   textTransform: "uppercase",
+        // }}
+      >
+        {user?.first_name?.[0]}
+        {user?.last_name?.[0]}
+      </Avatar>
       {isDisplayName && (
         <p className="text-sm font-medium text-gray-700">
           {user?.first_name + " " + user?.last_name}

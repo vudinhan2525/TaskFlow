@@ -1,7 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { FaChevronDown, FaChevronUp, FaPaperclip, FaTimes } from "react-icons/fa";
+import { Dropdown } from "antd";
+import {
+  FaChevronDown,
+  FaChevronUp,
+  FaPaperclip,
+  FaPlus,
+  FaTimes,
+} from "react-icons/fa";
 import StatusDropdown from "../projects/backlog/StatusDropdown";
 import { useProjectColumns } from "@libs/hooks/useProject";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
+import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import Button from "../general-components/button";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
@@ -30,15 +39,22 @@ const useDebounce = <T,>(value: T, delay: number): T => {
 };
 
 const IssueSideBar: React.FC = () => {
-  const { selectedIssueId, selectedIssue, selectIssue, isSidebarVisible } = useIssueSelection();
+  const { selectedIssueId, selectedIssue, selectIssue, isSidebarVisible } =
+    useIssueSelection();
   const { columns } = useProjectColumns(selectedIssue?.project_id || "");
+  const { projectMembers } = useProjectMembers(selectedIssue?.project_id || "");
+  interface Sprint {
+    id: string;
+    name: string;
+  }
   const { updateIssueAsync } = useUpdateIssue({
     projectId: selectedIssue?.project_id || "",
   });
   const { sprints } = useProjectSprints(selectedIssue?.project_id || "");
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("Comments");
-  const [selectedDetailOption, setSelectedDetailOption] = useState<DetailOption | null>(null);
+  const [selectedDetailOption, setSelectedDetailOption] =
+    useState<DetailOption | null>(null);
   const [childIssueForm, setChildIssueForm] = useState({
     title: "",
     summary: "",
@@ -78,13 +94,21 @@ const IssueSideBar: React.FC = () => {
 
   // Handle debounced updates
   useEffect(() => {
-    if (selectedIssue && valueChangedByUser.summary && debouncedSummary !== selectedIssue.summary) {
+    if (
+      selectedIssue &&
+      valueChangedByUser.summary &&
+      debouncedSummary !== selectedIssue.summary
+    ) {
       handleSummaryChange(debouncedSummary);
     }
   }, [debouncedSummary, selectedIssue, valueChangedByUser.summary]);
 
   useEffect(() => {
-    if (selectedIssue && valueChangedByUser.description && debouncedDescription !== selectedIssue.description) {
+    if (
+      selectedIssue &&
+      valueChangedByUser.description &&
+      debouncedDescription !== selectedIssue.description
+    ) {
       handleDescriptionChange(debouncedDescription);
     }
   }, [debouncedDescription, selectedIssue, valueChangedByUser.description]);
@@ -115,7 +139,9 @@ const IssueSideBar: React.FC = () => {
           type: "Task",
           project_id: selectedIssue!.project_id,
           sprint_id: selectedIssue!.sprint_id,
-          story_point: childIssueForm.summary ? parseInt(childIssueForm.summary) : undefined,
+          story_point: childIssueForm.summary
+            ? parseInt(childIssueForm.summary)
+            : undefined,
           parent_id: selectedIssueId,
           summary: childIssueForm.summary,
         };
@@ -131,9 +157,21 @@ const IssueSideBar: React.FC = () => {
     }
   };
 
+  const handleAssigneeChange = async (assigneeId: string) => {
+    try {
+      await updateIssueAsync({
+        id: selectedIssue.id,
+        data: { assignee_id: assigneeId },
+      });
+      toast.success("Assignee updated successfully");
+    } catch {
+      toast.error("Failed to update assignee");
+    }
+  };
+
   const handleStatusChange = async (newStatus: string) => {
     try {
-      console.log(newStatus)
+      console.log(newStatus);
       // TODO: FIX COLLUMN ID
       await updateIssueAsync({
         id: selectedIssue.id,
@@ -186,10 +224,23 @@ const IssueSideBar: React.FC = () => {
       toast.error("Cannot change team for child issues");
       return;
     }
+    if (selectedIssue.parent_id) {
+      toast.error("Cannot change team for child issues");
+      return;
+    }
     try {
+      const updatedIssue = { ...selectedIssue };
+      updatedIssue.team_id = teamId;
       await updateIssueAsync({
         id: selectedIssue.id,
-        data: { team_id: teamId },
+        data: {
+          column_id: updatedIssue.column.id,
+          type: updatedIssue.type,
+          priority: updatedIssue.priority,
+          sprint_id: updatedIssue.sprint_id,
+          title: updatedIssue.title,
+          summary: updatedIssue.summary,
+        },
       });
       toast.success("Team updated successfully");
     } catch {
@@ -213,7 +264,9 @@ const IssueSideBar: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = event.target.files;
     if (!files) return;
 
@@ -221,129 +274,234 @@ const IssueSideBar: React.FC = () => {
     toast.info(`Selected files: ${fileNames.join(", ")}`);
   };
 
+  const reporter = projectMembers?.find(
+    (member) => member.user_id === selectedIssue.reporter_id,
+  );
+  const reporterName = reporter
+    ? `${reporter.user?.first_name} ${reporter.user?.last_name}`
+    : "Unknown";
   const details = {
     assignee: {
-      initials: selectedIssue.assignee_id ? selectedIssue.assignee_id.substring(0, 2).toUpperCase() : "NA",
+      initials: selectedIssue.assignee_id
+        ? selectedIssue.assignee_id.substring(0, 2).toUpperCase()
+        : "NA",
       name: selectedIssue.assignee_id || "Unassigned",
     },
     summary: selectedIssue.summary || "No summary provided",
-    sprint: sprints?.find((s) => s.id === selectedIssue.sprint_id)?.name || "None",
+    sprint:
+      sprints?.find((s: Sprint) => s.id === selectedIssue.sprint_id)?.name ||
+      "None",
     storyPoint: selectedIssue.story_point || 0,
     reporter: {
-      initials: selectedIssue.reporter_id ? selectedIssue.reporter_id.substring(0, 2).toUpperCase() : "NA",
+      initials: selectedIssue.reporter_id
+        ? selectedIssue.reporter_id.substring(0, 2).toUpperCase()
+        : "NA",
       name: selectedIssue.reporter_id || "Unknown",
     },
     parent: {
-      initials: selectedIssue.parent_id ? selectedIssue.parent_id.substring(0, 2).toUpperCase() : "NA",
+      initials: selectedIssue.parent_id
+        ? selectedIssue.parent_id.substring(0, 2).toUpperCase()
+        : "NA",
       name: selectedIssue.parent_id || "Unknown",
     },
     attachments: selectedIssue.attachments || [],
   };
 
   return (
-    <div className="h-screen p-4 bg-white border-l border-gray-200 w-[400px] transition-all duration-300 overflow-y-auto">
+    <div className="h-screen w-[400px] overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-blue-600 hover:underline">{selectedIssue.id}</span>
+          <span className="text-sm text-blue-600 hover:underline">
+            {selectedIssue.id}
+          </span>
         </div>
         <div className="flex items-center space-x-2">
-          <Button variant="dark" className="text-gray-500 hover:text-gray-700" onClick={() => selectIssue(null)}>
+          <Button
+            variant="dark"
+            className="text-gray-500 hover:text-gray-700"
+            onClick={() => selectIssue(null)}
+          >
             ✖
           </Button>
         </div>
       </div>
 
       {/* Title */}
-      <h2 className="text-xl text-left font-semibold text-gray-800 mb-2">{selectedIssue.title}</h2>
+      <h2 className="mb-2 text-left text-xl font-semibold text-gray-800">
+        {selectedIssue.title}
+      </h2>
 
       {/* Status and Add button*/}
-      <div className="mb-4 w-full">
-        <StatusDropdown status={selectedIssue.column.name} columns={columns || []} onChange={handleStatusChange} />
-        <select
-          value={selectedDetailOption || ""}
-          onChange={(e) => setSelectedDetailOption((e.target.value as DetailOption) || null)}
-          className="px-3 py-1 text-sm text-gray-700 bg-gray-100 rounded focus:outline-none focus:ring-1 focus:ring-gray-400"
+      <div className="mb-4 flex w-full gap-5">
+        <StatusDropdown
+          status={selectedIssue.column.name}
+          columns={columns || []}
+          onStatusChange={handleStatusChange}
+        />
+        <Dropdown
+          menu={{
+            items: detailOptions.map((option) => ({
+              key: option,
+              label: (
+                <div className="flex items-center gap-2 p-2 hover:bg-gray-50">
+                  <span className="text-sm">{option}</span>
+                </div>
+              ),
+              onClick: () => setSelectedDetailOption(option),
+            })),
+          }}
+          trigger={["click"]}
         >
-          <option value="">Add detail...</option>
-          {detailOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
+          <div className="flex cursor-pointer items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-200">
+            <FaPlus size={14} />
+            <span>Add detail...</span>
+          </div>
+        </Dropdown>
       </div>
       {/* Input field for selected detail option */}
       {selectedDetailOption && (
-        <div className="mt-2">
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-500">{selectedDetailOption === "Attachment" && <FaPaperclip />}</span>
-            {selectedDetailOption === "Child Issue" ? (
-              <div className="flex-1 space-y-2">
-                <input
-                  type="text"
-                  placeholder="Issue title"
-                  value={childIssueForm.title}
-                  onChange={(e) => setChildIssueForm((prev) => ({ ...prev, title: e.target.value }))}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                />
-                <input
-                  type="summary"
-                  placeholder="Summary"
-                  value={childIssueForm.summary}
-                  onChange={(e) => setChildIssueForm((prev) => ({ ...prev, summary: e.target.value }))}
-                  className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  min="0"
-                />
-              </div>
-            ) : (
-              <input
-                type="file"
-                placeholder="Add attachment..."
-                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            )}
+        <div className="mt-2 rounded-md border border-gray-200 bg-gray-50 p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">
+              {selectedDetailOption}
+            </span>
             <button
-              onClick={handleDetailSubmit}
-              className="px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 focus:outline-none"
+              onClick={() => setSelectedDetailOption(null)}
+              className="text-gray-500 hover:text-gray-700"
             >
-              Add
+              <FaTimes size={14} />
             </button>
           </div>
+          {selectedDetailOption === "Child Issue" ? (
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-600">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter issue title"
+                  value={childIssueForm.title}
+                  onChange={(e) =>
+                    setChildIssueForm((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600">
+                  Summary
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter summary"
+                  value={childIssueForm.summary}
+                  onChange={(e) =>
+                    setChildIssueForm((prev) => ({
+                      ...prev,
+                      summary: e.target.value,
+                    }))
+                  }
+                  className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+          ) : (
+            <input
+              type="file"
+              onChange={handleFileUpload}
+              className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              multiple
+            />
+          )}
+          <button
+            onClick={handleDetailSubmit}
+            className="mt-3 w-full rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700 focus:outline-none"
+          >
+            Add
+          </button>
         </div>
       )}
       {/* Details Section */}
       <div className="mb-4">
         <div
-          className="flex items-center justify-between cursor-pointer"
+          className="flex cursor-pointer items-center justify-between"
           onClick={() => setIsDetailsOpen(!isDetailsOpen)}
         >
           <h2 className="text-md text-left font-bold text-gray-800">Details</h2>
-          <div className="text-gray-500 hover:text-gray-700">{isDetailsOpen ? <FaChevronUp /> : <FaChevronDown />}</div>
+          <div className="text-gray-500 hover:text-gray-700">
+            {isDetailsOpen ? <FaChevronUp /> : <FaChevronDown />}
+          </div>
         </div>
         {isDetailsOpen && (
           <div className="mt-4 space-y-4">
             {/* Assignee Selection */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Assignee</span>
-              <div className="flex items-center">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white text-xs mr-2">
-                  {details.assignee.initials}
-                </span>
-                <span className="text-sm">{details.assignee.name}</span>
+              <div className="w-2/3">
+                <Dropdown
+                  menu={{
+                    items: [
+                      ...(projectMembers
+                        ?.filter((member) => !member.is_pending)
+                        .map((member) => ({
+                          key: member.user_id,
+                          label: (
+                            <div className="flex items-center gap-2 p-2 hover:bg-gray-50">
+                              <UserAvatar
+                                userId={member.user_id}
+                                size={24}
+                                isDisplayName={true}
+                              />
+                            </div>
+                          ),
+                          onClick: () => handleAssigneeChange(member.user_id),
+                        })) || []),
+                      {
+                        key: "unassigned",
+                        label: (
+                          <div className="flex items-center gap-2 p-2 hover:bg-gray-50">
+                            <UserAvatar
+                              userId=""
+                              size={24}
+                              isDisplayName={true}
+                            />
+                          </div>
+                        ),
+                        onClick: () => handleAssigneeChange(""),
+                      },
+                    ],
+                  }}
+                  trigger={["click"]}
+                >
+                  <div className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50">
+                    <UserAvatar
+                      userId={selectedIssue.assignee_id || ""}
+                      size={24}
+                      isDisplayName={true}
+                    />
+                  </div>
+                </Dropdown>
               </div>
             </div>
             {/* Summary */}
-            <div className="flex items-center wiki justify-between">
+            <div className="wiki flex items-center justify-between">
               <span className="text-sm text-gray-600">Summary</span>
               <input
                 type="text"
                 value={formValues.summary}
                 onChange={(e) => {
-                  setFormValues((prev) => ({ ...prev, summary: e.target.value }));
+                  setFormValues((prev) => ({
+                    ...prev,
+                    summary: e.target.value,
+                  }));
                   setValueChangedByUser((prev) => ({ ...prev, summary: true }));
                 }}
-                className="text-sm border border-gray-300 rounded px-2 py-1 w-2/3"
+                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
               />
             </div>
             {/* Description */}
@@ -353,19 +511,25 @@ const IssueSideBar: React.FC = () => {
                 value={formValues.description}
                 placeholder="Add a description..."
                 onChange={(e) => {
-                  setFormValues((prev) => ({ ...prev, description: e.target.value }));
-                  setValueChangedByUser((prev) => ({ ...prev, description: true }));
+                  setFormValues((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }));
+                  setValueChangedByUser((prev) => ({
+                    ...prev,
+                    description: true,
+                  }));
                 }}
-                className="text-sm border border-gray-300 rounded px-2 py-1 w-2/3 h-24"
+                className="h-24 w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
               />
             </div>
             {/* Team Selection */}
-            <div className="flex items-center justify-between ">
-              <span className="text-sm text-gray-600 w-1/3">Team</span>
+            <div className="flex items-center justify-between">
+              <span className="w-1/3 text-sm text-gray-600">Team</span>
               <select
                 value={selectedIssue.team_id || ""}
                 onChange={(e) => handleTeamChange(e.target.value)}
-                className="text-sm border border-gray-300 rounded px-2 py-1 w-2/3"
+                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
                 disabled={!!selectedIssue.parent_id}
               >
                 <option value="">Select Team</option>
@@ -383,11 +547,11 @@ const IssueSideBar: React.FC = () => {
               <select
                 value={selectedIssue.sprint_id || ""}
                 onChange={(e) => handleSprintChange(e.target.value)}
-                className="text-sm border border-gray-300 rounded px-2 py-1 w-2/3"
+                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
                 disabled={!!selectedIssue.parent_id}
               >
                 <option value="">Select Sprint</option>
-                {sprints?.map((sprint) => (
+                {sprints?.map((sprint: Sprint) => (
                   <option key={sprint.id} value={sprint.id}>
                     {sprint.name}
                   </option>
@@ -403,18 +567,18 @@ const IssueSideBar: React.FC = () => {
                 value={details.storyPoint}
                 onChange={(e) => handleStoryPointChange(Number(e.target.value))}
                 min="0"
-                className=" text-sm border border-gray-300 rounded px-2 py-1 w-2/3"
+                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
               />
             </div>
 
             {/* File Attachments */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-gray-600">Attachments</span>
                 <input
                   type="file"
                   onChange={handleFileUpload}
-                  className="text-sm border border-gray-300 rounded px-2 py-1 w-2/3"
+                  className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
                   multiple
                 />
               </div>
@@ -422,9 +586,13 @@ const IssueSideBar: React.FC = () => {
                 {details.attachments.map((attachment, index) => (
                   <div key={index} className="flex items-center text-sm">
                     <FaPaperclip className="mr-1 text-gray-500" />
-                    <span className="text-blue-600 hover:underline">{attachment}</span>
+                    <span className="text-blue-600 hover:underline">
+                      {attachment}
+                    </span>
                     <button
-                      onClick={() => toast.info(`Remove ${attachment} - To be implemented`)}
+                      onClick={() =>
+                        toast.info(`Remove ${attachment} - To be implemented`)
+                      }
                       className="ml-2 text-red-500 hover:text-red-700"
                     >
                       <FaTimes />
@@ -434,19 +602,23 @@ const IssueSideBar: React.FC = () => {
               </div>
             </div>
 
-            {/* Reporter (Read-only) */}
+            {/* Reporter */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Reporter</span>
-              <div className="flex items-center">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-red-500 text-white text-xs mr-2">
-                  {details.reporter.initials}
-                </span>
-                <span className="text-sm">{details.reporter.name}</span>
+              <div className="flex items-center gap-2">
+                <UserAvatar
+                  userId={selectedIssue.reporter_id || ""}
+                  size={24}
+                  isDisplayName={true}
+                />
               </div>
             </div>
+            {/* Parent */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Parent</span>
-              <span className="text-sm text-gray-800">{details.parent.name}</span>
+              <span className="text-sm text-gray-800">
+                {details.parent.name}
+              </span>
             </div>
           </div>
         )}
@@ -459,12 +631,16 @@ const IssueSideBar: React.FC = () => {
             <FaCog />
           </button> */}
         </p>
-        <p className="text-sm text-gray-600">Updated {formatDate(selectedIssue.updated_at)}</p>
+        <p className="text-sm text-gray-600">
+          Updated {formatDate(selectedIssue.updated_at)}
+        </p>
       </div>
       {/* Activity Section */}
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-md text-left font-bold text-gray-800">Activity</h2>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-md text-left font-bold text-gray-800">
+            Activity
+          </h2>
           <button className="text-gray-500 hover:text-gray-700">⤓</button>
         </div>
         <div className="flex space-x-2 border-b border-gray-200">
@@ -473,7 +649,9 @@ const IssueSideBar: React.FC = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`pb-2 text-sm ${
-                activeTab === tab ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-600 hover:text-gray-800"
+                activeTab === tab
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               {tab}
