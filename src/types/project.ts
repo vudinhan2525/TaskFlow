@@ -36,3 +36,27 @@ export interface UpdateColumnOrderParams {
     order: number;
   }[];
 }
+
+
+export interface StatusCount {
+  name: string;
+  count: number;
+}
+
+export interface PriorityCount {
+  priority: string;
+  count: number;
+}
+
+export interface TypeCount {
+  type: string;
+  count: number;
+}
+
+export interface UserStats {
+  by_status: StatusCount[];
+  by_priority: PriorityCount[];
+  by_type: TypeCount[];
+  new_issues_count: number;
+  recently_updated_count: number;
+}

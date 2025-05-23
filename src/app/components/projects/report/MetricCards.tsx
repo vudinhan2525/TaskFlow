@@ -1,3 +1,4 @@
+import { UserStats } from "@libs/types/project";
 import React from "react";
 import { HiCheck, HiPlus, HiRefresh, HiClock } from "react-icons/hi";
 
@@ -9,9 +10,15 @@ interface MetricCardProps {
   textColor: string;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, bgColor, textColor }) => (
+const MetricCard: React.FC<MetricCardProps> = ({
+  title,
+  value,
+  icon,
+  bgColor,
+  textColor,
+}) => (
   <div className={`${bgColor} rounded-lg p-6`}>
-    <div className="flex justify-between items-start">
+    <div className="flex items-start justify-between">
       <div>
         <p className={`text-sm font-medium ${textColor} opacity-80`}>{title}</p>
         <p className={`text-2xl font-semibold ${textColor} mt-2`}>{value}</p>
@@ -21,25 +28,25 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, bgColor, te
   </div>
 );
 
-const MetricCards: React.FC = () => {
+const MetricCards = (props: { data: UserStats }) => {
   const metrics = [
     {
       title: "Total Completed",
-      value: 145,
+      value: props.data.by_status[props.data.by_status.length - 1].count,
       icon: <HiCheck size={24} />,
       bgColor: "bg-green-100",
       textColor: "text-green-800",
     },
     {
       title: "New Issues",
-      value: 23,
+      value: props.data.new_issues_count,
       icon: <HiPlus size={24} />,
       bgColor: "bg-blue-100",
       textColor: "text-blue-800",
     },
     {
       title: "Recently Updated",
-      value: 67,
+      value: props.data.recently_updated_count,
       icon: <HiRefresh size={24} />,
       bgColor: "bg-purple-100",
       textColor: "text-purple-800",
@@ -54,7 +61,7 @@ const MetricCards: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
       {metrics.map((metric, index) => (
         <MetricCard key={index} {...metric} />
       ))}

@@ -1,4 +1,4 @@
-import React from "react";
+import { UserStats } from "@libs/types/project";
 
 interface IssueCount {
   label: string;
@@ -6,36 +6,55 @@ interface IssueCount {
   color: string;
 }
 
-const IssueAnalytics: React.FC = () => {
-  const priorityData: IssueCount[] = [
-    { label: "High", value: 12, color: "#ef4444" },
-    { label: "Medium", value: 25, color: "#f97316" },
-    { label: "Low", value: 18, color: "#eab308" },
-  ];
+const IssueAnalytics = ({ data }: { data: UserStats }) => {
+  // Color mappings for each category
+  const priorityColors: { [key: string]: string } = {
+    High: "#ef4444", // Red
+    Medium: "#f97316", // Orange
+    Low: "#eab308", // Yellow
+  };
 
-  const typeData: IssueCount[] = [
-    { label: "Bug", value: 15, color: "#ef4444" },
-    { label: "Feature", value: 20, color: "#8b5cf6" },
-    { label: "Task", value: 28, color: "#60a5fa" },
-    { label: "Documentation", value: 8, color: "#10b981" },
-  ];
+  const typeColors: { [key: string]: string } = {
+    Bug: "#ef4444", // Red
+    Task: "#60a5fa", // Blue
+    Feature: "#8b5cf6", // Purple
+    Documentation: "#10b981", // Green
+  };
 
-  const maxPriorityValue = Math.max(...priorityData.map((d) => d.value));
-  const maxTypeValue = Math.max(...typeData.map((d) => d.value));
+  const priorityData: IssueCount[] = data.by_priority.map((item) => ({
+    label: item.priority,
+    value: item.count,
+    color: priorityColors[item.priority] || "#6b7280", // Fallback color
+  }));
+
+  const typeData: IssueCount[] = data.by_type.map((item) => ({
+    label: item.type,
+    value: item.count,
+    color: typeColors[item.type] || "#6b7280", // Fallback color
+  }));
+
+  const maxPriorityValue = Math.max(...priorityData.map((d) => d.value), 1);
+  const maxTypeValue = Math.max(...typeData.map((d) => d.value), 1);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Priority Distribution */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Priority Distribution</h3>
+      <div className="rounded-lg bg-white p-6 shadow-sm">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">
+          Priority Distribution
+        </h3>
         <div className="space-y-4">
           {priorityData.map((item, index) => (
             <div key={index}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-600">{item.label}</span>
-                <span className="text-sm font-medium text-gray-900">{item.value}</span>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-600">
+                  {item.label}
+                </span>
+                <span className="text-sm font-medium text-gray-900">
+                  {item.value}
+                </span>
               </div>
-              <div className="w-full h-4 bg-gray-100 rounded">
+              <div className="h-4 w-full rounded bg-gray-100">
                 <div
                   className="h-4 rounded transition-all duration-500"
                   style={{
@@ -50,16 +69,22 @@ const IssueAnalytics: React.FC = () => {
       </div>
 
       {/* Type Distribution */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Work Type Breakdown</h3>
+      <div className="rounded-lg bg-white p-6 shadow-sm">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">
+          Work Type Breakdown
+        </h3>
         <div className="space-y-4">
           {typeData.map((item, index) => (
             <div key={index}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-600">{item.label}</span>
-                <span className="text-sm font-medium text-gray-900">{item.value}</span>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-600">
+                  {item.label}
+                </span>
+                <span className="text-sm font-medium text-gray-900">
+                  {item.value}
+                </span>
               </div>
-              <div className="w-full h-4 bg-gray-100 rounded">
+              <div className="h-4 w-full rounded bg-gray-100">
                 <div
                   className="h-4 rounded transition-all duration-500"
                   style={{

@@ -1,4 +1,4 @@
-import React from "react";
+import { UserStats } from "@libs/types/project";
 
 interface StatusData {
   label: string;
@@ -15,12 +15,19 @@ interface ActivityItem {
   type: "create" | "update" | "complete";
 }
 
-const StatusOverview: React.FC = () => {
-  const statusData: StatusData[] = [
-    { label: "To Do", value: 30, color: "#94a3b8" },
-    { label: "In Progress", value: 45, color: "#60a5fa" },
-    { label: "Done", value: 25, color: "#4ade80" },
-  ];
+const COLOR_PALLETTE = ["#94a3b8", "#60a5fa", "#4ade80"];
+const StatusOverview = (props: { data: UserStats }) => {
+  const { by_status } = props.data;
+
+  const statusData: StatusData[] = by_status.map((status, idx) => ({
+    label: status.name,
+    value: status.count,
+    color: COLOR_PALLETTE[idx] || "#cbd5e1", // default color if not matched
+  }));
+
+  const total = statusData.reduce((sum, item) => sum + item.value, 0);
+  const getPercentage = (value: number) =>
+    total === 0 ? "0.0" : ((value / total) * 100).toFixed(1);
 
   const activities: ActivityItem[] = [
     {
@@ -49,69 +56,75 @@ const StatusOverview: React.FC = () => {
     },
   ];
 
-  const total = statusData.reduce((sum, item) => sum + item.value, 0);
-  const getPercentage = (value: number) => ((value / total) * 100).toFixed(1);
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Status Distribution */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Status Distribution</h3>
+      <div className="rounded-lg bg-white p-6 shadow-sm">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">
+          Status Distribution
+        </h3>
         <div className="flex flex-col space-y-4">
           {statusData.map((status, index) => (
             <div key={index}>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-600">{status.label}</span>
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-600">
+                  {status.label}
+                </span>
                 <span className="text-sm font-medium text-gray-900">
                   {status.value} ({getPercentage(status.value)}%)
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="h-2 w-full rounded-full bg-gray-200">
                 <div
                   className="h-2 rounded-full"
                   style={{
-                    width: `${(status.value / total) * 100}%`,
+                    width: `${getPercentage(status.value)}%`,
                     backgroundColor: status.color,
                   }}
                 />
               </div>
             </div>
           ))}
-          <div className="pt-4 border-t">
+          <div className="border-t pt-4">
             <p className="text-center text-sm text-gray-500">
-              Total Issues: <span className="font-semibold text-gray-900">{total}</span>
+              Total Issues:{" "}
+              <span className="font-semibold text-gray-900">{total}</span>
             </p>
           </div>
         </div>
       </div>
 
       {/* Activity Feed */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h3>
+      <div className="rounded-lg bg-white p-6 shadow-sm">
+        <h3 className="mb-4 text-lg font-medium text-gray-900">
+          Recent Activity
+        </h3>
         <div className="space-y-4">
           {activities.map((activity, index) => (
             <div key={index} className="flex items-start space-x-3">
               <div
-                className={`
-                w-2 h-2 mt-2 rounded-full
-                ${
+                className={`mt-2 h-2 w-2 rounded-full ${
                   activity.type === "create"
                     ? "bg-green-500"
                     : activity.type === "update"
-                    ? "bg-blue-500"
-                    : "bg-purple-500"
-                }
-              `}
+                      ? "bg-blue-500"
+                      : "bg-purple-500"
+                }`}
               />
               <div>
                 <p className="text-sm text-gray-900">
-                  <span className="font-medium">{activity.user}</span> {activity.action}{" "}
+                  <span className="font-medium">{activity.user}</span>{" "}
+                  {activity.action}{" "}
                   <span className="font-medium">{activity.issueTitle}</span>
                 </p>
                 {activity.modifiedFields.length > 0 && (
-                  <p className="text-xs text-gray-500 mt-1">Modified: {activity.modifiedFields.join(", ")}</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Modified: {activity.modifiedFields.join(", ")}
+                  </p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">{activity.timestamp}</p>
+                <p className="mt-1 text-xs text-gray-400">
+                  {activity.timestamp}
+                </p>
               </div>
             </div>
           ))}

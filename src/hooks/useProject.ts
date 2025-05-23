@@ -133,6 +133,35 @@ export function useDeleteProject({ onClose }: { onClose?: () => void }) {
     error,
   };
 }
+export function useGetProjectStats(projectId: string) {
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    refetch,
+  } = useQuery({
+    queryKey: ["projectStats", projectId],
+    queryFn: async () => {
+      if (!projectId) throw new Error("Project ID is required");
+      const response = await projects.getProjectStats({ project_id: projectId });
+      return response.data;
+    },
+    enabled: !!projectId, 
+    refetchOnMount: true, 
+    refetchOnWindowFocus: false,
+  });
+
+  return {
+    stats: data,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    refetch,
+  };
+}
 export function useProject(projectId: string) {
   const {
     data: project,
@@ -167,6 +196,7 @@ export function useProjectColumns(projectId: string) {
       return response.data;
     },
     enabled: !!projectId,
+    refetchOnMount: 'always'
   });
 
   return {
