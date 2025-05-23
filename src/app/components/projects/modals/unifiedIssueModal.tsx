@@ -6,7 +6,13 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
-import { useProject, useProjectColumns, useUserProjects } from "@libs/hooks/useProject";
+import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
+import {
+  useProject,
+  useProjectColumns,
+  useUserProjects,
+} from "@libs/hooks/useProject";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { RootState } from "@libs/store";
@@ -66,12 +72,15 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
   isEditing,
   initialIssue,
 }) => {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>(projectId || "");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(
+    projectId || "",
+  );
   const { user } = useSelector((state: RootState) => state.auth);
   const { projects } = useUserProjects();
   const { project } = useProject(projectId || "");
   const { columns } = useProjectColumns(selectedProjectId);
   const { sprints } = useProjectSprints(selectedProjectId);
+  const { projectMembers } = useProjectMembers(selectedProjectId);
 
   const { createIssue, isLoading: isCreating } = useCreateIssue({
     projectId: selectedProjectId,
@@ -161,7 +170,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
       const droppedFiles = Array.from(e.dataTransfer.files);
       setValue("attachments", droppedFiles);
     },
-    [setValue]
+    [setValue],
   );
 
   const handleFileChange = useCallback(
@@ -169,7 +178,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
       const selectedFiles = Array.from(e.target.files || []);
       setValue("attachments", selectedFiles);
     },
-    [setValue]
+    [setValue],
   );
 
   const onSubmit = handleSubmit(async (data: IssueFormInputs) => {
@@ -179,7 +188,9 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
     }
 
     // Convert File objects to string paths (in real app, you'd upload files first)
-    const attachmentPaths = data.attachments.map((file: File) => URL.createObjectURL(file));
+    const attachmentPaths = data.attachments.map((file: File) =>
+      URL.createObjectURL(file),
+    );
 
     if (!selectedProjectId) {
       console.error("No project selected");
@@ -205,7 +216,9 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
         await updateIssue({ id: initialIssue.id, data: issueData });
         toast.success("Issue updated successfully!");
       } catch (error) {
-        toast.error(`Failed to update issue: ${error instanceof Error ? error.message : "Unknown error"}`);
+        toast.error(
+          `Failed to update issue: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
       }
     } else {
       await createIssue(issueData);
@@ -218,7 +231,13 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
     <Modal
       title={isEditing ? "Update Issue" : "Create Issue"}
       onClose={onClose}
-      buttonContent={isLoading || isColumnsLoading ? "Loading..." : isEditing ? "Update Issue" : "Create Issue"}
+      buttonContent={
+        isLoading || isColumnsLoading
+          ? "Loading..."
+          : isEditing
+            ? "Update Issue"
+            : "Create Issue"
+      }
       onSubmit={onSubmit}
       className={"w-[600px]"}
       isLoadingButton={isLoading || isColumnsLoading}
@@ -230,10 +249,13 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
             {/* Project Selection/Display */}
             {projectId ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Project</label>
-                <div className="px-3 py-2 rounded-md bg-gray-50">
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Project
+                </label>
+                <div className="rounded-md bg-gray-50 px-3 py-2">
                   <span className="text-gray-900">
-                    {project?.name || projects?.find((p) => p.id === projectId)?.name}
+                    {project?.name ||
+                      projects?.find((p) => p.id === projectId)?.name}
                   </span>
                 </div>
               </div>
@@ -241,7 +263,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
               <>
                 {projects?.length > 0 ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
                       Project <span className="text-red-500">*</span>
                     </label>
                     <DropdownAntd
@@ -255,11 +277,15 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
                       rowClassName="font-semibold text-gray-700"
                       menuClassName="min-w-[180px]"
                       parent={
-                        <div className="flex items-center space-x-2 px-3 rounded-md">
-                          {projects?.find((p) => p.id === selectedProjectId)?.name || "Select Project"}
+                        <div className="flex items-center space-x-2 rounded-md px-3">
+                          {projects?.find((p) => p.id === selectedProjectId)
+                            ?.name || "Select Project"}
                         </div>
                       }
-                      onClickItem={(option) => {
+                      onClickItem={(option: {
+                        value: string;
+                        label: string;
+                      }) => {
                         setSelectedProjectId(option.value);
                         setValue("sprint_id", "");
                       }}
@@ -267,7 +293,9 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
                   </div>
                 ) : (
                   <div>
-                    <p className="text-sm text-gray-600">No projects available. Please create a project first.</p>
+                    <p className="text-sm text-gray-600">
+                      No projects available. Please create a project first.
+                    </p>
                   </div>
                 )}
               </>
@@ -278,14 +306,20 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
               <div>
                 {sprintId ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sprint</label>
-                    <div className="px-3 py-2  rounded-md bg-gray-50">
-                      <span className="text-gray-900">{sprints?.find((s) => s.id === sprintId)?.name}</span>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Sprint
+                    </label>
+                    <div className="rounded-md bg-gray-50 px-3 py-2">
+                      <span className="text-gray-900">
+                        {sprints?.find((s) => s.id === sprintId)?.name}
+                      </span>
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Sprint (Optional)</label>
+                    <label className="mb-1 block text-sm font-medium text-gray-700">
+                      Sprint (Optional)
+                    </label>
                     <DropdownAntd
                       options={
                         sprints?.map((sprint) => ({
@@ -297,11 +331,14 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
                       rowClassName="font-semibold text-gray-700"
                       menuClassName="min-w-[180px]"
                       parent={
-                        <div className="flex items-center space-x-2 px-3 rounded-md">
-                          {sprints?.find((s) => s.id === watch("sprint_id"))?.name || "Select Sprint"}
+                        <div className="flex items-center space-x-2 rounded-md px-3">
+                          {sprints?.find((s) => s.id === watch("sprint_id"))
+                            ?.name || "Select Sprint"}
                         </div>
                       }
-                      onClickItem={(option) => setValue("sprint_id", option.value)}
+                      onClickItem={(option) =>
+                        setValue("sprint_id", option.value)
+                      }
                     />
                   </div>
                 )}
@@ -311,7 +348,10 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="type"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Type <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
@@ -320,13 +360,22 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
                 rowClassName="w-full text-[15px]"
                 menuClassName="w-[180px]"
                 parent={<div className="w-full font-medium">{type}</div>}
-                onClickItem={(option) => setValue("type", option.value as IssueType)}
+                onClickItem={(option) =>
+                  setValue("type", option.value as IssueType)
+                }
               />
-              {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type.message}</p>}
+              {errors.type && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.type.message}
+                </p>
+              )}
             </div>
 
             <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="priority"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Priority <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
@@ -339,95 +388,161 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
                 rowClassName="w-full text-[15px]"
                 menuClassName="w-[180px]"
                 parent={<div className="w-full font-medium">{priority}</div>}
-                onClickItem={(option) => setValue("priority", option.value as IssuePriority)}
+                onClickItem={(option) =>
+                  setValue("priority", option.value as IssuePriority)
+                }
               />
-              {errors.priority && <p className="text-sm text-red-500 mt-1">{errors.priority.message}</p>}
+              {errors.priority && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.priority.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="title"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Title <span className="text-red-500">*</span>
             </label>
             <input
               id="title"
               type="text"
               {...register("title")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
               placeholder="Enter issue title"
             />
-            {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
+            {errors.title && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.title.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="summary"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Summary <span className="text-red-500">*</span>
             </label>
             <input
               id="summary"
               type="text"
               {...register("summary")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
               placeholder="Brief summary of the issue"
             />
-            {errors.summary && <p className="text-sm text-red-500 mt-1">{errors.summary.message}</p>}
+            {errors.summary && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.summary.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="description"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Description
             </label>
             <textarea
               id="description"
               {...register("description")}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
               placeholder="Detailed description of the issue"
             />
-            {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
+            {errors.description && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="column" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="column"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Status <span className="text-red-500">*</span>
             </label>
             <DropdownAntd
-              options={columns?.map(column => ({
-                value: column.id,
-                label: column.name
-              })) || []}
+              options={
+                columns?.map((column) => ({
+                  value: column.id,
+                  label: column.name,
+                })) || []
+              }
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[180px]"
               parent={
                 <div className="w-full font-medium">
-                  {columns?.find(c => c.id === column_id)?.name || 'Select Status'}
+                  {columns?.find((c) => c.id === column_id)?.name ||
+                    "Select Status"}
                 </div>
               }
               onClickItem={(option) => setValue("column_id", option.value)}
             />
-            {errors.column_id && <p className="text-sm text-red-500 mt-1">{errors.column_id.message}</p>}
+            {errors.column_id && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.column_id.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="assignee"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Assignee (Optional)
             </label>
             <DropdownAntd
-              options={[]} // Populate with project members
+              options={
+                projectMembers?.map((member) => ({
+                  value: member.user_id,
+                  label: (
+                    <div className="flex items-center gap-2">
+                      <UserAvatar
+                        userId={member.user_id}
+                        size={24}
+                        isDisplayName={true}
+                      />
+                    </div>
+                  ),
+                })) || []
+              }
               placement="bottom"
               rowClassName="w-full text-[15px]"
-              menuClassName="w-[180px]"
-              parent={<div className="w-full font-medium">Select Assignee</div>}
+              menuClassName="min-w-[200px]"
+              parent={
+                <div className="w-full font-medium">
+                  {watch("assignee_id") ? (
+                    <UserAvatar
+                      userId={watch("assignee_id")}
+                      size={24}
+                      isDisplayName={true}
+                    />
+                  ) : (
+                    "Select Assignee"
+                  )}
+                </div>
+              }
               onClickItem={(option) => setValue("assignee_id", option.value)}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Attachments
+            </label>
             <div
-              className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors 
-                ${files.length ? "border-green-500 bg-green-50" : "hover:border-green-500 hover:bg-green-50"}`}
+              className={`cursor-pointer rounded-md border-2 border-dashed p-4 text-center transition-colors ${files.length ? "border-green-500 bg-green-50" : "hover:border-green-500 hover:bg-green-50"}`}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={() => document.getElementById("file-input")?.click()}
