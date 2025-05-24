@@ -11,7 +11,7 @@ api.interceptors.request.use(
   (config) => {
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor
@@ -23,18 +23,18 @@ api.interceptors.response.use(
       // window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 export interface ResponseApi<T> {
   status: string;
   message: string;
   data: T;
-  pagination?: {
-    totalItems: number;
-    totalPages: number;
-    currentPage: number;
-    limit: number;
-  };
+  pagination?: PaginationRes;
 }
-
+export interface PaginationRes {
+  total_items: number;
+  total_pages: number;
+  current_page: number;
+  limit: number;
+}
 export default api;

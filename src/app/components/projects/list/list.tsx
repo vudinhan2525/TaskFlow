@@ -1,22 +1,46 @@
 import React, { useState } from "react";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useProjectIssues, useUpdateIssue } from "@libs/hooks/useIssue";
 import ListFilter from "./listFilter";
 import { IIssue } from "@libs/types/issue";
 import { useSearchParams } from "react-router-dom";
 import ListTable from "./listTable";
 import { TableRowSelection } from "antd/es/table/interface";
 import UnifiedIssueModal from "@libs/app/components/projects/modals/unifiedIssueModal";
+import { useProjectColumns } from "@libs/hooks/useProject";
+import {
+  FiltersSearchParams,
+  parseFiltersSearchParams,
+} from "@libs/utils/parseFiltersSearchParams";
 
-const List = ({
-  projectId,
-  issues,
-}: {
-  projectId?: string;
-  issues?: IIssue[];
-}) => {
+const List = ({ projectId }: { projectId?: string }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchParams] = useSearchParams();
+  const { columns } = useProjectColumns(projectId || "");
+  const filtersSearchParams = searchParams.get("filters");
   const keyword = searchParams.get("keyword");
+  const page = searchParams.get("page");
+  const limit = searchParams.get("limit");
+  const keywordSearchParams = searchParams.get("keyword");
+
+  const filters: FiltersSearchParams = parseFiltersSearchParams(
+    filtersSearchParams || "",
+  );
+  const {
+    issues,
+    pagination,
+    isLoading: isFetching,
+  } = useProjectIssues({
+    project_id: projectId,
+    keyword: keywordSearchParams || undefined,
+    sprint_ids: filters.sprint_ids,
+    assignee_ids: filters.assignee_ids,
+    column_ids: filters.status.map((status) => {
+      const column = columns.find((column) => column.name === status);
+      return column?.id || "";
+    }),
+    page: page || 1,
+    limit: limit || 12,
+  });
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
@@ -50,8 +74,10 @@ const List = ({
         issues={issues || []}
         isLoading={isLoading}
         rowSelection={rowSelection}
+        isFetching={isFetching}
         handleChangeCellValue={handleChangeCellValue}
         keyword={keyword || ""}
+        pagination={pagination}
         projectId={projectId || ""}
       />
 

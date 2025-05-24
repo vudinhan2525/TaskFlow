@@ -33,16 +33,17 @@ export default function UserAvatar({
       <Avatar
         size={size}
         shape="circle"
-        // style={{
-        //   backgroundColor: "#007bff",
-        //   color: "#ffffff",
-        //   display: "flex",
-        //   alignItems: "center",
-        //   justifyContent: "center",
-        //   fontSize: `${Math.floor(size / 2.5)}px`,
-        //   fontWeight: 500,
-        //   textTransform: "uppercase",
-        // }}
+        style={{
+          backgroundColor: "rgba(161, 157, 157)",
+          color: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: `${Math.floor(size / 2.5)}px`,
+          fontWeight: 500,
+          textTransform: "uppercase",
+          border: "2px solid white"
+        }}
       >
         {user?.first_name?.[0]}
         {user?.last_name?.[0]}

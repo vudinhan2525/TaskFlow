@@ -3,7 +3,7 @@ import { FaPlus } from "react-icons/fa";
 import { Table } from "antd";
 import type { TableProps, TableColumnType } from "antd";
 import { RiTeamFill } from "react-icons/ri";
-import { IIssue, IssuePriority} from "@libs/types/issue";
+import { IIssue, IssuePriority } from "@libs/types/issue";
 import { format } from "date-fns";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectColumns } from "@libs/hooks/useProject";
@@ -20,10 +20,14 @@ import {
 import { ISprint } from "@libs/types";
 import TableColumn from "./listTable/TableColumn";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
+import { PaginationRes } from "@libs/apis/api";
+import { useNavigate } from "react-router-dom";
 interface ListTableProps {
   isLoading: boolean;
+  isFetching: boolean;
   issues: IIssue[];
   rowSelection: TableProps<IIssue>["rowSelection"];
+  pagination?: PaginationRes;
   handleChangeCellValue: (
     id: string,
     field: keyof IIssue,
@@ -35,15 +39,18 @@ interface ListTableProps {
 
 const ListTable = ({
   isLoading,
+  isFetching,
   issues,
   rowSelection,
   handleChangeCellValue,
   keyword,
   projectId,
+  pagination,
 }: ListTableProps) => {
   const { columns } = useProjectColumns(projectId || "");
   const { sprints } = useProjectSprints(projectId || "");
   const { projectMembers } = useProjectMembers(projectId || "");
+  const navigate = useNavigate();
   const [visibleColumns, setVisibleColumns] = useState<
     { key: keyof IIssue; visible: boolean }[]
   >([]);
@@ -57,7 +64,10 @@ const ListTable = ({
   const issueProperties = Object.keys(issues?.[0] || {}) as Array<keyof IIssue>;
   const tableContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleSort = (key: keyof IIssue, sortOrder: "ascend" | "descend" | null) => {
+  const handleSort = (
+    key: keyof IIssue,
+    sortOrder: "ascend" | "descend" | null,
+  ) => {
     setSorterColumns((prev) => {
       const updatedColumns = prev.map((column) =>
         column.key === key ? { ...column, sortOrder } : column,
@@ -112,9 +122,9 @@ const ListTable = ({
               handleChangeCellValue(id, "type" as keyof IIssue, option.name),
           }))}
           children={
-            <div className="flex justify-center">
+            <div className="flex min-h-[50px] items-center justify-center px-[12px]">
               <div
-                className={`flex min-w-[100px] items-center justify-center gap-1 rounded-md py-1 ${
+                className={`flex h-fit min-w-[100px] items-center justify-center gap-1 rounded-md py-1 ${
                   typeOptions.find((option) => option.name === type)?.bgColor
                 }`}
               >
@@ -135,7 +145,8 @@ const ListTable = ({
       ),
       {
         multiple: 6,
-        sortOrder:sorterColumns.find((column) => column.key === "type")?.sortOrder,
+        sortOrder: sorterColumns.find((column) => column.key === "type")
+          ?.sortOrder,
       },
     ),
     // Title
@@ -191,71 +202,127 @@ const ListTable = ({
       },
     ),
     // Description
-    TableColumn("description", "Description",
+    TableColumn(
+      "description",
+      "Description",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { id }) => (
-      <ColumnInputFiled
-        issueId={id}
-        field="description"
-        handleChangeCellValue={handleChangeCellValue}
-      />
-    ),{
-      multiple: 9,
-      sortOrder: sorterColumns.find((column) => column.key === "description")?.sortOrder,
-    }),
+        <ColumnInputFiled
+          issueId={id}
+          field="description"
+          handleChangeCellValue={handleChangeCellValue}
+        />
+      ),
+      {
+        multiple: 9,
+        sortOrder: sorterColumns.find((column) => column.key === "description")
+          ?.sortOrder,
+      },
+    ),
     // Status
-    TableColumn("column", "Status", 
+    TableColumn(
+      "column",
+      "Status",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { id, column }) => (
-      <ColumnDropdown
-        items={columns.map((column) => ({
-          value: column.name,
-          style: {
-            padding: 0,
-            background: "white",
-          },
-          label: (
-            <div
-              key={column.id}
-              className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300 `}
-            >
+        <ColumnDropdown
+          items={columns.map((column) => ({
+            value: column.name,
+            style: {
+              padding: 0,
+              background: "white",
+            },
+            label: (
+              <div
+                key={column.id}
+                className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+              >
+                <RenderStatusCell column={column} />
+              </div>
+            ),
+            key: column.id,
+            onClick: () =>
+              handleChangeCellValue(id, "column_id" as keyof IIssue, column.id),
+          }))}
+          children={
+            <div className="flex justify-start px-2">
               <RenderStatusCell column={column} />
             </div>
-          ),
-          key: column.id,
-          onClick: () =>
-            handleChangeCellValue(
-              id,
-              "column_id" as keyof IIssue,
-              column.id,
-            ),
-        }))}
-        children={
-          <div className="flex justify-start px-2">
-            <RenderStatusCell column={column} />  
-          </div>
-        }
-        currentItem={column.name}
-      />
-    ),{
-      multiple: 2,
-      sortOrder: sorterColumns.find((column) => column.key === "column")?.sortOrder,
-    }),
+          }
+          currentItem={column.name}
+        />
+      ),
+      {
+        multiple: 2,
+        sortOrder: sorterColumns.find((column) => column.key === "column")
+          ?.sortOrder,
+      },
+    ),
     // Priority
-    TableColumn("priority", "Priority", 
+    TableColumn(
+      "priority",
+      "Priority",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { id, priority }) => (
-      <ColumnDropdown
-        items={priorityOptions.map((option) => {
-          return {
-            value: option.name,
-            key: option.name,
+        <ColumnDropdown
+          items={priorityOptions.map((option) => {
+            return {
+              value: option.name,
+              key: option.name,
+              style: {
+                padding: 0,
+                background: "white",
+              },
+              label: (
+                <div
+                  className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+                >
+                  {option.icon}
+                  <p className="text-xs font-bold">{option.name}</p>
+                </div>
+              ),
+              onClick: () => {
+                handleChangeCellValue(
+                  id,
+                  "priority" as keyof IIssue,
+                  option.name as IssuePriority,
+                );
+              },
+            };
+          })}
+          currentItem={priority}
+          children={
+            <div className="flex items-center justify-start gap-2 rounded-md p-2 hover:cursor-pointer">
+              {priorityOptions.find((option) => option.name === priority)?.icon}
+              <p className="text-xs font-bold">{priority}</p>
+            </div>
+          }
+        />
+      ),
+      {
+        multiple: 1,
+        sortOrder: sorterColumns.find((column) => column.key === "priority")
+          ?.sortOrder,
+      },
+    ),
+    // Sprint
+    TableColumn(
+      "sprint_id",
+      "Sprint",
+      visibleColumns,
+      handleVisible,
+      handleSort,
+      (_, { id, sprint_id }) => (
+        <ColumnDropdown
+          items={sprints.map((sprint: ISprint) => ({
+            value: sprint.name,
+            key: sprint.id,
             style: {
               padding: 0,
               background: "white",
@@ -264,249 +331,241 @@ const ListTable = ({
               <div
                 className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
               >
-                {option.icon}
-                <p className="text-xs font-bold">{option.name}</p>
+                <p className="font-bold">{sprint.name}</p>
               </div>
             ),
             onClick: () => {
               handleChangeCellValue(
                 id,
-                "priority" as keyof IIssue,
-                option.name as IssuePriority,
+                "sprint_id" as keyof IIssue,
+                sprint.id as string,
               );
             },
-          };
-        })}
-        currentItem={priority}
-        children={
-          <div className="flex items-center justify-start gap-2 rounded-md p-2 hover:cursor-pointer">
-            {priorityOptions.find((option) => option.name === priority)?.icon}
-            <p className="text-xs font-bold">{priority}</p>
-          </div>
-        }
-      />
+          }))}
+          currentItem={
+            sprints.find((sprint: ISprint) => sprint.id === sprint_id)?.name
+          }
+          children={
+            <div className="flex justify-start px-2">
+              <div className="rounded-md bg-gray-200 px-2 py-1">
+                <p className="text-xs font-bold text-gray-600">
+                  {
+                    sprints.find((sprint: ISprint) => sprint.id === sprint_id)
+                      ?.name
+                  }
+                </p>
+              </div>
+            </div>
+          }
+        />
+      ),
+      {
+        multiple: 3,
+        sortOrder: sorterColumns.find((column) => column.key === "sprint_id")
+          ?.sortOrder,
+      },
     ),
-    {
-      multiple: 1,
-      sortOrder:sorterColumns.find((column) => column.key === "priority")?.sortOrder,
-    },
-  ),
-    // Sprint
-    TableColumn("sprint_id", "Sprint",
-      visibleColumns,
-      handleVisible,
-      handleSort,
-      (_, { id, sprint_id }) => (
-      <ColumnDropdown
-        items={sprints.map((sprint: ISprint) => ({
-          value: sprint.name,
-          key: sprint.id,
-          style: {
-            padding: 0,
-            background: "white",
-          },
-          label: (
-            <div
-              className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
-            >
-              <p className="font-bold">{sprint.name}</p>
-            </div>
-          ),
-          onClick: () => {
-            handleChangeCellValue(
-              id,
-              "sprint_id" as keyof IIssue,
-              sprint.id as string,
-            );
-          },
-        }))}
-        currentItem={
-          sprints.find((sprint: ISprint) => sprint.id === sprint_id)?.name
-        }
-        children={
-          <div className="flex justify-start px-2">
-            <div className="rounded-md bg-gray-200 px-2 py-1  ">
-              <p className="font-bold text-xs text-gray-600">
-                {
-                  sprints.find((sprint: ISprint) => sprint.id === sprint_id)
-                    ?.name
-                }
-              </p>
-            </div>
-          </div>
-        }
-      />
-    ),{
-      multiple: 3,
-      sortOrder:sorterColumns.find((column) => column.key === "sprint_id")?.sortOrder,
-    }),
     // Assignee
-    TableColumn("assignee_id", "Assignee_id",
+    TableColumn(
+      "assignee_id",
+      "Assignee",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { id, assignee_id }) => (
-      <ColumnDropdown
-        items={
-          projectMembers &&
-          projectMembers
-            .map((member: IProjectMember) => ({
-              value: member.user?.first_name + " " + member.user?.last_name,
-              key: member.user_id,
+        <div className="px-4">
+          <ColumnDropdown
+            items={
+              projectMembers &&
+              projectMembers
+                .map((member: IProjectMember) => ({
+                  value: member.user?.first_name + " " + member.user?.last_name,
+                  key: member.user_id,
 
-              label: (
-                <UserAvatar userId={member.user_id} isDisplayName={true} />
-              ),
-              onClick: () => {
-                handleChangeCellValue(
-                  id,
-                  "assignee_id" as keyof IIssue,
-                  member.user_id as string,
-                );
-              },
-            }))
-            .concat({
-              value: "Unasigned",
-              key: "Unasigned",
+                  label: (
+                    <UserAvatar userId={member.user_id} isDisplayName={true} />
+                  ),
+                  onClick: () => {
+                    handleChangeCellValue(
+                      id,
+                      "assignee_id" as keyof IIssue,
+                      member.user_id as string,
+                    );
+                  },
+                }))
+                .concat({
+                  value: "Unasigned",
+                  key: "Unasigned",
 
-              label: <UserAvatar userId={""} isDisplayName={true} />,
-              onClick: () => {
-                handleChangeCellValue(
-                  id,
-                  "assignee_id" as keyof IIssue,
-                  "" as string,
-                );
-              },
-            })
-        }
-        // currentItem={
-        //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
-        //     .first_name +
-        //   " " +
-        //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
-        //     .last_name}
+                  label: <UserAvatar userId={""} isDisplayName={true} />,
+                  onClick: () => {
+                    handleChangeCellValue(
+                      id,
+                      "assignee_id" as keyof IIssue,
+                      "" as string,
+                    );
+                  },
+                })
+            }
+            // currentItem={
+            //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
+            //     .first_name +
+            //   " " +
+            //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
+            //     .last_name}
 
-        children={
-          <UserAvatar userId={assignee_id || ""} isDisplayName={true} />
-        }
-      />
-    ),{
-      multiple: 4,
-      sortOrder:sorterColumns.find((column) => column.key === "assignee_id")?.sortOrder,
-    }),
+            children={
+              <UserAvatar userId={assignee_id || ""} isDisplayName={true} />
+            }
+          />
+        </div>
+      ),
+      {
+        multiple: 4,
+        sortOrder: sorterColumns.find((column) => column.key === "assignee_id")
+          ?.sortOrder,
+      },
+    ),
     // Reporter
-    TableColumn("reporter_id", "Reporter_id",
+    TableColumn(
+      "reporter_id",
+      "Reporter",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { id, reporter_id }) => (
-      <ColumnDropdown
-        items={
-          projectMembers &&
-          projectMembers
-            .map((member: IProjectMember) => ({
-              value: member.user?.first_name + " " + member.user?.last_name,
-              key: member.user_id,
-              label: (
-                <UserAvatar userId={member.user_id} isDisplayName={true} />
-              ),
-              onClick: () => {
-                handleChangeCellValue(
-                  id,
-                  "reporter_id" as keyof IIssue,
-                  member.user_id as string,
-                );
-              },
-            }))
-            .concat({
-              value: "Unasigned",
-              key: "Unasigned",
+        <ColumnDropdown
+          items={
+            projectMembers &&
+            projectMembers
+              .map((member: IProjectMember) => ({
+                value: member.user?.first_name + " " + member.user?.last_name,
+                key: member.user_id,
+                label: (
+                  <UserAvatar userId={member.user_id} isDisplayName={true} />
+                ),
+                onClick: () => {
+                  handleChangeCellValue(
+                    id,
+                    "reporter_id" as keyof IIssue,
+                    member.user_id as string,
+                  );
+                },
+              }))
+              .concat({
+                value: "Unasigned",
+                key: "Unasigned",
 
-              label: <UserAvatar isDisplayName={true} />,
-              onClick: () => {
-                handleChangeCellValue(
-                  id,
-                  "reporter_id" as keyof IIssue,
-                  "" as string,
-                );
-              },
-            })
-        }
-        // currentItem={
-        //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
-        //     .first_name +
-        //   " " +
-        //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
-        //     .last_name}
+                label: <UserAvatar isDisplayName={true} />,
+                onClick: () => {
+                  handleChangeCellValue(
+                    id,
+                    "reporter_id" as keyof IIssue,
+                    "" as string,
+                  );
+                },
+              })
+          }
+          // currentItem={
+          //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
+          //     .first_name +
+          //   " " +
+          //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
+          //     .last_name}
 
-        children={
-          <UserAvatar userId={reporter_id || ""} isDisplayName={true} />
-        }
-      />
-    ),{
-      multiple: 5,
-      sortOrder:sorterColumns.find((column) => column.key === "reporter_id")?.sortOrder,
-    }),
+          children={
+            <UserAvatar userId={reporter_id || ""} isDisplayName={true} />
+          }
+        />
+      ),
+      {
+        multiple: 5,
+        sortOrder: sorterColumns.find((column) => column.key === "reporter_id")
+          ?.sortOrder,
+      },
+    ),
     // Team
-    TableColumn("team_id", "Team",
+    TableColumn(
+      "team_id",
+      "Team",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { team_id }) => (
-      <span className="inline-flex items-center gap-1">
-        <RiTeamFill className="text-gray-500" />
-        {team_id || "-"}
-      </span>
-    ),{
-      multiple: 10,
-      sortOrder: sorterColumns.find((column) => column.key === "team_id")?.sortOrder,
-    }),
+        <span className="inline-flex items-center gap-1">
+          <RiTeamFill className="text-gray-500" />
+          {team_id || "-"}
+        </span>
+      ),
+      {
+        multiple: 10,
+        sortOrder: sorterColumns.find((column) => column.key === "team_id")
+          ?.sortOrder,
+      },
+    ),
     // Parent Issue
-    TableColumn("parent_id", "Parent Issue",
+    TableColumn(
+      "parent_id",
+      "Parent Issue",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { parent_id }) => (
-      <span className="text-sm text-gray-500">
-        {parent_id ? parent_id.substring(0, 8) : "-"}
-      </span>
-    ),{
-      multiple: 11,
-      sortOrder: sorterColumns.find((column) => column.key === "parent_id")?.sortOrder,
-    }),
+        <span className="px-4 text-sm text-gray-500">
+          {parent_id ? parent_id.substring(0, 8) : ""}
+        </span>
+      ),
+      {
+        multiple: 11,
+        sortOrder: sorterColumns.find((column) => column.key === "parent_id")
+          ?.sortOrder,
+      },
+    ),
     // Labels
-    TableColumn("labels", "Labels",
+    TableColumn(
+      "labels",
+      "Labels",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { labels }) => (
-      <div className="flex flex-wrap gap-1">
-        {labels?.map((label) => (
-          <span
-            key={label}
-            className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
-          >
-            {label}
-          </span>
-        )) || "-"}
-      </div>
-    ),{
-      multiple: 12,
-      sortOrder: sorterColumns.find((column) => column.key === "labels")?.sortOrder,
-    }),
+        <div className="flex flex-wrap gap-1">
+          {labels?.map((label) => (
+            <span
+              key={label}
+              className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+            >
+              {label}
+            </span>
+          )) || "-"}
+        </div>
+      ),
+      {
+        multiple: 12,
+        sortOrder: sorterColumns.find((column) => column.key === "labels")
+          ?.sortOrder,
+      },
+    ),
     // Attachments
-    TableColumn("attachments", "Attachments",
+    TableColumn(
+      "attachments",
+      "Attachments",
       visibleColumns,
       handleVisible,
       handleSort,
       (_, { attachments }) => (
-      <span className="text-gray-500">
-        {attachments.length > 0 ? `📎 ${attachments.length}` : "-"}
-      </span>
-    ),{
-      multiple: 13,
-      sortOrder: sorterColumns.find((column) => column.key === "attachments")?.sortOrder,
-    }),
+        <div className="px-4">
+          <span className="text-gray-500">
+            {attachments.length > 0 ? `📎 ${attachments.length}` : ""}
+          </span>
+        </div>
+      ),
+      {
+        multiple: 13,
+        sortOrder: sorterColumns.find((column) => column.key === "attachments")
+          ?.sortOrder,
+      },
+    ),
     // Points
     TableColumn(
       "story_point",
@@ -521,10 +580,11 @@ const ListTable = ({
           inputType="number"
           handleChangeCellValue={handleChangeCellValue}
         />
-      ),  
-      { 
+      ),
+      {
         multiple: 14,
-        sortOrder:sorterColumns.find((column) => column.key === "story_point")?.sortOrder,
+        sortOrder: sorterColumns.find((column) => column.key === "story_point")
+          ?.sortOrder,
       },
     ),
     // Created
@@ -620,9 +680,18 @@ const ListTable = ({
         bordered={true}
         rowSelection={{ ...rowSelection }}
         rowKey="id"
-        loading={isLoading}
+        loading={isLoading || isFetching}
         scroll={{ x: "max-content" }}
-        style={{  width: tableContainerRef.current?.offsetWidth }}
+        style={{ width: tableContainerRef.current?.offsetWidth }}
+        pagination={{
+          current: pagination?.current_page || 1,
+          pageSize: pagination?.limit || 12,
+          total: pagination?.total_items || 0,
+          showSizeChanger: false,
+        }}
+        onChange={(pagination) => {
+          navigate(`?page=${pagination.current}`);
+        }}
       />
 
       <div className="absolute top-0 right-0 z-30 bg-gray-300">
@@ -657,8 +726,7 @@ const ListTable = ({
               })),
           ]}
           children={
-            <div className="cursor-pointer rounded-sm
-             px-2 py-1 hover:bg-gray-100">
+            <div className="cursor-pointer rounded-sm px-2 py-1 hover:bg-gray-100">
               <FaPlus />
             </div>
           }
@@ -679,5 +747,3 @@ const renderDateCell = (date: string) => {
     </div>
   );
 };
-
-

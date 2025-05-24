@@ -9,7 +9,10 @@ import { LuSearch, LuX } from "react-icons/lu";
 import ListFilterDropDown from "./listFilter/ListFilterDropDown";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import AddProjectMemberModal from "../modals/adProjectMemberModel/addProjectMemberModal";
-import { parseFiltersSearchParams,FiltersSearchParams } from "@libs/utils/parseFiltersSearchParams";
+import {
+  parseFiltersSearchParams,
+  FiltersSearchParams,
+} from "@libs/utils/parseFiltersSearchParams";
 interface ListFilterProps {
   setIsCreateModalOpen: (isOpen: boolean) => void;
   onSprintSelect?: (sprintId: string) => void;
@@ -22,13 +25,17 @@ const ListFilter = ({
   const { projectMembers } = useProjectMembers(projectId || "");
   const navigate = useNavigate();
   const searchParams = new URLSearchParams(window.location.search);
-  const [keyword, setKeyword] = useState<string>(searchParams.get("keyword")||"");
-  const [filters, setFilters] = useState<FiltersSearchParams>(parseFiltersSearchParams(searchParams.get("filters")||""));
+  const [keyword, setKeyword] = useState<string>(
+    searchParams.get("keyword") || "",
+  );
+  const [filters, setFilters] = useState<FiltersSearchParams>(
+    parseFiltersSearchParams(searchParams.get("filters") || ""),
+  );
 
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const debouncedUpdate = useMemo(
     () =>
-      debounce((value: string,filtersSearchParams:string) => {
+      debounce((value: string, filtersSearchParams: string) => {
         const keywordSearchParams = value;
         handleNavigate(keywordSearchParams, filtersSearchParams);
       }, 500),
@@ -36,12 +43,10 @@ const ListFilter = ({
     [navigate, projectId],
   );
 
-  
-
   useEffect(() => {
     const keywordSearchParams = searchParams.get("keyword");
 
-    let filterCategoryExist = Object.keys(filters).filter(
+    const filterCategoryExist = Object.keys(filters).filter(
       (filter) => filters[filter as keyof typeof filters].length > 0,
     );
     const filtersSearchParams = filterCategoryExist.reduce(
@@ -59,7 +64,7 @@ const ListFilter = ({
 
   const handleKeywordChange = (value: string) => {
     setKeyword(value);
-    debouncedUpdate(value,searchParams.get("filters")||"");
+    debouncedUpdate(value, searchParams.get("filters") || "");
   };
 
   const handleFilterChange = (
@@ -80,8 +85,8 @@ const ListFilter = ({
     if (keywordSearchParams) {
       url += `keyword=${keywordSearchParams}`;
     }
-    if(keywordSearchParams&&filtersSearchParams){
-      url+="&"
+    if (keywordSearchParams && filtersSearchParams) {
+      url += "&";
     }
     if (filtersSearchParams) {
       url += `filters=${filtersSearchParams}`;
@@ -121,26 +126,6 @@ const ListFilter = ({
         />
 
         <div className="flex flex-row items-center">
-          {/* Member */}
-          <div className="flex flex-row items-center">
-            {projectMembers?.length &&
-              projectMembers.map((member, index) => (
-                <div
-                  key={member.user_id}
-                  style={{
-                    transform: `translateX(-${index * 12}px)`,
-                  }}
-                  className={`cursor-pointer rounded-full border-2 border-transparent p-[1px] hover:z-50 hover:border-emerald-500`}
-                >
-                  <UserAvatar
-                    userId={member.user_id}
-                    size={28}
-                    isDisplayName={false}
-                  />
-                </div>
-              ))}
-          </div>
-
           {/* Add member */}
           <div
             onClick={() => setIsAddMemberModalOpen(true)}
@@ -148,12 +133,31 @@ const ListFilter = ({
           >
             <CiUser />
           </div>
+          {/* Member */}
+          <div className="flex">
+            {projectMembers?.length &&
+              projectMembers.map((member, index) => (
+                <div
+                  key={member.user_id}
+                  style={{
+                    transform: `translateX(-${index * 20}px)`,
+                  }}
+                  className={`cursor-pointer rounded-full border-2 border-transparent p-[1px] hover:z-50 hover:border-emerald-500`}
+                >
+                  <UserAvatar
+                    userId={member.user_id}
+                    size={32}
+                    isDisplayName={false}
+                  />
+                </div>
+              ))}
+          </div>
         </div>
       </div>
 
       <div className="flex items-center space-x-2">
         <Button
-          className="rounded bg-emerald-500 px-3 py-1 text-sm text-white hover:bg-emerald-600"
+          className="rounded bg-emerald-500 px-3 py-2 text-sm text-white hover:bg-emerald-600"
           onClick={() => setIsCreateModalOpen(true)}
         >
           Create Issue

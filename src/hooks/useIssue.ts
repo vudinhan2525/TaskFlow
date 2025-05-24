@@ -16,8 +16,9 @@ export function useProjectIssues(body: GetIssuesParams) {
       body.sprint_ids,
       body.keyword,
       body.status,
-      body.assignee_ids,  
+      body.assignee_ids,
       body.column_ids,
+      body.page,
     ],
     queryFn: async () => {
       const response = await issues.list(body);

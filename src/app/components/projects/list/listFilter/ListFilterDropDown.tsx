@@ -10,8 +10,8 @@ import { useProjectColumns } from "@libs/hooks/useProject";
 import { FiltersSearchParams } from "@libs/utils/parseFiltersSearchParams";
 import { MoveRight } from "lucide-react";
 import RenderStatusCell from "../common/RenderStatusCell";
-import { IoFilterOutline } from "react-icons/io5";
 import dayjs from "dayjs";
+import { FaChevronDown } from "react-icons/fa";
 
 const ListFilterDropDown = ({
   filters,
@@ -39,8 +39,8 @@ const ListFilterDropDown = ({
     listFilterKey: keyof typeof filters;
   }) => {
     return (
-      <div className="flex w-full items-center justify-between px-4 py-2">
-        <h1 className="text-sm font-medium text-gray-700">{title}</h1>
+      <div className="flex w-full items-center justify-between py-2">
+        <h1 className="text-sm font-bold text-black">{title}</h1>
         {filters[listFilterKey] && filters[listFilterKey].length > 0 && (
           <IoIosClose
             size={20}
@@ -62,7 +62,7 @@ const ListFilterDropDown = ({
         dropdownRender={() => (
           <div className="z-50 w-96 flex-col rounded-xs bg-white shadow-2xl">
             <div className="flex w-full items-center justify-between px-4 py-2 shadow-2xl">
-              <h1 className="text-sm font-medium text-gray-700">Filters</h1>
+              <h1 className="text-lg font-bold text-gray-800">Filters</h1>
             </div>
             <div className="flex max-h-60 flex-col gap-6 overflow-y-auto p-4">
               {/* Status Section */}
@@ -75,7 +75,20 @@ const ListFilterDropDown = ({
                   {columns?.map((column) => (
                     <div
                       key={column.id}
-                      className="flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-1 hover:bg-gray-50"
+                      onClick={() =>
+                        handleFilterChange("status", {
+                          status: filters.status.includes(
+                            column.name as IssueStatus,
+                          )
+                            ? filters.status.filter((s) => s !== column.name)
+                            : [...filters.status, column.name as IssueStatus],
+                        })
+                      }
+                      className={`${
+                        filters.status.includes(column.name)
+                          ? "bg-gray-300"
+                          : "hover:bg-gray-50"
+                      } flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-1`}
                     >
                       <input
                         type="checkbox"
@@ -83,17 +96,8 @@ const ListFilterDropDown = ({
                         checked={filters.status.includes(
                           column.name as IssueStatus,
                         )}
-                        onChange={() =>
-                          handleFilterChange("status", {
-                            status: filters.status.includes(
-                              column.name as IssueStatus,
-                            )
-                              ? filters.status.filter(
-                                  (s) => s !== (column.name as IssueStatus),
-                                )
-                              : [...filters.status, column.name as IssueStatus],
-                          })
-                        }
+                        onClick={(e) => e.preventDefault()}
+                        onChange={() => {}}
                       />
                       <RenderStatusCell column={column} />
                     </div>
@@ -127,7 +131,7 @@ const ListFilterDropDown = ({
                           onSprintSelect?.("");
                         }
                       }}
-                      className="cursor-pointer rounded-full bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200"
+                      className={`${filters.sprint_ids.includes(sprint.id) ? "bg-gray-300" : "hover:bg-gray-200"} cursor-pointer rounded-full bg-gray-50 px-3 py-1 text-sm`}
                     >
                       {sprint.name}
                     </div>
@@ -137,9 +141,7 @@ const ListFilterDropDown = ({
 
               {/*Created Date */}
               <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium text-gray-700">
-                  Created Date
-                </p>
+                <p className="text-sm font-bold text-black">Created Date</p>
                 <div className="flex flex-row items-end justify-between">
                   <div className="flex flex-col">
                     <p className="text-sm font-medium text-gray-700">From</p>
@@ -179,7 +181,7 @@ const ListFilterDropDown = ({
                   title="Assignee"
                   listFilterKey="assignee_ids"
                 />
-                <div className="flex flex-row flex-wrap items-center gap-1">
+                <div className="flex flex-row flex-wrap items-center gap-[2px]">
                   {projectMembers?.map((member) => (
                     <div
                       onClick={() => {
@@ -198,7 +200,7 @@ const ListFilterDropDown = ({
                     >
                       <UserAvatar
                         userId={member.user_id}
-                        size={28}
+                        size={32}
                         isDisplayName={false}
                       />
                     </div>
@@ -208,7 +210,7 @@ const ListFilterDropDown = ({
 
               {/*Date range */}
               <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium text-gray-700">Date Range</p>
+                <p className="text-sm font-bold text-black">Date Range</p>
                 <div className="flex flex-row items-end justify-between">
                   <div className="flex flex-col">
                     <p>Start Date</p>
@@ -225,8 +227,8 @@ const ListFilterDropDown = ({
 
               {/* Reporter */}
               <div className="flex flex-col gap-1">
-                <p className="text-sm font-medium text-gray-700">Reporter</p>
-                <div className="flex flex-row flex-wrap items-center gap-1">
+                <p className="text-sm font-bold text-black">Reporter</p>
+                <div className="flex flex-row flex-wrap items-center gap-[2px]">
                   {projectMembers?.map((member) => (
                     <div
                       key={member.user_id}
@@ -234,7 +236,7 @@ const ListFilterDropDown = ({
                     >
                       <UserAvatar
                         userId={member.user_id}
-                        size={28}
+                        size={32}
                         isDisplayName={false}
                       />
                     </div>
@@ -246,9 +248,11 @@ const ListFilterDropDown = ({
         )}
         trigger={["click"]}
       >
-        <button className="cursor-pointer rounded bg-emerald-500 px-3 py-2 text-sm text-white hover:bg-emerald-600">
-          Filter <IoFilterOutline className="ml-1 inline" />
-        </button>
+        <div>
+          <div className="cursor-pointer rounded bg-emerald-500 px-4 py-2 text-sm text-white hover:bg-emerald-600">
+            Filter <FaChevronDown className="ml-1 inline" />
+          </div>
+        </div>
       </Dropdown>
     </div>
   );

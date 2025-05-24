@@ -190,7 +190,7 @@ export const KanbanColumn = ({
         items={column.issues.map((issue) => issue.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="min-h-40">
+        <div className="max-h-[600px] min-h-40 overflow-auto">
           {column.issues.map((issue) => {
             if (issue.parent_id === "") {
               return <SortableIssue key={issue.id} issue={issue} />;

@@ -243,7 +243,7 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
       isLoadingButton={isLoading || isColumnsLoading}
       isSubmitDisabled={isColumnsLoading || !columns?.length}
     >
-      <div className="max-h-[calc(100vh-200px)] p-4">
+      <div className="max-h-[calc(100vh-200px)] overflow-auto p-4">
         <form className="space-y-4">
           <div className="mb-6 space-y-4">
             {/* Project Selection/Display */}
@@ -329,9 +329,9 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
                       }
                       placement="bottom"
                       rowClassName="font-semibold text-gray-700"
-                      menuClassName="min-w-[180px]"
+                      menuClassName="w-[450px]"
                       parent={
-                        <div className="flex items-center space-x-2 rounded-md px-3">
+                        <div className="flex items-center space-x-2 rounded-md">
                           {sprints?.find((s) => s.id === watch("sprint_id"))
                             ?.name || "Select Sprint"}
                         </div>
