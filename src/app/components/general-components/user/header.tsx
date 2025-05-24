@@ -31,9 +31,9 @@ export const Header = () => {
   };
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 w-full">
+      <header className="flex w-full items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
         {/* Left section - Logo and dropdowns */}
-        <div className="flex items-center space-x-4 w-1/4">
+        <div className="flex w-1/4 items-center space-x-4">
           {/* Logo */}
           <div className="flex items-center">
             <Image src={logo} className="h-[17px] w-[100px]" />
@@ -53,14 +53,16 @@ export const Header = () => {
                 }}
                 menuClassName={"min-w-[120px]"}
                 rowClassName="font-semibold text-gray-700"
-                parent={<div className="flex items-center space-x-2">Projects</div>}
+                parent={
+                  <div className="flex items-center space-x-2">Projects</div>
+                }
               />
             </div>
           )}
         </div>
 
         {/*Middle section - Search and Add more*/}
-        <div className="flex items-center space-x-4 w-1/2 justify-center">
+        <div className="flex w-1/2 items-center justify-center space-x-4">
           {/* Search Box */}
           <div className="relative w-[60%]">
             <SearchHeader />
@@ -74,15 +76,18 @@ export const Header = () => {
 
         {/* Right section - Search, notifications, settings, and user */}
         {isAuthenticated && (
-          <div className="flex items-center space-x-2 w-1/4 justify-end">
+          <div className="flex w-1/4 items-center justify-end space-x-2">
             {/* Notification Icon */}
-            <div className="p-2 hover:bg-gray-100 rounded-full cursor-pointer text-gray-600">
+            <div className="cursor-pointer rounded-full p-2 text-gray-600 hover:bg-gray-100">
               <FaBell />
             </div>
             {/* Project Invitations */}
             <ProjectInvitationsPopover userId={user?.data?.id || ""} />
             {/* Settings Icon */}
-            <div className="p-2 hover:bg-gray-100 rounded-full cursor-pointer text-gray-600">
+            <div
+              className="cursor-pointer rounded-full p-2 text-gray-600 hover:bg-gray-100"
+              onClick={() => navigate("/settings")}
+            >
               <FaGear />
             </div>
 
@@ -92,32 +97,36 @@ export const Header = () => {
                 className="flex items-center space-x-2 text-red-500"
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
               >
-                <p className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <p className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
                   <span className="text-sm font-medium text-gray-600">
                     {user?.data?.first_name?.[0]}
                   </span>
                 </p>
               </div>
               {isUserDropdownOpen && (
-                <div className="absolute right-0 z-10 mt-2 w-48 bg-white rounded-md shadow-lg">
-                  <div className="px-4 py-3 border-b">
+                <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-lg">
+                  <div className="border-b px-4 py-3">
                     <p className="text-sm font-medium">{`${user?.data?.first_name} ${user?.data?.last_name}`}</p>
                     <p className="text-sm text-gray-600">{user?.data?.email}</p>
                   </div>
                   <div className="py-1">
-                    <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Profile</button>
-                    <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Settings</button>
+                    <button className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100">
+                      Profile
+                    </button>
+                    <button className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100">
+                      Settings
+                    </button>
                     <button
                       onClick={async () => {
                         try {
                           setIsUserDropdownOpen(false);
                           await logout();
-                          navigate('/login', { replace: true });
+                          navigate("/login", { replace: true });
                         } catch (error) {
-                          console.error('Logout failed:', error);
+                          console.error("Logout failed:", error);
                         }
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
                     >
                       Sign out
                     </button>
@@ -128,15 +137,22 @@ export const Header = () => {
           </div>
         )}
         {!isAuthenticated && (
-          <div className="min-w-1/4 flex items-center justify-center">
-            <Button className="w-[100px]" onClick={() => navigate("/login")} variant="outline">
+          <div className="flex min-w-1/4 items-center justify-center">
+            <Button
+              className="w-[100px]"
+              onClick={() => navigate("/login")}
+              variant="outline"
+            >
               <span className="text-base font-semibold">Login</span>
             </Button>
           </div>
         )}
       </header>
 
-      <UnifiedIssueModal isOpen={isCreateIssueModalOpen} onClose={handleCloseIssueModal} />
+      <UnifiedIssueModal
+        isOpen={isCreateIssueModalOpen}
+        onClose={handleCloseIssueModal}
+      />
     </>
   );
 };

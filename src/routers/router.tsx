@@ -9,16 +9,38 @@ import DefaultLayout from "@libs/app/layouts/defaultLayout";
 import LoginPage from "@libs/app/pages/auth/loginPage/loginPage";
 import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
 import ProjectPage from "@libs/app/pages/project/projectPage/projectPage";
+import SettingsPage from "@libs/app/pages/settings/settingsPage";
 
 // Placeholder components until we implement the real ones
-const PlaceholderComponent = ({ title }: { title: string }): React.ReactElement => <div className="p-8 text-center text-gray-600">{title}</div>;
+const PlaceholderComponent = ({
+  title,
+}: {
+  title: string;
+}): React.ReactElement => (
+  <div className="p-8 text-center text-gray-600">{title}</div>
+);
 
 // Lazy load components
-const ProjectReport = lazy(() => import("@libs/app/pages/project/reportPage/reportPage"));
-const ProjectBoard = lazy(() => import("@libs/app/pages/project/boardPage/boardPage"));
-const Roadmap = lazy(() => import("@libs/app/pages/project/roadmapPage/roadmapPage"));
-const ActiveSprints = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Active Sprints" /> }));
-const ProjectSettings = lazy(() => Promise.resolve({ default: () => <PlaceholderComponent title="Project Settings" /> }));
+const ProjectReport = lazy(
+  () => import("@libs/app/pages/project/reportPage/reportPage"),
+);
+const ProjectBoard = lazy(
+  () => import("@libs/app/pages/project/boardPage/boardPage"),
+);
+const Roadmap = lazy(
+  () => import("@libs/app/pages/project/roadmapPage/roadmapPage"),
+);
+const ActiveSprints = lazy(() =>
+  Promise.resolve({
+    default: () => <PlaceholderComponent title="Active Sprints" />,
+  }),
+);
+
+const ProjectSettings = lazy(() =>
+  Promise.resolve({
+    default: () => <PlaceholderComponent title="Project Settings" />,
+  }),
+);
 
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -27,7 +49,13 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 
 const Router = (): React.ReactElement => {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <Routes>
         {/* Public routes */}
 
@@ -61,8 +89,18 @@ const Router = (): React.ReactElement => {
             </Route>
           </Route>
 
+          {/* User settings */}
+          <Route path="settings" element={<SettingsPage />} />
+
           {/* Fallback for protected routes */}
-          <Route path="*" element={<div className="p-8 text-center text-gray-600">Page not found</div>} />
+          <Route
+            path="*"
+            element={
+              <div className="p-8 text-center text-gray-600">
+                Page not found
+              </div>
+            }
+          />
         </Route>
       </Routes>
     </Suspense>
