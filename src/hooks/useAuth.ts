@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { setUser, setError } from "../store/slices/authSlice";
 import { queryClient } from "../apis/react-query";
 import { auth } from "@libs/apis/auth";
+import { users } from "@libs/apis/user";
 import { useNavigate } from "react-router-dom";
 
 export function useAuth() {
@@ -51,7 +52,7 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await auth.logout();  // Call the server to clear cookies
+      await auth.logout(); // Call the server to clear cookies
       localStorage.removeItem("token");
       dispatch(setUser(null));
       queryClient.clear();
@@ -59,6 +60,18 @@ export function useAuth() {
       console.error("Logout failed:", error);
     }
   };
+  const updateUser = useMutation({
+    mutationFn: users.update,
+    onSuccess: ({ data }) => {
+      dispatch(setUser(data.data));
+      queryClient.setQueryData(["currentUser"], { data: data.data });
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      console.error("Update failed:", error);
+    },
+  });
+
   return {
     user: currentUser,
     isLoading,
@@ -66,5 +79,6 @@ export function useAuth() {
     login,
     register,
     logout,
+    updateUser: updateUser.mutate,
   };
 }
