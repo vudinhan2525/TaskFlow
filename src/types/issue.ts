@@ -32,22 +32,16 @@ export interface GetIssuesParams {
   page?: number | string;
   limit?: number | string;
   column_ids?: string[];
-  status?: IssueStatus[];   
+  status?: IssueStatus[];
 }
-
-
-
-
-
-
 
 export interface CreateIssueParams {
   // Required fields from proto definition
   title: string;
-  summary: string;           // Required per proto
+  summary: string; // Required per proto
   type: "Bug" | "Task" | "Story" | "Epic";
   column_id: string;
-  priority: IssuePriority;   // Use proper type
+  priority: IssuePriority; // Use proper type
   project_id: string;
 
   // Optional fields
@@ -58,4 +52,25 @@ export interface CreateIssueParams {
   parent_id?: string;
   story_point?: number;
   attachments?: string[];
+}
+
+export interface GetActivitiesParams {
+  issue_id: string;
+  page: number;
+  limit: number;
+}
+
+export interface ActivityChanges {
+  field: string;
+  old_value: string;
+  new_value: string;
+}
+
+export interface IActivity {
+  id: string;
+  issue_id: string;
+  action_type: string;
+  created_at: string; // ISO 8601 datetime string
+  updated_at: string; // ISO 8601 datetime string
+  changes: ActivityChanges[];
 }

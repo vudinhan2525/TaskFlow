@@ -1,5 +1,11 @@
 import api, { ResponseApi } from "@libs/apis/api";
-import { GetIssuesParams, IIssue, CreateIssueParams } from "@libs/types/issue";
+import {
+  GetIssuesParams,
+  IIssue,
+  CreateIssueParams,
+  GetActivitiesParams,
+  IActivity,
+} from "@libs/types/issue";
 // Parameters for creating an issue
 
 const config = {
@@ -37,4 +43,7 @@ export const issues = {
   // Delete an issue
   delete: (projectId: string, issueId: string) =>
     api.delete<unknown>(`/project/${projectId}/issues/${issueId}`, config),
+
+  getActivities: (data: GetActivitiesParams) =>
+    api.post<ResponseApi<IActivity[]>>(`/issues/list-activities`, data, config),
 };

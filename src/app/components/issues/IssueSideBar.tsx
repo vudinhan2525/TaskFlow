@@ -18,6 +18,7 @@ import { useProjectSprints } from "@libs/hooks/useSprint";
 import { toast } from "react-toastify";
 import { formatDate } from "@libs/utils/date";
 import { CreateIssueParams } from "@libs/types/issue";
+import ActivitySection from "@libs/app/components/issues/activitySection";
 // Mock data for teams
 const MOCK_TEAMS = [
   { id: "1", name: "Team 1" },
@@ -52,7 +53,6 @@ const IssueSideBar: React.FC = () => {
   });
   const { sprints } = useProjectSprints(selectedIssue?.project_id || "");
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>("Comments");
   const [selectedDetailOption, setSelectedDetailOption] =
     useState<DetailOption | null>(null);
   const [childIssueForm, setChildIssueForm] = useState({
@@ -635,30 +635,7 @@ const IssueSideBar: React.FC = () => {
           Updated {formatDate(selectedIssue.updated_at)}
         </p>
       </div>
-      {/* Activity Section */}
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-md text-left font-bold text-gray-800">
-            Activity
-          </h2>
-          <button className="text-gray-500 hover:text-gray-700">⤓</button>
-        </div>
-        <div className="flex space-x-2 border-b border-gray-200">
-          {["All", "Comments", "History", "Work log"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-2 text-sm ${
-                activeTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      </div>
+      <ActivitySection issueId={selectedIssue.id} />
     </div>
   );
 };

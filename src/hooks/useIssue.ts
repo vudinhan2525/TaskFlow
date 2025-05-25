@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { issues } from "../apis/issue";
-import { CreateIssueParams } from "@libs/types/issue";
+import { CreateIssueParams, GetActivitiesParams } from "@libs/types/issue";
 import { toast } from "react-toastify";
 import { GetIssuesParams } from "@libs/types/issue";
 
@@ -181,6 +181,26 @@ export function useDeleteIssue({
     deleteIssue,
     isLoading,
     isSuccess,
+    error,
+  };
+}
+
+export function useActivities(params: GetActivitiesParams) {
+  const {
+    data: activitiesRes,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["activities", params.issue_id],
+    queryFn: async () => {
+      const response = await issues.getActivities(params);
+      return response.data;
+    },
+  });
+
+  return {
+    activities: activitiesRes?.data,
+    isLoading,
     error,
   };
 }
