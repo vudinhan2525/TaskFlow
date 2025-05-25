@@ -1,7 +1,6 @@
 export type FiltersSearchParams = {
   sprint_ids: string[];
   assignee_ids: string[];
-  status: string[];
   column_ids: string[];
   created_at: string[];
 };
@@ -12,7 +11,6 @@ export function parseFiltersSearchParams(
   const result: FiltersSearchParams = {
     sprint_ids: [],
     assignee_ids: [],
-    status: [],
     column_ids: [],
     created_at: [],
   } as FiltersSearchParams;

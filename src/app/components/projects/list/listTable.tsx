@@ -682,7 +682,11 @@ const ListTable = ({
         rowKey="id"
         loading={isLoading || isFetching}
         scroll={{ x: "max-content" }}
-        style={{ width: tableContainerRef.current?.offsetWidth }}
+        style={{
+          width: tableContainerRef.current?.offsetWidth,
+          transition: "opacity 0.2s ease-in-out",
+          opacity: isLoading || isFetching ? 0.6 : 1,
+        }}
         pagination={{
           current: pagination?.current_page || 1,
           pageSize: pagination?.limit || 12,

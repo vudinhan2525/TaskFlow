@@ -1,6 +1,5 @@
 import { Dropdown } from "antd";
 import { IoIosClose } from "react-icons/io";
-import { IssueStatus } from "@libs/types/issue";
 import { ISprint } from "@libs/types";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import { useProjectSprints } from "@libs/hooks/useSprint";
@@ -69,23 +68,23 @@ const ListFilterDropDown = ({
               <div className="flex flex-col gap-1">
                 <ListFilterDropdownHeader
                   title="Status"
-                  listFilterKey="status"
+                  listFilterKey="column_ids"
                 />
                 <div className="flex flex-wrap gap-2">
                   {columns?.map((column) => (
                     <div
                       key={column.id}
                       onClick={() =>
-                        handleFilterChange("status", {
-                          status: filters.status.includes(
-                            column.name as IssueStatus,
-                          )
-                            ? filters.status.filter((s) => s !== column.name)
-                            : [...filters.status, column.name as IssueStatus],
+                        handleFilterChange("column_ids", {
+                          column_ids: filters.column_ids.includes(column.id)
+                            ? filters.column_ids.filter(
+                                (id) => id !== column.id,
+                              )
+                            : [...filters.column_ids, column.id],
                         })
                       }
                       className={`${
-                        filters.status.includes(column.name)
+                        filters.column_ids.includes(column.id)
                           ? "bg-gray-300"
                           : "hover:bg-gray-50"
                       } flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 px-3 py-1`}
@@ -93,9 +92,7 @@ const ListFilterDropDown = ({
                       <input
                         type="checkbox"
                         className="rounded text-emerald-500"
-                        checked={filters.status.includes(
-                          column.name as IssueStatus,
-                        )}
+                        checked={filters.column_ids.includes(column.id)}
                         onClick={(e) => e.preventDefault()}
                         onChange={() => {}}
                       />
