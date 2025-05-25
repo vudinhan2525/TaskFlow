@@ -694,7 +694,9 @@ const ListTable = ({
           showSizeChanger: false,
         }}
         onChange={(pagination) => {
-          navigate(`?page=${pagination.current}`);
+          const url = new URL(window.location.href);
+          url.searchParams.set("page", pagination.current.toString());
+          navigate(url.search);
         }}
       />
 
