@@ -6,7 +6,6 @@ import { useSearchParams } from "react-router-dom";
 import ListTable from "./listTable";
 import { TableRowSelection } from "antd/es/table/interface";
 import UnifiedIssueModal from "@libs/app/components/projects/modals/unifiedIssueModal";
-import { useProjectColumns } from "@libs/hooks/useProject";
 import {
   FiltersSearchParams,
   parseFiltersSearchParams,
@@ -15,7 +14,6 @@ import {
 const List = ({ projectId }: { projectId?: string }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchParams] = useSearchParams();
-  const { columns } = useProjectColumns(projectId || "");
   const filtersSearchParams = searchParams.get("filters");
   const keyword = searchParams.get("keyword");
   const page = searchParams.get("page");
@@ -34,10 +32,7 @@ const List = ({ projectId }: { projectId?: string }) => {
     keyword: keywordSearchParams || undefined,
     sprint_ids: filters.sprint_ids,
     assignee_ids: filters.assignee_ids,
-    column_ids: filters.status.map((status) => {
-      const column = columns.find((column) => column.name === status);
-      return column?.id || "";
-    }),
+    column_ids: filters.column_ids,
     page: page || 1,
     limit: limit || 12,
   });
