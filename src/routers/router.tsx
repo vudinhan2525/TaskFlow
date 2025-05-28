@@ -81,6 +81,7 @@ const Router = (): React.ReactElement => {
               <Route path="board" element={<ProjectBoard />} />
               <Route path="summary" element={<ProjectPage />} />
               <Route path="backlog" element={<BacklogPage />} />
+              <Route path="backlog/:selectedIssue" element={<BacklogPage />} />
               <Route path="list" element={<ListPage />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="sprints" element={<ActiveSprints />} />

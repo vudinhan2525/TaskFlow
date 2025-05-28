@@ -2,24 +2,36 @@ import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { IIssue } from "@libs/types/issue";
-import { selectIssue as selectIssueAction } from "../store/slices/projectSlice";
+import {
+  selectIssue as selectIssueAction,
+  selectIssues as selectIssuesAction,
+} from "../store/slices/projectSlice";
 
 export function useIssueSelection() {
   const dispatch = useDispatch();
-  const { selectedIssueId, selectedIssue, isLoading } = useSelector((state: RootState) => state.project);
+  const { selectedIssue, selectedIssues, isLoading } = useSelector(
+    (state: RootState) => state.project,
+  );
 
-  const selectIssue = useCallback(
+  const setSelectedIssue = useCallback(
     (issue: IIssue | null) => {
       dispatch(selectIssueAction(issue));
     },
-    [dispatch]
+    [dispatch],
+  );
+
+  const setSelectIssues = useCallback(
+    (issues: Record<string, IIssue[]>) => {
+      dispatch(selectIssuesAction(issues));
+    },
+    [dispatch],
   );
 
   return {
-    selectedIssueId,
-    selectIssue,
+    setSelectedIssue,
+    setSelectIssues,
     selectedIssue,
+    selectedIssues,
     isLoading,
-    isSidebarVisible: !!selectedIssue,
   };
 }

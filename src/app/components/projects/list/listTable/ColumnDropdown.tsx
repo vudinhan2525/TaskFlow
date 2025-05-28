@@ -1,7 +1,7 @@
 import { Dropdown, MenuProps } from "antd";
-import { useState, useEffect,useRef } from "react";
+import { useState, useEffect, useRef,memo } from "react";
 import React from "react";
-const ColumnDropdown = ({
+const ColumnDropdown = memo(({
   items,
   currentItem,
   children,
@@ -14,6 +14,13 @@ const ColumnDropdown = ({
   const [visible, setVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState(items);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [elementHeight, setElementHeight] = useState(0);
+  useEffect(() => {
+    const container = document.getElementsByClassName("ant-table-cell");
+    if (container.length > 0) {
+      setElementHeight(container[0].clientHeight);
+    }
+  }, []);
 
   useEffect(() => {
     if (searchText.length == 0) {
@@ -35,39 +42,44 @@ const ColumnDropdown = ({
   }, [searchText, items]);
 
   return (
-    <div ref={dropdownRef}>
+    <div
+      style={{
+        height: elementHeight,
+      }}
+      className="flex items-center"
+      ref={dropdownRef}
+    >
       <Dropdown
         menu={{
           style: {
-          marginTop: "0px",
-          padding: "4px 0px",
-          borderRadius: "0px",
-        },
-        items: filteredItems,
-      }}
-      trigger={["click"]}
-      onOpenChange={setVisible}
-      open={visible}
-    >
-      {visible ? (
-        <input
-          placeholder={currentItem}
-          value={searchText}
-          autoFocus={true}
-          style={{
-            width:dropdownRef.current?.clientWidth,
-          }}
-          onChange={(e) => setSearchText(e.target.value)}
-          onClick={(e) => e.stopPropagation()}
-          className="rounded-none border-2 border-emerald-500 
-          px-2 py-1 text-gray-800 outline-none text-xs"
-        />
-      ) : (
-        <div className="py-2">{children}</div>
+            marginTop: "0px",
+            padding: "4px 0px",
+            borderRadius: "0px",
+          },
+          items: filteredItems,
+        }}
+        trigger={["click"]}
+        onOpenChange={setVisible}
+        open={visible}
+      >
+        {visible ? (
+          <div className="p-1">
+
+          <input
+            placeholder={currentItem}
+            value={searchText}
+            autoFocus={true}
+            onChange={(e) => setSearchText(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            className="h-full rounded-none w-full border-2 border-emerald-500 p-1 text-xs text-gray-800 outline-none"
+            />
+            </div>
+        ) : (
+          <div className="py-2">{children}</div>
         )}
       </Dropdown>
     </div>
   );
-};
+});
 
 export default ColumnDropdown;

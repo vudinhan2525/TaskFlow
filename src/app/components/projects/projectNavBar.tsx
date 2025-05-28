@@ -137,7 +137,7 @@ const ProjectNavbar = (): React.ReactElement => {
   };
 
   return (
-    <div className="flex flex-col bg-white p-2 border-b border-gray-200">
+    <div id="project-navbar" className="flex flex-col bg-white p-2 border-b border-gray-200">
       <nav className="flex items-center overflow-x-auto whitespace-nowrap">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={items} strategy={horizontalListSortingStrategy}>

@@ -1,7 +1,13 @@
 import { IIssue } from "@libs/types/issue";
 import { Dropdown, MenuProps, TableColumnType } from "antd";
 import React from "react";
-import { FaAngleDown, FaPlus, FaArrowDown, FaListUl, FaArrowUp } from "react-icons/fa";
+import {
+  FaAngleDown,
+  FaPlus,
+  FaArrowDown,
+  FaListUl,
+  FaArrowUp,
+} from "react-icons/fa";
 import { LuX } from "react-icons/lu";
 import { columnsIcon } from "../../../../../constants/list";
 import { FaCheck } from "react-icons/fa6";
@@ -23,6 +29,7 @@ const TableColumn = (
     sorter?: (a: IIssue, b: IIssue) => number;
     align?: "start" | "center" | "end";
     colSpan?: number;
+    width?: number;
   } = {},
 ): TableColumnType<IIssue> => {
   const items: MenuProps["items"] = [
@@ -68,7 +75,6 @@ const TableColumn = (
         <div className="flex items-center gap-2">
           <MdHideSource className="h-3 w-3" />
           <p className="text-xs text-[#6c757d]">Hide field</p>
-         
         </div>
       ),
       key: "hide-field",
@@ -83,7 +89,7 @@ const TableColumn = (
         className="group item flex items-center justify-between gap-2"
       >
         <div className="flex items-center gap-2">
-          <div className="hidden rounded-md p-1 group-hover:block ">
+          <div className="hidden rounded-md p-1 group-hover:block">
             <FaListUl className="h-3 w-3 text-[#6c757d]" />
           </div>
           <div className="rounded-md p-1 group-hover:hidden">
@@ -108,6 +114,7 @@ const TableColumn = (
     sortOrder: options.sortOrder,
     hidden: !visibleColumns.find((column) => column.key === key)?.visible,
     render,
+    width: options.width || 140,
     sortIcon: () => {
       if (options.sortOrder === null) return <div></div>;
       if (options.sortOrder === "ascend") return <FaArrowUp />;

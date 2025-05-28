@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Dropdown } from "antd";
 import {
   FaChevronDown,
   FaChevronUp,
   FaPaperclip,
-  FaPlus,
+  // FaPlus,
   FaTimes,
 } from "react-icons/fa";
-import StatusDropdown from "../projects/backlog/StatusDropdown";
-import { useProjectColumns } from "@libs/hooks/useProject";
+// import { useProjectColumns } from "@libs/hooks/useProject";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
-import Button from "../general-components/button";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
@@ -19,30 +17,78 @@ import { toast } from "react-toastify";
 import { formatDate } from "@libs/utils/date";
 import { CreateIssueParams } from "@libs/types/issue";
 import ActivitySection from "@libs/app/components/issues/activitySection";
+import { useNavigate } from "react-router-dom";
+import { PiNotePencil } from "react-icons/pi";
+import { IoLockClosedOutline } from "react-icons/io5";
+import { FaEye } from "react-icons/fa";
+import { AiOutlineLike } from "react-icons/ai";
+import { CiShare2 } from "react-icons/ci";
+import { BsThreeDots } from "react-icons/bs";
+import { IoIosClose } from "react-icons/io";
+import TextEditor from "../projects/backlog/TextEditor";
+
 // Mock data for teams
 const MOCK_TEAMS = [
   { id: "1", name: "Team 1" },
   { id: "2", name: "Team 2" },
 ];
 type DetailOption = "Attachment" | "Child Issue";
-const detailOptions: DetailOption[] = ["Attachment", "Child Issue"];
-
-// Custom hook for debouncing values
-const useDebounce = <T,>(value: T, delay: number): T => {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-};
 
 const IssueSideBar: React.FC = () => {
-  const { selectedIssueId, selectedIssue, selectIssue, isSidebarVisible } =
-    useIssueSelection();
-  const { columns } = useProjectColumns(selectedIssue?.project_id || "");
+  const { selectedIssue, setSelectedIssue } = useIssueSelection();
+  const IssueSideBarHeader = [
+    {
+      key: "lock",
+      icon: <IoLockClosedOutline />,
+      label: "Lock Issue",
+      onClick: () => {
+        toast.info("Lock issue not implemented yet");
+      },
+    },
+    {
+      key: "watch",
+      icon: <FaEye />,
+      label: "Watch Issue",
+      onClick: () => {
+        toast.info("Watch issue not implemented yet");
+      },
+    },
+    {
+      key: "like",
+      icon: <AiOutlineLike />,
+      label: "Like Issue",
+      onClick: () => {
+        toast.info("Like issue not implemented yet");
+      },
+    },
+    {
+      key: "share",
+      icon: <CiShare2 />,
+      label: "Share Issue",
+      onClick: () => {
+        toast.info("Share issue not implemented yet");
+      },
+    },
+    {
+      key: "actions",
+      icon: <BsThreeDots />,
+      label: "Actions",
+      onClick: () => {
+        toast.info("Actions not implemented yet");
+      },
+    },
+    {
+      key: "close",
+      icon: <IoIosClose />,
+      label: "Close Issue",
+      onClick: () => {
+        setSelectedIssue(null);
+        navigate(`/projects/${selectedIssue?.project_id}/backlog`);
+      },
+    },
+  ];
+  const navigate = useNavigate();
+  // const { columns } = useProjectColumns(selectedIssue?.project_id || "");
   const { projectMembers } = useProjectMembers(selectedIssue?.project_id || "");
   interface Sprint {
     id: string;
@@ -59,66 +105,12 @@ const IssueSideBar: React.FC = () => {
     title: "",
     summary: "",
   });
-  // Track if values were changed by user
-  const [valueChangedByUser, setValueChangedByUser] = useState({
-    summary: false,
-    description: false,
-  });
 
-  // Local state for input fields
-  const [formValues, setFormValues] = useState({
-    summary: "",
-    description: "",
-    storyPoint: 0,
-  });
-
-  // Debounced values
-  const debouncedSummary = useDebounce(formValues.summary, 500);
-  const debouncedDescription = useDebounce(formValues.description, 500);
-
-  // Update form values when selected issue changes
-  useEffect(() => {
-    if (selectedIssue) {
-      setFormValues({
-        summary: selectedIssue.summary || "",
-        description: selectedIssue.description || "",
-        storyPoint: selectedIssue.story_point || 0,
-      });
-      // Reset user change flags when switching issues
-      setValueChangedByUser({
-        summary: false,
-        description: false,
-      });
-    }
-  }, [selectedIssue]);
-
-  // Handle debounced updates
-  useEffect(() => {
-    if (
-      selectedIssue &&
-      valueChangedByUser.summary &&
-      debouncedSummary !== selectedIssue.summary
-    ) {
-      handleSummaryChange(debouncedSummary);
-    }
-  }, [debouncedSummary, selectedIssue, valueChangedByUser.summary]);
-
-  useEffect(() => {
-    if (
-      selectedIssue &&
-      valueChangedByUser.description &&
-      debouncedDescription !== selectedIssue.description
-    ) {
-      handleDescriptionChange(debouncedDescription);
-    }
-  }, [debouncedDescription, selectedIssue, valueChangedByUser.description]);
   const { createIssueAsync } = useCreateIssue({
     projectId: selectedIssue?.project_id || "",
   });
 
-  if (!isSidebarVisible || !selectedIssueId || !selectedIssue) {
-    return null;
-  }
+  if (!selectedIssue) return null;
 
   const handleDetailSubmit = async () => {
     if (!selectedDetailOption) return;
@@ -142,7 +134,7 @@ const IssueSideBar: React.FC = () => {
           story_point: childIssueForm.summary
             ? parseInt(childIssueForm.summary)
             : undefined,
-          parent_id: selectedIssueId,
+          parent_id: selectedIssue?.id || "",
           summary: childIssueForm.summary,
         };
 
@@ -154,68 +146,6 @@ const IssueSideBar: React.FC = () => {
         console.error("Failed to create child issue:", error);
         toast.error("Failed to create child issue");
       }
-    }
-  };
-
-  const handleAssigneeChange = async (assigneeId: string) => {
-    try {
-      await updateIssueAsync({
-        id: selectedIssue.id,
-        data: { assignee_id: assigneeId },
-      });
-      toast.success("Assignee updated successfully");
-    } catch {
-      toast.error("Failed to update assignee");
-    }
-  };
-
-  const handleStatusChange = async (newStatus: string) => {
-    try {
-      console.log(newStatus);
-      // TODO: FIX COLLUMN ID
-      await updateIssueAsync({
-        id: selectedIssue.id,
-        data: { column_id: "681f1494011a0f0114c92e1a" },
-      });
-      toast.success("Status updated successfully");
-    } catch {
-      toast.error("Failed to update status");
-    }
-  };
-
-  const handleStoryPointChange = async (value: number) => {
-    try {
-      await updateIssueAsync({
-        id: selectedIssue.id,
-        data: { story_point: value },
-      });
-      toast.success("Story points updated successfully");
-    } catch {
-      toast.error("Failed to update story points");
-    }
-  };
-
-  const handleSummaryChange = async (value: string) => {
-    try {
-      await updateIssueAsync({
-        id: selectedIssue.id,
-        data: { summary: value },
-      });
-      toast.success("Summary updated successfully");
-    } catch {
-      toast.error("Failed to update summary");
-    }
-  };
-
-  const handleDescriptionChange = async (value: string) => {
-    try {
-      await updateIssueAsync({
-        id: selectedIssue.id,
-        data: { description: value },
-      });
-      toast.success("Description updated successfully");
-    } catch {
-      toast.error("Failed to update description");
     }
   };
 
@@ -248,22 +178,6 @@ const IssueSideBar: React.FC = () => {
     }
   };
 
-  const handleSprintChange = async (sprintId: string) => {
-    if (selectedIssue.parent_id) {
-      toast.error("Cannot change sprint for child issues");
-      return;
-    }
-    try {
-      await updateIssueAsync({
-        id: selectedIssue.id,
-        data: { sprint_id: sprintId },
-      });
-      toast.success("Sprint updated successfully");
-    } catch {
-      toast.error("Failed to update sprint");
-    }
-  };
-
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -274,12 +188,20 @@ const IssueSideBar: React.FC = () => {
     toast.info(`Selected files: ${fileNames.join(", ")}`);
   };
 
-  const reporter = projectMembers?.find(
-    (member) => member.user_id === selectedIssue.reporter_id,
-  );
-  const reporterName = reporter
-    ? `${reporter.user?.first_name} ${reporter.user?.last_name}`
-    : "Unknown";
+  const handleUpdateIssue = async (key: string, value: string) => {
+    try {
+      await updateIssueAsync({
+        id: selectedIssue.id,
+        data: {
+          [key]: value,
+        },
+      });
+      toast.success("Issue updated successfully");
+    } catch {
+      toast.error("Failed to update issue");
+    }
+  };
+
   const details = {
     assignee: {
       initials: selectedIssue.assignee_id
@@ -308,57 +230,38 @@ const IssueSideBar: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-[400px] overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
+    <div className="overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-blue-600 hover:underline">
-            {selectedIssue.id}
-          </span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <PiNotePencil size={16} />
+            <span className="text-sm text-gray-600">Add epic</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-gray-600">
+              {selectedIssue?.title}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="dark"
-            className="text-gray-500 hover:text-gray-700"
-            onClick={() => selectIssue(null)}
-          >
-            ✖
-          </Button>
+        <div className="flex flex-row gap-2">
+          {IssueSideBarHeader.map((item) => (
+            <div
+              key={item.key}
+              onClick={item.onClick}
+              className="cursor-pointer rounded-sm border-1 border-gray-300 p-1.5 hover:bg-gray-100"
+            >
+              {item.icon}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Title */}
       <h2 className="mb-2 text-left text-xl font-semibold text-gray-800">
-        {selectedIssue.title}
+        {selectedIssue?.title}
       </h2>
 
-      {/* Status and Add button*/}
-      <div className="mb-4 flex w-full gap-5">
-        <StatusDropdown
-          status={selectedIssue.column.name}
-          columns={columns || []}
-          onStatusChange={handleStatusChange}
-        />
-        <Dropdown
-          menu={{
-            items: detailOptions.map((option) => ({
-              key: option,
-              label: (
-                <div className="flex items-center gap-2 p-2 hover:bg-gray-50">
-                  <span className="text-sm">{option}</span>
-                </div>
-              ),
-              onClick: () => setSelectedDetailOption(option),
-            })),
-          }}
-          trigger={["click"]}
-        >
-          <div className="flex cursor-pointer items-center gap-2 rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-200">
-            <FaPlus size={14} />
-            <span>Add detail...</span>
-          </div>
-        </Dropdown>
-      </div>
       {/* Input field for selected detail option */}
       {selectedDetailOption && (
         <div className="mt-2 rounded-md border border-gray-200 bg-gray-50 p-3">
@@ -459,7 +362,8 @@ const IssueSideBar: React.FC = () => {
                               />
                             </div>
                           ),
-                          onClick: () => handleAssigneeChange(member.user_id),
+                          onClick: () =>
+                            handleUpdateIssue("assignee_id", member.user_id),
                         })) || []),
                       {
                         key: "unassigned",
@@ -472,7 +376,7 @@ const IssueSideBar: React.FC = () => {
                             />
                           </div>
                         ),
-                        onClick: () => handleAssigneeChange(""),
+                        onClick: () => handleUpdateIssue("assignee_id", ""),
                       },
                     ],
                   }}
@@ -480,7 +384,7 @@ const IssueSideBar: React.FC = () => {
                 >
                   <div className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50">
                     <UserAvatar
-                      userId={selectedIssue.assignee_id || ""}
+                      userId={selectedIssue?.assignee_id || ""}
                       size={24}
                       isDisplayName={true}
                     />
@@ -493,67 +397,49 @@ const IssueSideBar: React.FC = () => {
               <span className="text-sm text-gray-600">Summary</span>
               <input
                 type="text"
-                value={formValues.summary}
+                value={selectedIssue?.summary}
                 onChange={(e) => {
-                  setFormValues((prev) => ({
-                    ...prev,
-                    summary: e.target.value,
-                  }));
-                  setValueChangedByUser((prev) => ({ ...prev, summary: true }));
+                  handleUpdateIssue("summary", e.target.value);
                 }}
                 className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
               />
             </div>
             {/* Description */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Description</span>
-              <textarea
-                value={formValues.description}
-                placeholder="Add a description..."
-                onChange={(e) => {
-                  setFormValues((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }));
-                  setValueChangedByUser((prev) => ({
-                    ...prev,
-                    description: true,
-                  }));
+            <div className="flex w-full flex-col items-start gap-1">
+              <p className="text-sm font-medium text-gray-600">Description</p>
+              <TextEditor
+                value={selectedIssue?.description || ""}
+                onChange={(value) => {
+                  handleUpdateIssue("description", value);
                 }}
-                className="h-24 w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
               />
+              <div className="flex flex-row gap-2">
+                <button
+                onClick={()=>{
+                 
+                }}
+                className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700 focus:outline-none">
+                  Add
+                </button>
+                <button className="rounded-md bg-red-600 px-3 py-1 text-sm text-white transition-colors hover:bg-red-700 focus:outline-none">
+                  Cancel
+                </button>
+              </div>
             </div>
+
             {/* Team Selection */}
             <div className="flex items-center justify-between">
               <span className="w-1/3 text-sm text-gray-600">Team</span>
               <select
-                value={selectedIssue.team_id || ""}
+                value={selectedIssue?.team_id || ""}
                 onChange={(e) => handleTeamChange(e.target.value)}
                 className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-                disabled={!!selectedIssue.parent_id}
+                disabled={!!selectedIssue?.parent_id}
               >
                 <option value="">Select Team</option>
                 {MOCK_TEAMS.map((team) => (
                   <option key={team.id} value={team.id}>
                     {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Sprint Selection */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Sprint</span>
-              <select
-                value={selectedIssue.sprint_id || ""}
-                onChange={(e) => handleSprintChange(e.target.value)}
-                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-                disabled={!!selectedIssue.parent_id}
-              >
-                <option value="">Select Sprint</option>
-                {sprints?.map((sprint: Sprint) => (
-                  <option key={sprint.id} value={sprint.id}>
-                    {sprint.name}
                   </option>
                 ))}
               </select>
@@ -565,7 +451,9 @@ const IssueSideBar: React.FC = () => {
               <input
                 type="number"
                 value={details.storyPoint}
-                onChange={(e) => handleStoryPointChange(Number(e.target.value))}
+                onChange={(e) =>
+                  handleUpdateIssue("story_point", e.target.value)
+                }
                 min="0"
                 className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
               />
@@ -607,7 +495,7 @@ const IssueSideBar: React.FC = () => {
               <span className="text-sm text-gray-600">Reporter</span>
               <div className="flex items-center gap-2">
                 <UserAvatar
-                  userId={selectedIssue.reporter_id || ""}
+                  userId={selectedIssue?.reporter_id || ""}
                   size={24}
                   isDisplayName={true}
                 />
@@ -635,7 +523,7 @@ const IssueSideBar: React.FC = () => {
           Updated {formatDate(selectedIssue.updated_at)}
         </p>
       </div>
-      <ActivitySection issueId={selectedIssue.id} />
+      <ActivitySection issueId={selectedIssue?.id || ""} />
     </div>
   );
 };

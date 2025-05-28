@@ -1,7 +1,7 @@
-import ProjectNavbar from "@libs/app/components/projects/projectNavBar";
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "@libs/hooks/useAuth";
+import ProjectNavbar from "@libs/app/components/projects/projectNavBar";
 
 const ProjectLayout = (): React.ReactElement => {
   const { user, isLoading } = useAuth();
@@ -18,16 +18,13 @@ const ProjectLayout = (): React.ReactElement => {
   }
 
   if (!user) {
- 
     return <div></div>;
   }
 
   return (
-    <div className="flex h-screen flex-col bg-white">
+    <div className="flex flex-col flex-1 overflow-auto">
       <ProjectNavbar />
-      <div>
-        <Outlet />
-      </div>
+      <Outlet />
     </div>
   );
 };
