@@ -11,7 +11,7 @@ import ColumnInputFiled from "./listTable/ColumnInputFiled";
 import ColumnDropdown from "./listTable/ColumnDropdown";
 import { IProjectMember } from "@libs/types/projectMember";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import RenderStatusCell from "./common/RenderStatusCell";
+import RenderStatusCell from "../../general-components/RenderStatusCell";
 import {
   columnsIcon,
   priorityOptions,
@@ -22,6 +22,7 @@ import TableColumn from "./listTable/TableColumn";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import { PaginationRes } from "@libs/apis/api";
 import { useNavigate } from "react-router-dom";
+import RenderTextCell from "./common/RenderTextCell";
 interface ListTableProps {
   isLoading: boolean;
   isFetching: boolean;
@@ -159,7 +160,7 @@ const ListTable = ({
       (_, { title }) => (
         <div className="p-2">
           {keyword ? (
-            <p>
+            <p className="line-clamp-1">
               {title.slice(
                 0,
                 title.toLowerCase().indexOf(keyword.toLowerCase()),
@@ -199,6 +200,7 @@ const ListTable = ({
         multiple: 8,
         sortOrder: sorterColumns.find((column) => column.key === "summary")
           ?.sortOrder,
+        width: 250,
       },
     ),
     // Description
@@ -217,6 +219,7 @@ const ListTable = ({
       ),
       {
         multiple: 9,
+        width: 250,
         sortOrder: sorterColumns.find((column) => column.key === "description")
           ?.sortOrder,
       },
@@ -284,7 +287,7 @@ const ListTable = ({
                   className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
                 >
                   {option.icon}
-                  <p className="text-xs font-bold">{option.name}</p>
+                  <p className="text-sm font-medium text-gray-800">{option.name}</p>
                 </div>
               ),
               onClick: () => {
@@ -300,7 +303,6 @@ const ListTable = ({
           children={
             <div className="flex items-center justify-start gap-2 rounded-md p-2 hover:cursor-pointer">
               {priorityOptions.find((option) => option.name === priority)?.icon}
-              <p className="text-xs font-bold">{priority}</p>
             </div>
           }
         />
@@ -331,7 +333,7 @@ const ListTable = ({
               <div
                 className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
               >
-                <p className="font-bold">{sprint.name}</p>
+                <p className="font-medium text-sm">{sprint.name}</p>
               </div>
             ),
             onClick: () => {
@@ -346,16 +348,12 @@ const ListTable = ({
             sprints.find((sprint: ISprint) => sprint.id === sprint_id)?.name
           }
           children={
-            <div className="flex justify-start px-2">
-              <div className="rounded-md bg-gray-200 px-2 py-1">
-                <p className="text-xs font-bold text-gray-600">
-                  {
-                    sprints.find((sprint: ISprint) => sprint.id === sprint_id)
-                      ?.name
-                  }
-                </p>
-              </div>
-            </div>
+            <RenderTextCell
+              text={
+                sprints.find((sprint: ISprint) => sprint.id === sprint_id)
+                  ?.name
+              }
+            />
           }
         />
       ),
@@ -594,7 +592,12 @@ const ListTable = ({
       visibleColumns,
       handleVisible,
       handleSort,
-      (_, { created_at }) => renderDateCell(created_at),
+      (_, { created_at }) => (
+        <RenderTextCell
+          text={format(new Date(created_at), "MM/dd/yyyy")}
+          className="text-sm p-1 font-medium"
+        />
+      ),
       {
         multiple: 15,
         sorter: (a, b) =>
@@ -608,7 +611,12 @@ const ListTable = ({
       visibleColumns,
       handleVisible,
       handleSort,
-      (_, { updated_at }) => renderDateCell(updated_at),
+      (_, { updated_at }) => (
+        <RenderTextCell
+          text={format(new Date(updated_at), "MM/dd/yyyy")}
+          className="text-sm p-1 font-medium"
+        />
+      ),
       {
         multiple: 16,
         sorter: (a, b) =>
@@ -678,15 +686,15 @@ const ListTable = ({
         columns={tableColumns}
         dataSource={issues}
         bordered={true}
+        size="small"
+        style={{
+          width: tableContainerRef.current?.offsetWidth,
+        }}
         rowSelection={{ ...rowSelection }}
         rowKey="id"
         loading={isLoading || isFetching}
-        scroll={{ x: "max-content" }}
-        style={{
-          width: tableContainerRef.current?.offsetWidth,
-          transition: "opacity 0.2s ease-in-out",
-          opacity: isLoading || isFetching ? 0.6 : 1,
-        }}
+        scroll={{ x: "max-content", y: 300 }}
+
         pagination={{
           current: pagination?.current_page || 1,
           pageSize: pagination?.limit || 12,
@@ -695,7 +703,7 @@ const ListTable = ({
         }}
         onChange={(pagination) => {
           const url = new URL(window.location.href);
-          url.searchParams.set("page", pagination.current.toString());
+          url.searchParams.set("page", pagination.current?.toString() || "1");
           navigate(url.search);
         }}
       />
@@ -744,12 +752,3 @@ const ListTable = ({
 
 export default ListTable;
 
-const renderDateCell = (date: string) => {
-  return (
-    <div className="flex justify-center px-2">
-      <span className="rounded-md bg-gray-300 px-2 py-1 text-center text-[15px] font-medium text-gray-700">
-        {format(new Date(date), "MM/dd/yyyy")}
-      </span>
-    </div>
-  );
-};

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, memo } from "react";
 import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import Button from "@libs/app/components/general-components/button";
@@ -16,11 +16,12 @@ import ConfirmDeleteModal from "@libs/app/components/general-components/modal/mo
 import CreateIssueModal from "@libs/app/components/projects/modals/createIssueModal";
 import {
   SortableContext,
-  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useDroppable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
 import { useDeleteSprint } from "@libs/hooks/useSprint";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
 }
@@ -28,17 +29,10 @@ interface ISprintIssues extends ISprint {
 interface ScrumSprintProps {
   sprint: ISprintIssues;
   projectId: string;
-  selectedIssues: { [key: string]: boolean };
-  onIssueSelect: (issueId: string, selected: boolean, issue?: IIssue) => void;
 }
 
-const ScrumSprint: React.FC<ScrumSprintProps> = ({
-  sprint,
-  projectId,
-  selectedIssues,
-  onIssueSelect,
-}) => {
-  const { setNodeRef } = useDroppable({
+const ScrumSprint = memo(({ sprint, projectId }: ScrumSprintProps) => {
+  const { setNodeRef } = useSortable({
     id: sprint.id,
     data: {
       type: "Sprint",
@@ -58,29 +52,17 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
       setIsUpdateSprintModalOpen(false);
     },
   });
-
+  const { selectedIssues, setSelectIssues } = useIssueSelection();
   const [isOpenButtonMenu, setIsOpenButtonMenu] = useState(false);
   const [isUpdateSprintModalOpen, setIsUpdateSprintModalOpen] = useState(false);
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
   const [isDeleteSprintModalOpen, setIsDeleteSprintModalOpen] = useState(false);
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
+  const [isSprintIssuesChecked, setIsSprintIssuesChecked] = useState(
+    selectedIssues[sprint.id || ""]?.length ? true : false,
+  );
   const [isExpanded, setIsExpanded] = useState(true);
   const { columns } = useProjectColumns(projectId);
-
-  // Group issues by their parent-child relationship
-  const issueMap: { [key: string]: IIssue[] } = {};
-  const parentIssues: IIssue[] = [];
-
-  sprint.issues.forEach((issue) => {
-    if (!issue.parent_id) {
-      parentIssues.push(issue);
-    } else {
-      if (!issueMap[issue.parent_id]) {
-        issueMap[issue.parent_id] = [];
-      }
-      issueMap[issue.parent_id].push(issue);
-    }
-  });
 
   const buttonItems: MenuProps["items"] = [
     {
@@ -101,7 +83,6 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
 
   const handleDeleteSprint = async () => {
     try {
-      // Update all issues in the sprint to have null sprint_id
       for (const issue of sprint.issues) {
         await updateIssueAsync({
           id: issue.id,
@@ -117,6 +98,20 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
     }
   };
 
+  const handleToggleSprintIssuesChecked = () => {
+    if (isSprintIssuesChecked) {
+      setSelectIssues({ [sprint.id]: [] });
+      setIsSprintIssuesChecked(false);
+    } else {
+      const issues: IIssue[] = [];
+      for (const issue of sprint.issues) {
+        issues.push(issue);
+      }
+      setSelectIssues({ [sprint.id]: issues });
+      setIsSprintIssuesChecked(true);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -126,6 +121,12 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
       <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-2 py-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            <input
+              type="checkbox"
+              checked={isSprintIssuesChecked}
+              onChange={handleToggleSprintIssuesChecked}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
             <button
               className="scale-110 text-gray-500 transition-colors hover:cursor-pointer hover:text-gray-900"
               onClick={() => setIsExpanded(!isExpanded)}
@@ -163,7 +164,7 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
                   <div className="text-xs font-semibold text-gray-900">
                     {
                       sprint.issues.filter(
-                        (issue) => issue.column.name === column.name,
+                        (issue) => issue?.column?.name === column.name,
                       ).length
                     }
                   </div>
@@ -208,18 +209,16 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
         <div className="flex flex-col gap-2 divide-y divide-gray-100 bg-[#f8f8f8] p-2">
           <div>
             <SortableContext
-              strategy={verticalListSortingStrategy}
-              items={parentIssues.map((issue) => issue.id)}
+              strategy={horizontalListSortingStrategy}
+              items={sprint.issues.map((issue) => issue.id)}
             >
-              {parentIssues.length > 0 ? (
-                parentIssues.map((parentIssue) => (
-                  <div key={parentIssue.id} className="group">
+              {sprint.issues.length > 0 ? (
+                sprint.issues.map((issue) => (
+                  <div key={issue.id} className="group">
                     <IssueCard
-                      issue={parentIssue}
-                      selectedIssues={selectedIssues}
-                      onIssueSelect={onIssueSelect}
+                      issue={issue}
                       projectId={projectId}
-                      issueMap={issueMap}
+                      setIsSprintIssuesChecked={setIsSprintIssuesChecked}
                     />
                   </div>
                 ))
@@ -279,6 +278,6 @@ const ScrumSprint: React.FC<ScrumSprintProps> = ({
       />
     </div>
   );
-};
+});
 
 export default ScrumSprint;

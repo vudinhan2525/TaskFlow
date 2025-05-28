@@ -30,8 +30,9 @@ export const Header = () => {
     setIsCreateIssueModalOpen(false);
   };
   return (
-    <>
+    <div>
       <header className="flex w-full items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
+
         {/* Left section - Logo and dropdowns */}
         <div className="flex w-1/4 items-center space-x-4">
           {/* Logo */}
@@ -149,10 +150,8 @@ export const Header = () => {
         )}
       </header>
 
-      <UnifiedIssueModal
-        isOpen={isCreateIssueModalOpen}
-        onClose={handleCloseIssueModal}
-      />
-    </>
+
+      <UnifiedIssueModal isOpen={isCreateIssueModalOpen} onClose={handleCloseIssueModal} />
+    </div>
   );
 };

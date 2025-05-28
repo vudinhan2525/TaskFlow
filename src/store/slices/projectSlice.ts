@@ -1,24 +1,22 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Project, Board, ISprint } from "@libs/types";
-import { IIssue as Issue } from "@libs/types/issue";
+import { IIssue  } from "@libs/types/issue";
 
 interface ProjectState {
   currentProject: Project | null;
-  projects: Project[];
   currentBoard: Board | null;
   currentSprint: ISprint | null;
-  selectedIssueId: string | null;
-  selectedIssue: Issue | null;
+  selectedIssue: IIssue | null;
+  selectedIssues:Record<string,IIssue[]>  ;
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: ProjectState = {
   currentProject: null,
-  projects: [],
   currentBoard: null,
   currentSprint: null,
-  selectedIssueId: null,
+  selectedIssues: {},
   selectedIssue: null,
   isLoading: false,
   error: null,
@@ -28,9 +26,7 @@ const projectSlice = createSlice({
   name: "project",
   initialState,
   reducers: {
-    setProjects: (state, action: PayloadAction<Project[]>) => {
-      state.projects = action.payload;
-    },
+
     setCurrentProject: (state, action: PayloadAction<Project | null>) => {
       state.currentProject = action.payload;
     },
@@ -40,7 +36,7 @@ const projectSlice = createSlice({
     setCurrentSprint: (state, action: PayloadAction<ISprint | null>) => {
       state.currentSprint = action.payload;
     },
-    updateIssue: (state, action: PayloadAction<Issue>) => {
+    updateIssue: (state, action: PayloadAction<IIssue>) => {
       const { currentProject, currentBoard } = state;
       const updatedIssue = action.payload;
 
@@ -78,9 +74,9 @@ const projectSlice = createSlice({
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
     },
-    selectIssue: (state, action: PayloadAction<Issue | null>) => {
+    selectIssue: (state, action: PayloadAction<IIssue | null>) => {
       if (action.payload === null) {
-        state.selectedIssueId = null;
+     
         state.selectedIssue = null;
         return;
       }
@@ -91,19 +87,25 @@ const projectSlice = createSlice({
         action.payload.sprint_id !== state.selectedIssue.sprint_id
       ) {
         // Unselect current issue and select the new one
-        state.selectedIssueId = action.payload.id;
         state.selectedIssue = action.payload;
       } else {
         // Same sprint or no currently selected issue, just select the new issue
-        state.selectedIssueId = action.payload.id;
         state.selectedIssue = action.payload;
+      }
+    },
+
+    selectIssues: (state, action: PayloadAction<Record<string,IIssue[]>>) => {
+      const key= Object.keys(action.payload)
+      if (key[0] in state.selectedIssues){
+        state.selectedIssues[key[0]] = action.payload[key[0]]
+      }else{
+        state.selectedIssues[key[0]] = action.payload[key[0]]
       }
     },
   },
 });
 
 export const {
-  setProjects,
   setCurrentProject,
   setCurrentBoard,
   setCurrentSprint,
@@ -111,6 +113,7 @@ export const {
   setLoading,
   setError,
   selectIssue,
+  selectIssues,
 } = projectSlice.actions;
 
 export const projectReducer = projectSlice.reducer;

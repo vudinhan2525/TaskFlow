@@ -1,33 +1,28 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { ISprint } from "@libs/types/index";
 import { IIssue } from "@libs/types/issue";
 import ScrumSprint from "@libs/app/components/projects/backlog/scrumPrint";
-import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
-import Button from "@libs/app/components/general-components/button";
-import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
-// import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import {
   DndContext,
   useSensor,
-  useSensors,
   PointerSensor,
-  KeyboardSensor,
   closestCenter,
   DragEndEvent,
-  DragOverEvent,
+  // DragOverEvent,
   DragStartEvent,
+  DragOverlay,
 } from "@dnd-kit/core";
 
 import {
   SortableContext,
-  arrayMove,
+
   // sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { FaCheck } from "react-icons/fa";
 
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
@@ -58,13 +53,7 @@ const BackLog = ({
   isLoadingIssues: boolean;
 }) => {
   const { projectId = "" } = useParams();
-  const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
-  const { selectIssue } = useIssueSelection();
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
-  const [activeSprint, setActiveSprint] = useState<ISprint | null>(null);
-  const [selectedIssues, setSelectedIssues] = useState<{
-    [key: string]: boolean;
-  }>({});
   const [sprints, setSprints] = useState<ISprintIssues[]>([]);
 
   useEffect(() => {
@@ -82,27 +71,8 @@ const BackLog = ({
   const { isLoading: isLoadingColumns } = useProjectColumns(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor),
-  );
+  const sensors= useSensor(PointerSensor)
 
-  const handleIssueSelect = (
-    issueId: string,
-    selected: boolean,
-    issue?: IIssue,
-  ) => {
-    setSelectedIssues((prev) => ({
-      ...prev,
-      [issueId]: selected,
-    }));
-
-    if (!selected) {
-      selectIssue(null);
-    } else if (issue) {
-      selectIssue(issue);
-    }
-  };
 
   if (isLoadingColumns || isLoadingSprints || isLoadingIssues) {
     return <div>Loading...</div>;
@@ -116,248 +86,174 @@ const BackLog = ({
       const issue = sprint.issues.find((i) => i.id === issueId);
       if (issue) {
         setActiveIssue(issue);
-        setActiveSprint(sprint);
         break;
       }
     }
   };
 
-  const handleDragOver = (event: DragOverEvent) => {
+  // const handleDragOver = (event: DragOverEvent) => {};
+
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over || !activeIssue) return;
+
+    if (!over || active.id === over.id) return;
 
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    if (activeId === overId) return;
+    const isOverSprint = sprints.find((sprint) =>
+      sprint.issues.some((issue) => issue.id === overId),
+    )
+      ? false
+      : true;
 
-    const isOverSprint = sprints.some(
-      (sprint: ISprint) => sprint.id === overId,
+    // Find the sprint that the issue is being dragged over
+    const targetSprint =
+      sprints.find((sprint) =>
+        sprint.issues.some((issue) => issue.id === overId),
+      ) || sprints.find((sprint) => sprint.id === overId);
+    const activeSprint = sprints.find((sprint) =>
+      sprint.issues.some((issue) => issue.id === activeId),
     );
-    if (isOverSprint) {
-      console.log("Dropped onto a column");
-      // We're dropping onto a column directly
+
+    //Drop into the same sprint
+    if (targetSprint?.id == activeSprint?.id) {
+      if(targetSprint?.id==overId) return
       setSprints((prevSprints) => {
-        // Find which column the active issue belongs to
-        const sourceColumnIndex = prevSprints.findIndex((sprint) =>
-          sprint.issues.some((issue) => issue.id === activeId),
+        const newSprints = prevSprints.map((sprint) => ({
+          ...sprint,
+          issues: [...sprint.issues],
+        }));
+        const targetSprintIndex = newSprints.findIndex(
+          (sprint) => sprint.id === targetSprint?.id,
         );
 
-        if (sourceColumnIndex === -1) return prevSprints;
-
-        // Remove from the source column
-        const newSprints = [...prevSprints];
-        const activeIssue = newSprints[sourceColumnIndex].issues.find(
-          (issue: IIssue) => issue.id === activeId,
+        const activeIssueIndex = newSprints[targetSprintIndex].issues.findIndex(
+          (issue) => issue.id === activeId,
         );
-
-        if (!activeIssue) return prevSprints;
-
-        newSprints[sourceColumnIndex] = {
-          ...newSprints[sourceColumnIndex],
-          issues: newSprints[sourceColumnIndex].issues.filter(
-            (issue: IIssue) => issue.id !== activeId,
-          ),
-        };
-
-        // Add to the target column (at the end)
-        const targetColumnIndex = sprints.findIndex(
-          (sprint: ISprintIssues) => sprint.id === overId,
+        const activeIssue =
+          newSprints[targetSprintIndex].issues[activeIssueIndex];
+        const overIssueIndex = newSprints[targetSprintIndex].issues.findIndex(
+          (issue) => issue.id === overId,
         );
+       
 
-        if (targetColumnIndex === -1) return prevSprints;
-
-        newSprints[targetColumnIndex] = {
-          ...newSprints[targetColumnIndex],
-          issues: [...newSprints[targetColumnIndex].issues, activeIssue],
-        };
+        newSprints[targetSprintIndex].issues[activeIssueIndex] =
+          newSprints[targetSprintIndex].issues[overIssueIndex];
+        newSprints[targetSprintIndex].issues[overIssueIndex] = activeIssue;
 
         return newSprints;
       });
       return;
     }
 
-    let overSprintId = null;
-    let overIssue = null;
-
-    for (const sprint of sprints) {
-      overIssue = sprint.issues.find((issue) => issue.id === overId);
-      if (overIssue) {
-        overSprintId = sprint.id;
-        break;
-      }
-    }
-
-    if (!overSprintId || !overIssue) return;
-    if (activeSprint?.id === overSprintId) return;
-
-    const prevSprint = [...sprints];
-
-    const sourceSprintIndex = prevSprint.findIndex(
-      (sprint) => sprint.id === activeSprint?.id,
-    );
-
-    const targetSprintIndex = prevSprint.findIndex(
-      (sprint) => sprint.id === overSprintId,
-    );
-
-    if (sourceSprintIndex === -1 || targetSprintIndex === -1) return prevSprint;
-
-    const issueToMove = prevSprint[sourceSprintIndex].issues.find(
-      (issue) => issue.id === activeIssue?.id,
-    );
-
-    if (!issueToMove) return prevSprint;
-
-    const newSprints = [...prevSprint];
-
-    newSprints[sourceSprintIndex] = {
-      ...newSprints[sourceSprintIndex],
-      issues: newSprints[sourceSprintIndex].issues.filter(
-        (issue) => issue.id !== activeIssue?.id,
-      ),
-    };
-
-    const overSprintIndex = newSprints.findIndex(
-      (sprint) => sprint.id === overSprintId,
-    );
-
-    newSprints[overSprintIndex] = {
-      ...newSprints[overSprintIndex],
-      issues: [...newSprints[overSprintIndex].issues, issueToMove],
-    };
-
-    setSprints(newSprints);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    setActiveIssue(null);
-    setActiveSprint(null);
-
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Update issue status in backend
-    if (projectId) {
-      const targetSprint = sprints.find((sprint) =>
-        sprint.issues.some((issue) => issue.id === overId),
-      );
-      if (targetSprint) {
-        updateIssueAsync({
-          id: activeId,
-          data: {
-            sprint_id: targetSprint.id === "" ? "null" : targetSprint.id,
-          },
-        });
-      }
-    }
-    if (activeId === overId) return;
-
-    const isOverSprint = sprints.some((sprint) => sprint.id === overId);
-
-    if (isOverSprint) {
-      return;
-    }
-    // We're dropping onto another issue
-    setSprints((prevSprints) => {
-      // Find the column containing our active issue
-      const activeSprintIndex = prevSprints.findIndex((sprint) =>
-        sprint.issues.some((issue) => issue.id === activeId),
-      );
-
-      // Find the column containing the issue we're dropping onto
-      const overSprintIndex = prevSprints.findIndex((sprint) =>
-        sprint.issues.some((issue) => issue.id === overId),
-      );
-
-      if (activeSprintIndex === -1 || overSprintIndex === -1)
-        return prevSprints;
-
-      // Same column reordering
-      if (activeSprintIndex === overSprintIndex) {
-        const sprint = prevSprints[activeSprintIndex];
-        const oldIndex = sprint.issues.findIndex(
-          (issue) => issue.id === activeId,
-        );
-        const newIndex = sprint.issues.findIndex(
-          (issue) => issue.id === overId,
-        );
-
-        const newSprints = [...prevSprints];
-        newSprints[activeSprintIndex] = {
+    //Drop into another sprint
+    else {
+      //Drop into an empty sprint
+      setSprints((prevSprints) => {
+        const newSprints = prevSprints.map((sprint) => ({
           ...sprint,
-          issues: arrayMove(sprint.issues, oldIndex, newIndex),
-        };
+          issues: [...sprint.issues],
+        }));
+        const targetSprintIndex = newSprints.findIndex(
+          (sprint) => sprint.id == targetSprint?.id,
+        );
+        const activeSprintIndex = newSprints.findIndex(
+          (sprint) => sprint.id == activeSprint?.id,
+        );
+        const activeIssueIndex = newSprints[activeSprintIndex].issues.findIndex(
+          (issue) => issue.id == activeId,
+        );
 
+        //Remove the issue from the active/original sprint
+        newSprints[activeSprintIndex].issues.splice(activeIssueIndex, 1);
+
+        if (!activeIssue) return prevSprints;
+
+        //Drop into the target sprint
+        if (isOverSprint) {
+          newSprints[targetSprintIndex].issues.push(activeIssue);
+        } else {
+          const targetIssueIndex = newSprints[
+            targetSprintIndex
+          ].issues.findIndex((issue) => issue.id == overId);
+
+          newSprints[targetSprintIndex].issues.splice(
+            targetIssueIndex,
+            0,
+            activeIssue,
+          );
+        }
         return newSprints;
-      }
+      });
 
-      return prevSprints; // Cross-column movement was handled in dragOver
-    });
+      if (projectId) {
+        if (targetSprint) {
+          updateIssueAsync({
+            id: activeId,
+            data: {
+              sprint_id: targetSprint.id === "" ? "null" : targetSprint.id,
+            },
+          });
+        }
+      }
+    }
+    setActiveIssue(null);
   };
 
   return (
-    // <PanelGroup autoSaveId="backlog-panel-group" direction="horizontal">
-    //   <Panel defaultSize={25}>
-    <div className="flex">
-      <div className="flex-1 p-4">
-        <div className="mb-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Backlog</h1>
-          <Button
-            onClick={() => setIsCreateSprintModalOpen(true)}
-            variant="primary"
-          >
-            Create Sprint
-          </Button>
+    <DndContext
+      sensors={[sensors]}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      // onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        strategy={horizontalListSortingStrategy}
+        items={sprints.map((sprint: ISprintIssues) => sprint.id)}
+      >
+        {/* Sprint List */}
+
+        <div className="flex flex-col gap-2">
+          {sprints?.map((sprint: ISprintIssues) => (
+            <ScrumSprint
+              key={sprint.id}
+              sprint={sprint}
+              projectId={projectId}
+            />
+          ))}
         </div>
+      </SortableContext>
 
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
+      {activeIssue && (
+        <DragOverlay
+          dropAnimation={{
+            duration: 500,
+            easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+          }}
         >
-          <SortableContext
-            strategy={verticalListSortingStrategy}
-            items={sprints.map((sprint: ISprintIssues) => sprint.id)}
-          >
-            {/* Sprint List */}
-
-            <div className="flex flex-col gap-2">
-              {sprints?.map((sprint: ISprintIssues) => (
-                <ScrumSprint
-                  key={sprint.id}
-                  sprint={sprint}
-                  projectId={projectId}
-                  selectedIssues={selectedIssues}
-                  onIssueSelect={handleIssueSelect}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-
-        {/* Create Sprint Modal */}
-        <CreateSprintModal
-          isOpen={isCreateSprintModalOpen}
-          onClose={() => setIsCreateSprintModalOpen(false)}
-          projectId={projectId}
-        />
-      </div>
-      <IssueSideBar />
-    </div>
-
-    //   </Panel>
-    //   <PanelResizeHandle className="w-1 cursor-col-resize bg-gray-300" />
-    //   <Panel defaultSize={75}>
-    //   </Panel>
-    // </PanelGroup>
+          <IssueCardOverlay issue={activeIssue} />
+        </DragOverlay>
+      )}
+    </DndContext>
   );
 };
 
 export default BackLog;
+
+const IssueCardOverlay = memo(({ issue }: { issue: IIssue }) => {
+  return (
+    <div className="inline-block">
+      <div className="flex flex-row items-center gap-3 rounded-md  bg-white px-4 py-2 opacity-60">
+        <div className="flex flex-row items-center gap-1">
+          <div className="rounded-sm border-1 border-emerald-500 p-0.5">
+            <FaCheck className="font-normal text-emerald-500" size={12}  />
+          </div>
+          <span className="text-xs">{issue.title}</span>
+        </div>
+        <span className="text-xs">{issue.description}</span>
+      </div>
+    </div>
+  );
+});

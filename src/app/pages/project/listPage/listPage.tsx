@@ -5,11 +5,11 @@ import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
 const ListPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   return (
-    <div className="flex">
+    <div className="flex-1 overflow-y-hidden">
       <div className="flex-1">
         <List projectId={projectId} />
       </div>
-      <IssueSideBar />
+      {/* <IssueSideBar /> */}
     </div>
   );
 };

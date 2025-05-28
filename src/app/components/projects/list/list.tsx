@@ -61,7 +61,7 @@ const List = ({ projectId }: { projectId?: string }) => {
   };
 
   return (
-    <div className="min-h-[100vh] flex-col gap-4 bg-gray-100 p-4">
+    <div className="flex-col gap-4 bg-gray-100 p-4">
       {/* Search and Filters */}
       <ListFilter setIsCreateModalOpen={setIsCreateModalOpen} />
 
