@@ -44,28 +44,27 @@ const IssueCard = memo(
     };
 
     const { updateIssueAsync } = useUpdateIssue({ projectId });
-
     const { columns } = useProjectColumns(projectId);
-    const [issueDescription, setIssueDescription] = useState(
-      issue?.description,
+    const [issueSummary, setIssueSummary] = useState(
+      issue?.summary,
     );
-    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const [isEditingSummary, setIsEditingSummary] = useState(false);
 
-    const descriptionInputRef = useRef<HTMLInputElement>(null);
+    const summaryInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-      if (selectedIssueParams) {
+      if (selectedIssueParams && selectedIssueParams === issue.id) {
         setSelectedIssue(issue);
-      }else{
-        setSelectedIssue(null)
+      } else if (!selectedIssueParams) {
+        setSelectedIssue(null);
       }
     }, [selectedIssueParams, setSelectedIssue, issue]);
 
     useEffect(() => {
-      if (descriptionInputRef.current) {
-        descriptionInputRef.current.focus();
+      if (summaryInputRef.current) {
+        summaryInputRef.current.focus();
       }
-    }, [descriptionInputRef, isEditingDescription]);
+    }, [summaryInputRef, isEditingSummary]);
 
     const getPriorityIcon = (priority: string) => {
       const issuePriority = priorityOptions.find(
@@ -79,8 +78,8 @@ const IssueCard = memo(
     };
 
     const handleClickEditDescription = () => {
-      setIsEditingDescription(true);
-      descriptionInputRef.current?.focus();
+      setIsEditingSummary(true);
+      summaryInputRef.current?.focus();
     };
     const stopPropagation = (e: React.PointerEvent) => {
       e.stopPropagation();
@@ -145,6 +144,7 @@ const IssueCard = memo(
     };
 
     const handleIssueCardClick = () => {
+      setSelectedIssue(issue);
       navigate(`/projects/${projectId}/backlog?selectedIssue=${issue.id}`);
     };
     return (
@@ -219,23 +219,23 @@ const IssueCard = memo(
                 }}
                 className="group flex flex-1 items-center gap-2"
               >
-                {isEditingDescription ? (
+                {isEditingSummary ? (
                   <input
                     type="text"
-                    ref={descriptionInputRef}
-                    value={issueDescription}
+                    ref={summaryInputRef}
+                    value={issueSummary}
                     onBlur={() => {
-                      handleChangeIssueValue("description", issueDescription);
-                      setIsEditingDescription(false);
+                      handleChangeIssueValue("summary", issueSummary);
+                      setIsEditingSummary(false);
                     }}
-                    onChange={(e) => setIssueDescription(e.target.value)}
+                    onChange={(e) => setIssueSummary(e.target.value)}
                     className={`w-full rounded-sm border-2 border-emerald-500 px-2 py-1 outline-none`}
                   />
                 ) : (
-                  <span className="text-sm">{issueDescription}</span>
+                  <span className="text-sm">{issueSummary}</span>
                 )}
 
-                {!isEditingDescription && (
+                {!isEditingSummary && (
                   <div
                     onPointerDown={stopPropagation}
                     onClick={handleClickEditDescription}
@@ -251,7 +251,7 @@ const IssueCard = memo(
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
-                className={`${isEditingDescription ? "block" : "hidden"} group-hover:block`}
+                className={`${isEditingSummary ? "block" : "hidden"} group-hover:block`}
               >
                 <div className="flex items-center gap-2 rounded-sm border-1 border-gray-300 px-3 py-0.5">
                   <FaPlus className="text-gray-500" size={12} />

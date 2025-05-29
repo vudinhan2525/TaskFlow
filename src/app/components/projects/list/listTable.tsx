@@ -203,27 +203,6 @@ const ListTable = ({
         width: 250,
       },
     ),
-    // Description
-    TableColumn(
-      "description",
-      "Description",
-      visibleColumns,
-      handleVisible,
-      handleSort,
-      (_, { id }) => (
-        <ColumnInputFiled
-          issueId={id}
-          field="description"
-          handleChangeCellValue={handleChangeCellValue}
-        />
-      ),
-      {
-        multiple: 9,
-        width: 250,
-        sortOrder: sorterColumns.find((column) => column.key === "description")
-          ?.sortOrder,
-      },
-    ),
     // Status
     TableColumn(
       "column",
@@ -645,7 +624,6 @@ const ListTable = ({
       const defaultVisibleColumns = [
         "title",
         "summary",
-        "description",
         "status",
         "sprint_id",
         "assignee_id",

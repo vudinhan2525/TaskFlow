@@ -23,7 +23,7 @@ export interface IIssue {
 
 export type IssueStatus = "TO DO" | "IN PROGRESS" | "DONE";
 export type IssuePriority = "Low" | "Medium" | "High";
-
+export type IssueType = "Bug" | "Task" | "Story" | "Epic";
 export interface GetIssuesParams {
   project_id?: string;
   keyword?: string;
@@ -39,7 +39,7 @@ export interface CreateIssueParams {
   // Required fields from proto definition
   title: string;
   summary: string; // Required per proto
-  type: "Bug" | "Task" | "Story" | "Epic";
+  type: IssueType;
   column_id: string;
   priority: IssuePriority; // Use proper type
   project_id: string;
