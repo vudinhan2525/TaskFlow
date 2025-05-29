@@ -4,18 +4,16 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaPaperclip,
-  // FaPlus,
+  FaPlus,
   FaTimes,
 } from "react-icons/fa";
-// import { useProjectColumns } from "@libs/hooks/useProject";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
-import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { toast } from "react-toastify";
 import { formatDate } from "@libs/utils/date";
-import { CreateIssueParams } from "@libs/types/issue";
 import ActivitySection from "@libs/app/components/issues/activitySection";
 import { useNavigate } from "react-router-dom";
 import { PiNotePencil } from "react-icons/pi";
@@ -26,13 +24,9 @@ import { CiShare2 } from "react-icons/ci";
 import { BsThreeDots } from "react-icons/bs";
 import { IoIosClose } from "react-icons/io";
 import TextEditor from "../projects/backlog/TextEditor";
-
-// Mock data for teams
-const MOCK_TEAMS = [
-  { id: "1", name: "Team 1" },
-  { id: "2", name: "Team 2" },
-];
-type DetailOption = "Attachment" | "Child Issue";
+import { TbHexagon3D } from "react-icons/tb";
+import { ISprint } from "@libs/types/index";
+  
 
 const IssueSideBar: React.FC = () => {
   const { selectedIssue, setSelectedIssue } = useIssueSelection();
@@ -88,95 +82,16 @@ const IssueSideBar: React.FC = () => {
     },
   ];
   const navigate = useNavigate();
-  // const { columns } = useProjectColumns(selectedIssue?.project_id || "");
   const { projectMembers } = useProjectMembers(selectedIssue?.project_id || "");
-  interface Sprint {
-    id: string;
-    name: string;
-  }
   const { updateIssueAsync } = useUpdateIssue({
     projectId: selectedIssue?.project_id || "",
   });
   const { sprints } = useProjectSprints(selectedIssue?.project_id || "");
+  const [summary, setSummary] = useState(selectedIssue?.summary || "");
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
-  const [selectedDetailOption, setSelectedDetailOption] =
-    useState<DetailOption | null>(null);
-  const [childIssueForm, setChildIssueForm] = useState({
-    title: "",
-    summary: "",
-  });
-
-  const { createIssueAsync } = useCreateIssue({
-    projectId: selectedIssue?.project_id || "",
-  });
+  const [isShowingTextEditor, setIsShowingTextEditor] = useState(false);
 
   if (!selectedIssue) return null;
-
-  const handleDetailSubmit = async () => {
-    if (!selectedDetailOption) return;
-
-    if (selectedDetailOption === "Attachment") {
-      toast.info("Attachment upload not implemented yet");
-    } else if (selectedDetailOption === "Child Issue") {
-      if (!childIssueForm.title) {
-        toast.error("Title is required");
-        return;
-      }
-
-      try {
-        const newIssue: CreateIssueParams = {
-          title: childIssueForm.title,
-          column_id: "681f1494011a0f0114c92e1a",
-          priority: "Medium",
-          type: "Task",
-          project_id: selectedIssue!.project_id,
-          sprint_id: selectedIssue!.sprint_id,
-          story_point: childIssueForm.summary
-            ? parseInt(childIssueForm.summary)
-            : undefined,
-          parent_id: selectedIssue?.id || "",
-          summary: childIssueForm.summary,
-        };
-
-        await createIssueAsync(newIssue);
-        toast.success("Child issue created successfully");
-        setSelectedDetailOption(null);
-        setChildIssueForm({ title: "", summary: "" });
-      } catch (error) {
-        console.error("Failed to create child issue:", error);
-        toast.error("Failed to create child issue");
-      }
-    }
-  };
-
-  const handleTeamChange = async (teamId: string) => {
-    if (selectedIssue.parent_id) {
-      toast.error("Cannot change team for child issues");
-      return;
-    }
-    if (selectedIssue.parent_id) {
-      toast.error("Cannot change team for child issues");
-      return;
-    }
-    try {
-      const updatedIssue = { ...selectedIssue };
-      updatedIssue.team_id = teamId;
-      await updateIssueAsync({
-        id: selectedIssue.id,
-        data: {
-          column_id: updatedIssue.column.id,
-          type: updatedIssue.type,
-          priority: updatedIssue.priority,
-          sprint_id: updatedIssue.sprint_id,
-          title: updatedIssue.title,
-          summary: updatedIssue.summary,
-        },
-      });
-      toast.success("Team updated successfully");
-    } catch {
-      toast.error("Failed to update team");
-    }
-  };
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -196,11 +111,11 @@ const IssueSideBar: React.FC = () => {
           [key]: value,
         },
       });
-      toast.success("Issue updated successfully");
     } catch {
       toast.error("Failed to update issue");
     }
   };
+
 
   const details = {
     assignee: {
@@ -211,7 +126,7 @@ const IssueSideBar: React.FC = () => {
     },
     summary: selectedIssue.summary || "No summary provided",
     sprint:
-      sprints?.find((s: Sprint) => s.id === selectedIssue.sprint_id)?.name ||
+      sprints?.find((s: ISprint) => s.id === selectedIssue.sprint_id)?.name ||
       "None",
     storyPoint: selectedIssue.story_point || 0,
     reporter: {
@@ -230,9 +145,9 @@ const IssueSideBar: React.FC = () => {
   };
 
   return (
-    <div className="overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
+    <div className="z-30 flex flex-col gap-4 overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
             <PiNotePencil size={16} />
@@ -257,78 +172,62 @@ const IssueSideBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Title */}
-      <h2 className="mb-2 text-left text-xl font-semibold text-gray-800">
-        {selectedIssue?.title}
-      </h2>
-
-      {/* Input field for selected detail option */}
-      {selectedDetailOption && (
-        <div className="mt-2 rounded-md border border-gray-200 bg-gray-50 p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">
-              {selectedDetailOption}
-            </span>
-            <button
-              onClick={() => setSelectedDetailOption(null)}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <FaTimes size={14} />
-            </button>
-          </div>
-          {selectedDetailOption === "Child Issue" ? (
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium text-gray-600">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter issue title"
-                  value={childIssueForm.title}
-                  onChange={(e) =>
-                    setChildIssueForm((prev) => ({
-                      ...prev,
-                      title: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-600">
-                  Summary
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter summary"
-                  value={childIssueForm.summary}
-                  onChange={(e) =>
-                    setChildIssueForm((prev) => ({
-                      ...prev,
-                      summary: e.target.value,
-                    }))
-                  }
-                  className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
-            </div>
-          ) : (
-            <input
-              type="file"
-              onChange={handleFileUpload}
-              className="w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-1 focus:ring-blue-500 focus:outline-none"
-              multiple
-            />
-          )}
-          <button
-            onClick={handleDetailSubmit}
-            className="mt-3 w-full rounded-md bg-blue-600 px-3 py-1.5 text-sm text-white transition-colors hover:bg-blue-700 focus:outline-none"
-          >
-            Add
+      <div className="flex flex-col gap-1">
+        {/* Summary */}
+        <div className="wiki flex items-center justify-between">
+          <input
+            type="text"
+            value={summary}
+            onChange={(e) => {
+              setSummary(e.target.value);
+            }}
+            onBlur={() => {
+              if (summary !== selectedIssue?.summary) {
+                handleUpdateIssue("summary", summary);
+              }
+            }}
+            className="w-full cursor-pointer rounded border-2 border-transparent bg-transparent p-2 text-sm font-semibold text-gray-900 outline-none hover:bg-gray-200 focus:border-emerald-500"
+          />
+        </div>
+        <div className="flex flex-row gap-2">
+          <button className="flex cursor-pointer items-center gap-2 rounded-sm border-1 border-gray-300 px-3 py-1 text-sm font-medium text-gray-800 hover:bg-gray-200">
+            <FaPlus />
+            <span className="text-sm font-medium text-gray-800">Add</span>
+          </button>
+          <button className="flex cursor-pointer items-center gap-2 rounded-sm border-1 border-gray-300 px-3 py-1 text-sm font-medium text-gray-800 hover:bg-gray-200">
+            <TbHexagon3D />
+            <span className="text-sm font-medium text-gray-800">Apps</span>
           </button>
         </div>
-      )}
+      </div>
+
+      {/* Description */}
+      <div className="flex w-full flex-col items-start gap-1">
+        <p className="text-sm font-bold text-gray-600">Description</p>
+
+        {isShowingTextEditor ? (
+          <TextEditor
+            initialValue={selectedIssue?.description || ""}
+            handleSave={(newValue: string) => {
+              handleUpdateIssue("description", newValue);
+              setIsShowingTextEditor(false);
+            }}
+            handleCancel={() => {
+              setIsShowingTextEditor(false);
+            }}
+          />
+        ) : (
+          <input
+            value={JSON.parse(selectedIssue?.description || "").plainText}
+            onClick={() => {
+              setIsShowingTextEditor(true);
+            }}
+            placeholder="Add a description"
+            className="w-full rounded border border-gray-300 px-2 py-1 text-sm outline-none hover:bg-gray-100 focus:border-emerald-500"
+          />
+        )}
+      </div>
+
       {/* Details Section */}
       <div className="mb-4">
         <div
@@ -392,56 +291,17 @@ const IssueSideBar: React.FC = () => {
                 </Dropdown>
               </div>
             </div>
-            {/* Summary */}
-            <div className="wiki flex items-center justify-between">
-              <span className="text-sm text-gray-600">Summary</span>
-              <input
-                type="text"
-                value={selectedIssue?.summary}
-                onChange={(e) => {
-                  handleUpdateIssue("summary", e.target.value);
-                }}
-                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-              />
-            </div>
-            {/* Description */}
-            <div className="flex w-full flex-col items-start gap-1">
-              <p className="text-sm font-medium text-gray-600">Description</p>
-              <TextEditor
-                value={selectedIssue?.description || ""}
-                onChange={(value) => {
-                  handleUpdateIssue("description", value);
-                }}
-              />
-              <div className="flex flex-row gap-2">
-                <button
-                onClick={()=>{
-                 
-                }}
-                className="rounded-md bg-blue-600 px-3 py-1 text-sm text-white transition-colors hover:bg-blue-700 focus:outline-none">
-                  Add
-                </button>
-                <button className="rounded-md bg-red-600 px-3 py-1 text-sm text-white transition-colors hover:bg-red-700 focus:outline-none">
-                  Cancel
-                </button>
-              </div>
-            </div>
 
             {/* Team Selection */}
             <div className="flex items-center justify-between">
               <span className="w-1/3 text-sm text-gray-600">Team</span>
               <select
                 value={selectedIssue?.team_id || ""}
-                onChange={(e) => handleTeamChange(e.target.value)}
+                onChange={(e) => handleUpdateIssue("team_id", e.target.value)}
                 className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
                 disabled={!!selectedIssue?.parent_id}
               >
                 <option value="">Select Team</option>
-                {MOCK_TEAMS.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
               </select>
             </div>
 
