@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Calendar,
   Clock,
@@ -22,7 +22,7 @@ import {
   Line,
 } from "recharts";
 
-export default function SprintReportPage() {
+export default function SprintDetail() {
   const [selectedChart, setSelectedChart] = useState("progress");
 
   // Mock sprint data
@@ -132,7 +132,7 @@ export default function SprintReportPage() {
     },
   ];
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "Done":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
@@ -145,7 +145,7 @@ export default function SprintReportPage() {
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
         return "text-red-600 bg-red-50";
@@ -158,7 +158,7 @@ export default function SprintReportPage() {
     }
   };
 
-  const getTypeColor = (type) => {
+  const getTypeColor = (type: string) => {
     switch (type) {
       case "Story":
         return "text-green-600 bg-green-50";
@@ -453,7 +453,7 @@ export default function SprintReportPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {issues.map((issue, index) => (
+                  {issues.map((issue) => (
                     <tr
                       key={issue.id}
                       className="border-b border-slate-100 transition-colors hover:bg-slate-50/50"

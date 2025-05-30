@@ -65,3 +65,33 @@ export function useChangePassword() {
     },
   });
 }
+
+export function useGetUserStats(id: string, isSprintId: boolean) {
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    refetch,
+  } = useQuery({
+    queryKey: ["userStats", id],
+    queryFn: async () => {
+      if (!id) throw new Error("Project/Sprint ID is required");
+      const response = await users.getUserStats({ id: id, is_sprintId: isSprintId });
+      return response.data;
+    },
+    enabled: !!id, 
+    refetchOnMount: true, 
+    refetchOnWindowFocus: false,
+  });
+
+  return {
+    stats: data,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    refetch,
+  };
+}

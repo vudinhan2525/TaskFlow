@@ -1,4 +1,5 @@
 import api, { ResponseApi } from "@libs/apis/api";
+import { UserStats } from "@libs/types/project";
 import { IUser } from "@libs/types/user";
 const config = {
   withCredentials: true,
@@ -20,4 +21,6 @@ export const users = {
     old_password: string;
     new_password: string;
   }) => api.post<ResponseApi<void>>("/users/change-password", data, config),
+  getUserStats: (body: { id: string , is_sprintId: boolean}) => api.post<ResponseApi<UserStats>>(`/users/stats/`,body, config),
+
 };

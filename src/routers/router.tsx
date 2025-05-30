@@ -10,6 +10,7 @@ import LoginPage from "@libs/app/pages/auth/loginPage/loginPage";
 import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
 import ProjectPage from "@libs/app/pages/project/projectPage/projectPage";
 import SettingsPage from "@libs/app/pages/settings/settingsPage";
+import SprintDetail from "@libs/app/components/sprints/SprintDetail";
 
 // Placeholder components until we implement the real ones
 const PlaceholderComponent = ({
@@ -87,6 +88,7 @@ const Router = (): React.ReactElement => {
               <Route path="sprints" element={<ActiveSprints />} />
               <Route path="reports" element={<ProjectReport />} />
               <Route path="settings" element={<ProjectSettings />} />
+              <Route path="detail" element={<SprintDetail />} />
             </Route>
           </Route>
 

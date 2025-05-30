@@ -1,6 +1,6 @@
 import api, { ResponseApi } from "@libs/apis/api";
 import { Project } from "@libs/types";
-import { CreateColumnProjectParams, IColumn, UpdateColumnOrderParams, UpdateColumnProjectParams, UserStats } from "@libs/types/project";
+import { CreateColumnProjectParams, IColumn, UpdateColumnOrderParams, UpdateColumnProjectParams } from "@libs/types/project";
 
 interface ListProjectsParams {
   page?: number;
@@ -28,5 +28,4 @@ export const projects = {
   updateOrderColumns: (body: UpdateColumnOrderParams) => api.post<ResponseApi<IColumn[]>>(`/projects/${body.projectId}/columns/order`, body, config),
   updateColumns: (body: UpdateColumnProjectParams) => api.put<ResponseApi<IColumn>>(`/projects/${body.projectId}/columns`, body, config),
   deleteColumn: (body: { column_id: string }) => api.delete<ResponseApi<IColumn>>(`/projects/columns/${body.column_id}`, config),
-  getProjectStats: (body: { project_id: string }) => api.post<ResponseApi<UserStats>>(`/users/stats/`,body, config),
 };
