@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { FaChartBar, FaListAlt, FaTh, FaCalendarAlt, FaCode, FaTasks, FaGlobe, FaUserPlus } from "react-icons/fa";
+import {
+  FaChartBar,
+  FaListAlt,
+  FaTh,
+  FaCalendarAlt,
+  FaCode,
+  FaTasks,
+  FaGlobe,
+  FaStar,
+  FaUserPlus,
+} from "react-icons/fa";
 import {
   DndContext,
   closestCenter,
@@ -10,7 +20,12 @@ import {
   useSensors,
   DragEndEvent,
 } from "@dnd-kit/core";
-import { arrayMove, SortableContext, useSortable, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";
 import { useProject } from "../../../hooks/useProject";
@@ -28,15 +43,25 @@ interface SortableNavItemProps {
   isActive: boolean;
 }
 
-const SortableNavItem: React.FC<SortableNavItemProps> = ({ item, isActive }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+const SortableNavItem: React.FC<SortableNavItemProps> = ({
+  item,
+  isActive,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: item.id,
   });
 
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    cursor: isDragging ? "grabbing" : "grab",
+    cursor: isDragging ? "grabbing" : "default",
     touchAction: "none",
   };
 
@@ -44,21 +69,27 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({ item, isActive }) => 
     <div
       ref={setNodeRef}
       style={style}
-      className={`mr-1 ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
+      className={`relative ${isDragging ? "pointer-events-none z-50" : "pointer-events-auto"}`}
       {...attributes}
       {...listeners}
     >
       <Link
         to={item.route}
-        className={`flex items-center px-3 py-2 rounded transition-colors duration-200 no-underline
-          ${
-            isActive
-              ? "bg-emerald-100 text-emerald-700 font-medium"
-              : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-600"
-          }`}
+        className={`group relative flex items-center px-4 py-3 text-sm font-medium no-underline transition-all duration-150 ${
+          isActive
+            ? "border-b-2 border-green-600 bg-green-50 text-green-600"
+            : "border-b-2 border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:text-green-600"
+        }`}
       >
-        <span className="text-base mr-2 text-emerald-700">{item.icon}</span>
-        <span className="text-sm text-emerald-600">{item.label}</span>
+        <span
+          className={`mr-2 text-base transition-colors ${isActive ? "text-green-600" : "text-gray-500 group-hover:text-green-600"}`}
+        >
+          {item.icon}
+        </span>
+        <span className="whitespace-nowrap">{item.label}</span>
+        {isActive && (
+          <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-sm bg-green-600"></div>
+        )}
       </Link>
     </div>
   );
@@ -68,17 +99,52 @@ const ProjectNavbar = (): React.ReactElement => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  useProject(projectId || ""); // Keep project synchronized
+  const [isStarred, setIsStarred] = useState(false);
+  const { project } = useProject(projectId || ""); // Assuming this returns project data
 
   const getNavItems = (currentProjectId: string): NavItem[] => [
-    { id: "summary", label: "Summary", icon: <FaGlobe />, route: `/projects/${currentProjectId}/summary` },
-    { id: "board", label: "Board", icon: <FaTh />, route: `/projects/${currentProjectId}/board` },
-    { id: "backlog", label: "Backlog", icon: <FaTasks />, route: `/projects/${currentProjectId}/backlog` },
-    { id: "list", label: "List", icon: <FaListAlt />, route: `/projects/${currentProjectId}/list` },
-    { id: "roadmap", label: "Roadmap", icon: <FaChartBar />, route: `/projects/${currentProjectId}/roadmap` },
-    { id: "sprints", label: "Sprints", icon: <FaCalendarAlt />, route: `/projects/${currentProjectId}/sprints` },
-    { id: "reports", label: "Reports", icon: <FaChartBar />, route: `/projects/${currentProjectId}/reports` },
-    { id: "settings", label: "Settings", icon: <FaCode />, route: `/projects/${currentProjectId}/settings` },
+    {
+      id: "summary",
+      label: "Summary",
+      icon: <FaGlobe />,
+      route: `/projects/${currentProjectId}/summary`,
+    },
+    {
+      id: "board",
+      label: "Board",
+      icon: <FaTh />,
+      route: `/projects/${currentProjectId}/board`,
+    },
+    {
+      id: "backlog",
+      label: "Backlog",
+      icon: <FaTasks />,
+      route: `/projects/${currentProjectId}/backlog`,
+    },
+    {
+      id: "list",
+      label: "List",
+      icon: <FaListAlt />,
+      route: `/projects/${currentProjectId}/list`,
+    },
+    {
+      id: "roadmap",
+      label: "Roadmap",
+      icon: <FaChartBar />,
+      route: `/projects/${currentProjectId}/roadmap`,
+    },
+    {
+      id: "sprints",
+      label: "Sprints",
+      icon: <FaCalendarAlt />,
+      route: `/projects/${currentProjectId}/sprints`,
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: <FaCode />,
+      route: `/projects/${currentProjectId}/settings`,
+    },
   ];
 
   const defaultItems = getNavItems(projectId || "");
@@ -88,7 +154,9 @@ const ProjectNavbar = (): React.ReactElement => {
     if (savedOrder) {
       const orderIds: string[] = JSON.parse(savedOrder);
       return orderIds
-        .map((id: string) => getNavItems(projectId || "").find((item) => item.id === id))
+        .map((id: string) =>
+          getNavItems(projectId || "").find((item) => item.id === id),
+        )
         .filter(Boolean) as NavItem[];
     }
     return defaultItems;
@@ -102,8 +170,10 @@ const ProjectNavbar = (): React.ReactElement => {
         const orderIds: string[] = JSON.parse(savedOrder);
         setItems(
           orderIds
-            .map((id: string) => getNavItems(projectId).find((item) => item.id === id))
-            .filter(Boolean) as NavItem[]
+            .map((id: string) =>
+              getNavItems(projectId).find((item) => item.id === id),
+            )
+            .filter(Boolean) as NavItem[],
         );
       } else {
         setItems(getNavItems(projectId));
@@ -114,10 +184,10 @@ const ProjectNavbar = (): React.ReactElement => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Small distance for easier activation
+        distance: 8,
       },
     }),
-    useSensor(KeyboardSensor)
+    useSensor(KeyboardSensor),
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -128,32 +198,95 @@ const ProjectNavbar = (): React.ReactElement => {
         const newItems = arrayMove(
           items,
           items.findIndex((item) => item.id === active.id),
-          items.findIndex((item) => item.id === over.id)
+          items.findIndex((item) => item.id === over.id),
         );
-        localStorage.setItem(`navbar-order-${projectId}`, JSON.stringify(newItems.map((item) => item.id)));
+        localStorage.setItem(
+          `navbar-order-${projectId}`,
+          JSON.stringify(newItems.map((item) => item.id)),
+        );
         return newItems;
       });
     }
   };
 
+  const toggleStar = () => {
+    setIsStarred(!isStarred);
+    // Here you would typically call an API to save the starred state
+  };
+
   return (
-    <div id="project-navbar" className="flex flex-col bg-white p-2 border-b border-gray-200">
-      <nav className="flex items-center overflow-x-auto whitespace-nowrap">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={items} strategy={horizontalListSortingStrategy}>
-            {items.map((item) => (
-              <SortableNavItem key={item.id} item={item} isActive={location.pathname === item.route} />
-            ))}
-          </SortableContext>
-        </DndContext>
-        <div
-          onClick={() => setIsAddMemberModalOpen(true)}
-          className="flex items-center ml-2 px-2 py-2 bg-emerald-100 rounded hover:bg-emerald-200 cursor-pointer"
-          title="Add Project Member"
-        >
-          <FaUserPlus className="text-emerald-600" />
+    <div className="border-b border-gray-200 bg-white shadow-sm">
+      {/* Project Header */}
+      <div className="border-b border-gray-100 px-6 py-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {/* Project Avatar */}
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-green-600 text-sm font-semibold text-white">
+              {project?.name?.substring(0, 2)?.toUpperCase() || "PR"}
+            </div>
+
+            {/* Project Info */}
+            <div className="flex items-center space-x-3">
+              <div>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  {project?.name || "Project Name"}
+                </h1>
+                <p className="text-sm text-gray-500">
+                  {project?.key || "PROJ"} • Software project
+                </p>
+              </div>
+
+              {/* Star Button */}
+              <button
+                onClick={toggleStar}
+                className="rounded p-1 transition-colors hover:bg-gray-100"
+                title={isStarred ? "Remove from starred" : "Add to starred"}
+              >
+                {isStarred ? (
+                  <FaStar className="h-4 w-4 text-yellow-500" />
+                ) : (
+                  <FaStar className="h-4 w-4 text-gray-400 hover:text-yellow-500" />
+                )}
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setIsAddMemberModalOpen(true)}
+              className="inline-flex cursor-pointer items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+              title="Add people"
+            >
+              <FaUserPlus className="mr-2 h-4 w-4" />
+              Add people
+            </button>
+          </div>
         </div>
-      </nav>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="px-6">
+        <nav className="scrollbar-hide flex items-center space-x-1 overflow-x-auto">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={items}
+              strategy={horizontalListSortingStrategy}
+            >
+              {items.map((item) => (
+                <SortableNavItem
+                  key={item.id}
+                  item={item}
+                  isActive={location.pathname === item.route}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </nav>
+      </div>
+
       <AddProjectMemberModal
         isOpen={isAddMemberModalOpen}
         onClose={() => setIsAddMemberModalOpen(false)}

@@ -218,7 +218,7 @@ const IssueSideBar: React.FC = () => {
           />
         ) : (
           <input
-            value={JSON.parse(selectedIssue?.description || "").plainText}
+            value={selectedIssue?.description ? JSON.parse(selectedIssue?.description || '{}')?.plainText : ""}
             onClick={() => {
               setIsShowingTextEditor(true);
             }}
@@ -383,7 +383,7 @@ const IssueSideBar: React.FC = () => {
           Updated {formatDate(selectedIssue.updated_at)}
         </p>
       </div>
-      <ActivitySection issueId={selectedIssue?.id || ""} />
+      <ActivitySection issueId={selectedIssue?.id || ""} showOnlyActivity={false}/>
     </div>
   );
 };

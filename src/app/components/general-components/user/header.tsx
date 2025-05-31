@@ -36,7 +36,7 @@ export const Header = () => {
         {/* Left section - Logo and dropdowns */}
         <div className="flex w-1/4 items-center space-x-4">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
             <Image src={logo} className="h-[17px] w-[100px]" />
           </div>
 

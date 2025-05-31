@@ -193,6 +193,7 @@ export function useActivities(params: GetActivitiesParams) {
       const response = await issues.getActivities(params);
       return response.data;
     },
+    refetchOnMount: "always",
   });
 
   return {

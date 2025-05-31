@@ -55,7 +55,7 @@ export interface CreateIssueParams {
 }
 
 export interface GetActivitiesParams {
-  issue_id: string;
+  issue_id?: string;
   page: number;
   limit: number;
 }
@@ -70,6 +70,8 @@ export interface IActivity {
   id: string;
   issue_id: string;
   action_type: string;
+  user_id: string;
+  user_name: string;
   created_at: string; // ISO 8601 datetime string
   updated_at: string; // ISO 8601 datetime string
   changes: ActivityChanges[];

@@ -78,15 +78,13 @@ const Router = (): React.ReactElement => {
           <Route path="projects">
             <Route index element={<ProjectPage />} />
             <Route path=":projectId" element={<ProjectLayout />}>
-              <Route index element={<ProjectPage />} />
               <Route path="board" element={<ProjectBoard />} />
-              <Route path="summary" element={<ProjectPage />} />
+              <Route index path="summary" element={<ProjectReport />} />
               <Route path="backlog" element={<BacklogPage />} />
               <Route path="backlog/:selectedIssue" element={<BacklogPage />} />
               <Route path="list" element={<ListPage />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="sprints" element={<ActiveSprints />} />
-              <Route path="reports" element={<ProjectReport />} />
               <Route path="settings" element={<ProjectSettings />} />
               <Route path="detail" element={<SprintDetail />} />
             </Route>

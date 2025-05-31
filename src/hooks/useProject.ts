@@ -5,19 +5,28 @@ import { projects } from "@libs/apis/project";
 import { useUserMemberships } from "@libs/hooks/useProjectMember";
 import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
-import { CreateColumnProjectParams, IColumn, UpdateColumnOrderParams, UpdateColumnProjectParams } from "@libs/types/project";
+import {
+  CreateColumnProjectParams,
+  IColumn,
+  UpdateColumnOrderParams,
+  UpdateColumnProjectParams,
+} from "@libs/types/project";
 import { Dispatch, SetStateAction } from "react";
 import { AxiosError } from "axios";
 
 export function useUserProjects() {
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
   const userId = user?.id;
 
   const { memberships, isLoading, error } = useUserMemberships(userId || "");
 
   // Filter out pending memberships and map to project info
-  const validMemberships = memberships.filter(membership => !membership.is_pending);
-  const projects = validMemberships.map(membership => membership.project);
+  const validMemberships = memberships.filter(
+    (membership) => !membership.is_pending,
+  );
+  const projects = validMemberships.map((membership) => membership.project);
 
   return {
     projects: isAuthenticated ? projects : [],
@@ -86,7 +95,8 @@ export function useUpdateProject({ onClose }: { onClose?: () => void }) {
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) => projects.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) =>
+      projects.update(id, data),
     onSuccess: () => {
       toast.success("Project updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["userProjects"] });
@@ -167,7 +177,7 @@ export function useProjectColumns(projectId: string) {
       return response.data;
     },
     enabled: !!projectId,
-    refetchOnMount: 'always'
+    refetchOnMount: "always",
   });
 
   return {
@@ -176,7 +186,12 @@ export function useProjectColumns(projectId: string) {
     error,
   };
 }
-export function useAddProjectColumn({ setColumns }: { setColumns: Dispatch<SetStateAction<IColumn[]>> }) {
+export function useAddProjectColumn({
+  setColumns,
+}: {
+  setColumns: Dispatch<SetStateAction<IColumn[]>>;
+}) {
+  const queryClient = useQueryClient();
   const {
     mutate: createColumn,
     isPending: isLoading,
@@ -188,6 +203,7 @@ export function useAddProjectColumn({ setColumns }: { setColumns: Dispatch<SetSt
       if (res.data.status === "success") {
         setColumns((prev) => [...prev, res.data.data]);
       }
+      queryClient.invalidateQueries({ queryKey: ["projectColumns"] });
       toast.success("Stage added successfully!");
     },
     onError: () => {
@@ -210,7 +226,8 @@ export function useUpdateProjectOrderColumn() {
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: (body: UpdateColumnOrderParams) => projects.updateOrderColumns(body),
+    mutationFn: (body: UpdateColumnOrderParams) =>
+      projects.updateOrderColumns(body),
     onSuccess: () => {
       toast.success("Column order updated successfully!");
     },
@@ -234,7 +251,8 @@ export function useUpdateColumn() {
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: (body: UpdateColumnProjectParams) => projects.updateColumns(body),
+    mutationFn: (body: UpdateColumnProjectParams) =>
+      projects.updateColumns(body),
     onSuccess: () => {
       toast.success("Column updated successfully!");
     },
@@ -250,7 +268,9 @@ export function useUpdateColumn() {
     error,
   };
 }
-export function useDeleteColumn(onDeleteSuccess?: (deletedColumnId: string) => void) {
+export function useDeleteColumn(
+  onDeleteSuccess?: (deletedColumnId: string) => void,
+) {
   const {
     mutate: deleteColumn,
     isPending: isLoading,

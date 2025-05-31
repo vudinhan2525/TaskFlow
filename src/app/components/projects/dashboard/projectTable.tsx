@@ -57,7 +57,7 @@ const ProjectTable: React.FC = () => {
           style: { cursor: "pointer" },
           onClick: (e) => {
             e.stopPropagation();
-            navigate(`/projects/${record.id}`);
+            navigate(`/projects/${record.id}/summary`);
           },
         };
       }}
