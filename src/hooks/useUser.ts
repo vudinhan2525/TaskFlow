@@ -67,22 +67,18 @@ export function useChangePassword() {
 }
 
 export function useGetUserStats(id: string, isSprintId: boolean) {
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-    refetch,
-  } = useQuery({
+  const { data, isLoading, isError, error, isSuccess, refetch } = useQuery({
     queryKey: ["userStats", id],
     queryFn: async () => {
       if (!id) throw new Error("Project/Sprint ID is required");
-      const response = await users.getUserStats({ id: id, is_sprintId: isSprintId });
+      const response = await users.getUserStats({
+        id: id,
+        is_sprintId: isSprintId,
+      });
       return response.data;
     },
-    enabled: !!id, 
-    refetchOnMount: true, 
+    enabled: !!id,
+    refetchOnMount: "always",
     refetchOnWindowFocus: false,
   });
 

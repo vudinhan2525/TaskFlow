@@ -11,8 +11,8 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import ActivitySection from "@libs/app/components/issues/activitySection";
 import { UserStats } from "@libs/types/project";
+import HistorySection from "@libs/app/components/issues/historySection";
 
 interface StatusData {
   label: string;
@@ -260,7 +260,7 @@ const StatusOverview = (props: { data: UserStats }) => {
 
       {/* Activity Feed */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <ActivitySection showOnlyActivity={true} />
+        <HistorySection />
       </div>
     </div>
   );

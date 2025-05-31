@@ -1,0 +1,225 @@
+import { useActivities } from "@libs/hooks/useIssue";
+
+export default function HistorySection({ issueId }: { issueId?: string }) {
+  const { activities } = useActivities({
+    issue_id: issueId || "",
+    page: 1,
+    limit: 10,
+  });
+  if (!activities) return null;
+  const getActivityIcon = (actionType: string) => {
+    switch (actionType) {
+      case "ISSUE_UPDATED":
+        return (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+            <svg
+              className="h-4 w-4 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </div>
+        );
+      case "COMMENT_ADDED":
+        return (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+            <svg
+              className="h-4 w-4 text-green-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.013 8.013 0 01-2.319-.34l-4.772 1.18a1 1 0 01-1.24-1.24l1.18-4.772A8 8 0 1121 12z"
+              />
+            </svg>
+          </div>
+        );
+      default:
+        return (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100">
+            <svg
+              className="h-4 w-4 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+        );
+    }
+  };
+
+  const getFieldIcon = (field: string) => {
+    switch (field.toLowerCase()) {
+      case "status":
+        return "🔄";
+      case "assignee":
+        return "👤";
+      case "reporter":
+        return "📝";
+      case "priority":
+        return "🔺";
+      case "description":
+        return "📄";
+      case "labels":
+        return "🏷️";
+      case "component":
+        return "🧩";
+      default:
+        return "✏️";
+    }
+  };
+
+  const formatFieldLabel = (field: string) => {
+    switch (field) {
+      case "Description":
+        return "updated the description";
+      case "Status":
+        return "changed status";
+      case "Reporter":
+        return "changed reporter";
+      case "Assignee":
+        return "changed assignee";
+      case "Priority":
+        return "changed priority";
+      default:
+        return `changed ${field.toLowerCase()}`;
+    }
+  };
+
+  const formatRelativeTime = (dateString: string) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return "just now";
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)}d ago`;
+
+    return date.toLocaleDateString();
+  };
+
+  const getUserInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+  return (
+    <div className="max-h-[600px] min-h-[400px] space-y-4 overflow-auto">
+      {activities?.map((activity, activityIndex) => (
+        <div
+          key={activity.id}
+          className={`relative flex space-x-3 ${
+            activityIndex !== activities.length - 1 ? "pb-4" : ""
+          }`}
+        >
+          {/* Timeline line */}
+          {activityIndex !== activities.length - 1 && (
+            <div className="absolute top-8 left-4 h-full w-0.5 bg-gray-200" />
+          )}
+
+          {/* Activity icon */}
+          <div className="relative flex-shrink-0">
+            {getActivityIcon(activity.action_type)}
+          </div>
+
+          {/* Activity content */}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center space-x-2">
+              {/* User avatar */}
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-xs font-medium text-gray-700">
+                {getUserInitials(activity.user_name)}
+              </div>
+
+              {/* User name and action */}
+              <div className="flex items-center space-x-1 text-sm">
+                <span className="font-medium text-gray-900">
+                  {activity.user_name}
+                </span>
+                <span className="text-gray-500">
+                  {activity.action_type === "ISSUE_UPDATED"
+                    ? "made changes"
+                    : "performed an action"}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-500">
+                  {formatRelativeTime(activity.created_at)}
+                </span>
+              </div>
+            </div>
+
+            {/* Changes */}
+            {activity.changes && activity.changes.length > 0 && (
+              <div className="mt-2 space-y-2">
+                {activity.changes.map((change, index) => (
+                  <div
+                    key={index}
+                    className="rounded-lg border border-gray-200 bg-gray-50 p-3"
+                  >
+                    <div className="flex items-center space-x-2 text-sm">
+                      <span className="text-base">
+                        {getFieldIcon(change.field)}
+                      </span>
+                      <span className="font-medium text-gray-700">
+                        {formatFieldLabel(change.field)}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-center space-x-2 text-sm">
+                      {change.old_value && (
+                        <>
+                          <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-800 line-through">
+                            {change.old_value}
+                          </span>
+                          <svg
+                            className="h-3 w-3 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13 7l5 5m0 0l-5 5m5-5H6"
+                            />
+                          </svg>
+                        </>
+                      )}
+                      <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
+                        {change.new_value}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}

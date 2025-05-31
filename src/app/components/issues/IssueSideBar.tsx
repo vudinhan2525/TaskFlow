@@ -14,7 +14,7 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { toast } from "react-toastify";
 import { formatDate } from "@libs/utils/date";
-import ActivitySection from "@libs/app/components/issues/activitySection";
+import ActivityIssue from "@libs/app/components/issues/activityIssue";
 import { useNavigate } from "react-router-dom";
 import { PiNotePencil } from "react-icons/pi";
 import { IoLockClosedOutline } from "react-icons/io5";
@@ -26,7 +26,6 @@ import { IoIosClose } from "react-icons/io";
 import TextEditor from "../projects/backlog/TextEditor";
 import { TbHexagon3D } from "react-icons/tb";
 import { ISprint } from "@libs/types/index";
-  
 
 const IssueSideBar: React.FC = () => {
   const { selectedIssue, setSelectedIssue } = useIssueSelection();
@@ -115,7 +114,6 @@ const IssueSideBar: React.FC = () => {
       toast.error("Failed to update issue");
     }
   };
-
 
   const details = {
     assignee: {
@@ -218,7 +216,11 @@ const IssueSideBar: React.FC = () => {
           />
         ) : (
           <input
-            value={selectedIssue?.description ? JSON.parse(selectedIssue?.description || '{}')?.plainText : ""}
+            value={
+              selectedIssue?.description
+                ? JSON.parse(selectedIssue?.description || "{}")?.plainText
+                : ""
+            }
             onClick={() => {
               setIsShowingTextEditor(true);
             }}
@@ -383,7 +385,7 @@ const IssueSideBar: React.FC = () => {
           Updated {formatDate(selectedIssue.updated_at)}
         </p>
       </div>
-      <ActivitySection issueId={selectedIssue?.id || ""} showOnlyActivity={false}/>
+      <ActivityIssue issueId={selectedIssue?.id || ""} />
     </div>
   );
 };
