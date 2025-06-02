@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import UserTable from "@libs/app/components/admin/users/UserTable";
 import UserModal from "@libs/app/components/admin/users/UserModal";
 import SearchFilters from "@libs/app/components/admin/common/SearchFilters";
@@ -6,15 +6,15 @@ import { useListUser } from "@libs/hooks/useUser";
 import { IUser } from "@libs/types/user";
 import { useDebounce } from "@libs/hooks/useDebounce";
 
-type SortField = "name" | "email" | "role" | "created_at";
-type SortOrder = "asc" | "desc";
+export type UserSortField = "name" | "email" | "role" | "created_at";
+export type SortOrder = "asc" | "desc";
 
 const UsersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const [sortConfig, setSortConfig] = useState<{
-    field: SortField;
+    field: UserSortField;
     order: SortOrder;
   }>({
     field: "name",
@@ -24,8 +24,10 @@ const UsersPage = () => {
   const debouncedSearch = useDebounce(searchTerm, 500);
   const { users = [], isLoading } = useListUser(debouncedSearch);
 
-  const sortedUsers = React.useMemo(() => {
-    const getSortValue = (user: IUser, field: SortField) => {
+  const sortedUsers = useMemo(() => {
+    if (!users) return [];
+
+    const getSortValue = (user: IUser, field: UserSortField) => {
       const sortValues = {
         name: `${user.first_name} ${user.last_name}`.toLowerCase(),
         email: user.email.toLowerCase(),
@@ -51,7 +53,7 @@ const UsersPage = () => {
     });
   }, [users, sortConfig]);
 
-  const handleSort = (field: SortField) => {
+  const handleSort = (field: UserSortField) => {
     setSortConfig((prevConfig) => ({
       field,
       order:

@@ -6,13 +6,20 @@ import UserTable from "@libs/app/components/admin/users/UserTable";
 import UserModal from "@libs/app/components/admin/users/UserModal";
 import ProjectTable from "@libs/app/components/admin/projects/ProjectTable";
 import CreateProjectModal from "@libs/app/components/projects/modals/createProjectModal";
+import { useListUser } from "@libs/hooks/useUser";
+import { useProjects } from "@libs/hooks/useProject";
 import { IUser } from "@libs/types/user";
 import { IProject } from "@libs/types/project";
 import { UserFormData } from "@libs/app/components/admin/users/UserModal";
 
-// Mock data - replace with real data fetching later
-const mockUsers: IUser[] = []; // Your mock users data
-const mockProjects: IProject[] = []; // Your mock projects data
+type ProjectSortField =
+  | "name"
+  | "type"
+  | "access"
+  | "created_at"
+  | "updated_at";
+type UserSortField = "name" | "email" | "role" | "created_at";
+type SortOrder = "asc" | "desc";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<"users" | "projects">("users");
@@ -20,12 +27,51 @@ const AdminDashboard = () => {
   const [projectType, setProjectType] = useState("");
   const [projectAccess, setProjectAccess] = useState("");
 
+  const [projectSortConfig, setProjectSortConfig] = useState<{
+    field: ProjectSortField;
+    order: SortOrder;
+  }>({
+    field: "updated_at",
+    order: "desc",
+  });
+
+  const [userSortConfig, setUserSortConfig] = useState<{
+    field: UserSortField;
+    order: SortOrder;
+  }>({
+    field: "name",
+    order: "asc",
+  });
+
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<IUser | null>(null);
   const [editingProject, setEditingProject] = useState<IProject | undefined>(
     undefined,
   );
+
+  const { users } = useListUser("");
+  const { projects = [] } = useProjects();
+
+  const handleProjectSort = (field: ProjectSortField) => {
+    setProjectSortConfig((prevConfig) => ({
+      field,
+      order:
+        prevConfig.field === field && prevConfig.order === "asc"
+          ? "desc"
+          : "asc",
+    }));
+  };
+
+  const handleUserSort = (field: UserSortField) => {
+    setUserSortConfig((prevConfig) => ({
+      field,
+      order:
+        prevConfig.field === field && prevConfig.order === "asc"
+          ? "desc"
+          : "asc",
+    }));
+  };
 
   const handleUserSubmit = (data: UserFormData) => {
     console.log("User data:", data);
@@ -75,22 +121,26 @@ const AdminDashboard = () => {
             <div className="rounded-lg bg-white shadow">
               {activeTab === "users" ? (
                 <UserTable
-                  users={mockUsers}
+                  users={users || []}
                   onEdit={(user) => {
                     setEditingUser(user);
                     setUserModalOpen(true);
                   }}
                   onDelete={handleDeleteUser}
+                  sortConfig={userSortConfig}
+                  onSort={handleUserSort}
                 />
               ) : (
                 <ProjectTable
-                  projects={mockProjects}
-                  users={mockUsers}
+                  projects={projects}
+                  users={users || []}
                   onEdit={(project) => {
                     setEditingProject(project);
                     setProjectModalOpen(true);
                   }}
                   onDelete={handleDeleteProject}
+                  sortConfig={projectSortConfig}
+                  onSort={handleProjectSort}
                 />
               )}
             </div>
