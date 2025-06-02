@@ -22,14 +22,13 @@ export function useUserById(userId: string) {
   };
 }
 
-export function useListUser(keyword: string) {
+export function useListUser(keyword?: string) {
   const { data, isLoading, error } = useQuery({
     queryKey: ["users", keyword],
     queryFn: async () => {
       const { data } = await users.list(keyword);
       return data;
     },
-    enabled: keyword.length > 0,
   });
   return {
     users: data?.data,

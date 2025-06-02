@@ -6,10 +6,11 @@ const config = {
 };
 
 export const users = {
-  list: (keyword: string) => {
-    return api.get<ResponseApi<IUser[]>>(`/users/list-users?name=${keyword}`, {
-      ...config,
-    });
+  list: (keyword?: string) => {
+    const url = keyword
+      ? `/users/list-users?name=${keyword}`
+      : "/users/list-users";
+    return api.get<ResponseApi<IUser[]>>(url, config);
   },
   getById: (userId: string) =>
     api.get<ResponseApi<IUser>>(`/users/${userId}`, config),
@@ -21,6 +22,6 @@ export const users = {
     old_password: string;
     new_password: string;
   }) => api.post<ResponseApi<void>>("/users/change-password", data, config),
-  getUserStats: (body: { id: string , is_sprintId: boolean}) => api.post<ResponseApi<UserStats>>(`/users/stats/`,body, config),
-
+  getUserStats: (body: { id: string; is_sprintId: boolean }) =>
+    api.post<ResponseApi<UserStats>>(`/users/stats/`, body, config),
 };

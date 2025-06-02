@@ -1,6 +1,5 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
-// import { useAuth } from "../hooks/useAuth";
 import type { ReactNode } from "react";
 import ProjectLayout from "@libs/app/layouts/projectLayout";
 import BacklogPage from "@libs/app/pages/project/backLogPage/backLogPage";
@@ -11,15 +10,11 @@ import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
 import ProjectPage from "@libs/app/pages/project/projectPage/projectPage";
 import SettingsPage from "@libs/app/pages/settings/settingsPage";
 import SprintDetail from "@libs/app/components/sprints/SprintDetail";
-
-// Placeholder components until we implement the real ones
-const PlaceholderComponent = ({
-  title,
-}: {
-  title: string;
-}): React.ReactElement => (
-  <div className="p-8 text-center text-gray-600">{title}</div>
-);
+import AdminLoginPage from "@libs/app/pages/admin/login/AdminLoginPage";
+import AdminLayout from "@libs/app/layouts/adminLayout";
+import AdminRoute from "./AdminRoute";
+import UsersPage from "@libs/app/pages/admin/users/UsersPage";
+import ProjectsPage from "@libs/app/pages/admin/projects/ProjectsPage";
 
 // Lazy load components
 const ProjectReport = lazy(
@@ -33,13 +28,17 @@ const Roadmap = lazy(
 );
 const ActiveSprints = lazy(() =>
   Promise.resolve({
-    default: () => <PlaceholderComponent title="Active Sprints" />,
+    default: () => (
+      <div className="p-8 text-center text-gray-600">Active Sprints</div>
+    ),
   }),
 );
 
 const ProjectSettings = lazy(() =>
   Promise.resolve({
-    default: () => <PlaceholderComponent title="Project Settings" />,
+    default: () => (
+      <div className="p-8 text-center text-gray-600">Project Settings</div>
+    ),
   }),
 );
 
@@ -59,11 +58,22 @@ const Router = (): React.ReactElement => {
     >
       <Routes>
         {/* Public routes */}
-
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Protected routes */}
+        {/* Admin routes */}
+        <Route path="/admin">
+          <Route path="login" element={<AdminLoginPage />} />
+          <Route element={<AdminRoute />}>
+            <Route path="dashboard" element={<AdminLayout />}>
+              <Route index element={<UsersPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="projects" element={<ProjectsPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        {/* User routes */}
         <Route
           element={
             <ProtectedRoute>
@@ -71,10 +81,7 @@ const Router = (): React.ReactElement => {
             </ProtectedRoute>
           }
         >
-          {/* Redirect to projects */}
           <Route index element={<Navigate to="/projects" replace />} />
-
-          {/* Projects routes */}
           <Route path="projects">
             <Route index element={<ProjectPage />} />
             <Route path=":projectId" element={<ProjectLayout />}>
@@ -93,7 +100,7 @@ const Router = (): React.ReactElement => {
           {/* User settings */}
           <Route path="settings" element={<SettingsPage />} />
 
-          {/* Fallback for protected routes */}
+          {/* Fallback for user routes */}
           <Route
             path="*"
             element={
