@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaGear } from "react-icons/fa6";
-import { FaBell } from "react-icons/fa";
+import NotificationsPopover from "../../notifications/notificationsPopover";
 import ProjectInvitationsPopover from "@libs/app/components/projects/projectInvitationsPopover";
 import { useAuth } from "@libs/hooks/useAuth";
 import DropdownAntd from "../dropdown";
@@ -32,11 +32,13 @@ export const Header = () => {
   return (
     <div>
       <header className="flex w-full items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
-
         {/* Left section - Logo and dropdowns */}
         <div className="flex w-1/4 items-center space-x-4">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
+          <div
+            className="flex cursor-pointer items-center"
+            onClick={() => navigate("/")}
+          >
             <Image src={logo} className="h-[17px] w-[100px]" />
           </div>
 
@@ -78,10 +80,8 @@ export const Header = () => {
         {/* Right section - Search, notifications, settings, and user */}
         {isAuthenticated && (
           <div className="flex w-1/4 items-center justify-end space-x-2">
-            {/* Notification Icon */}
-            <div className="cursor-pointer rounded-full p-2 text-gray-600 hover:bg-gray-100">
-              <FaBell />
-            </div>
+            {/* Notifications */}
+            <NotificationsPopover userId={user?.data?.id || ""} />
             {/* Project Invitations */}
             <ProjectInvitationsPopover userId={user?.data?.id || ""} />
             {/* Settings Icon */}
@@ -150,8 +150,10 @@ export const Header = () => {
         )}
       </header>
 
-
-      <UnifiedIssueModal isOpen={isCreateIssueModalOpen} onClose={handleCloseIssueModal} />
+      <UnifiedIssueModal
+        isOpen={isCreateIssueModalOpen}
+        onClose={handleCloseIssueModal}
+      />
     </div>
   );
 };
