@@ -1,36 +1,36 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Quill, { Delta } from "quill";
 import "quill/dist/quill.snow.css";
 import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
 
 export default function TextEditor({
-  initialValue,
+  initialDeltaString,
+  issueId,
+  projectId,
+  attachments,
   handleSave,
   handleCancel,
 }: {
-  initialValue: string;
+  initialDeltaString: string;
+  issueId: string;
+  projectId: string;
+  attachments: string[];
   handleSave: (newValue: string) => void;
   handleCancel: () => void;
 }) {
   const editorRef = useRef(null);
-  const quillRef = useRef(null);
-  const toolbarOptions = [
-    [
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "link",
-      "image",
-      "video",
-      { list: "ordered" },
-      { list: "bullet" },
-    ],
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    ["clean"],
-  ];
+  const quillRef = useRef<Quill | null>(null);
+  const [initialAttachmentsOps, setInitialAttachmentsOps] = useState<string[]>([])
+  const { updateIssueAsync } = useUpdateIssue({ projectId });
 
   useEffect(() => {
+    const toolbarOptions = [
+      ["bold", "italic", "underline", "strike", "link", "image", "video", { list: "ordered" }, { list: "bullet" }],
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ["clean"],
+    ];
+
     if (editorRef.current && !quillRef.current) {
       quillRef.current = new Quill(editorRef.current, {
         theme: "snow",
@@ -38,21 +38,30 @@ export default function TextEditor({
           toolbar: toolbarOptions,
         },
       });
+
       try {
-        if (initialValue) {
-          quillRef.current.setContents(JSON.parse(initialValue).delta);
+        if (initialDeltaString) {
+          const delta = JSON.parse(initialDeltaString).delta;
+          quillRef.current.setContents(delta);
+
+          const imageOps = delta.ops
+            .filter((op) => op.insert.image)
+            .map((op) => op.insert.image);
+          setInitialAttachmentsOps(imageOps);
         }
       } catch (error) {
         console.log(error);
       }
     }
-  }, []);
+  }, [initialDeltaString]);
 
   const handleSaveDescription = async () => {
-    const rawDelta: Delta = quillRef.current?.getContents();
+    if (!quillRef.current) return;
+
+    const rawDelta: Delta = quillRef.current.getContents();
     const delta = await handleProcessDelta(rawDelta);
 
-    const plainText = quillRef.current?.getText();
+    const plainText = quillRef.current.getText();
 
     const description = {
       plainText,
@@ -60,27 +69,67 @@ export default function TextEditor({
     };
     handleSave(JSON.stringify(description));
   };
-  const handleProcessDelta = async (
-    rawDelta: Delta,
-  ): Promise<Delta> => {
-    const mediaOps = rawDelta.ops.filter(
-      (op) => typeof op.insert === "object" && 
-        'image' in op.insert && 
-        typeof op.insert.image === 'string' && 
-        op.insert.image.includes("data")
+
+  const handleProcessDelta = async (rawDelta: Delta): Promise<Delta> => {
+    // Extract current image operations
+    const currentImageOps = rawDelta.ops
+      .filter((op) => typeof op.insert === "object" && "image" in op.insert)
+      .map((op) => op.insert.image);
+
+    // Identify deleted images by comparing initial and current image operations
+    const deletedImages = initialAttachmentsOps.filter(
+      (image) => !currentImageOps.includes(image)
     );
 
-    for (const op of mediaOps) {
-      if (!op.attributes) {
-        const image = op.insert as {
-          image: string;
-        };
-        const imageUrl = await uploadFileToCloudinary(image.image,undefined);
-        op.insert = {
-          image: imageUrl,
-        };
+    // Filter out deleted attachments
+    let updatedAttachments = [...attachments];
+    if (deletedImages.length > 0) {
+      updatedAttachments = attachments.filter((attachment) => {
+        const { url } = JSON.parse(attachment);
+        return !deletedImages.includes(url);
+      });
+
+      // Update the issue with the new attachments list
+      await updateIssueAsync({
+        id: issueId,
+        data: {
+          attachments: updatedAttachments,
+        },
+      });
+    }
+
+    // Handle new images
+    const newAttachments = [];
+    for (const op of rawDelta.ops) {
+      if (typeof op.insert === "object" && "image" in op.insert) {
+        const image = op.insert as { image: string };
+        if (!initialAttachmentsOps.includes(image.image)) {
+          // Upload new image to Cloudinary
+          const imageUrl = await uploadFileToCloudinary(image.image, undefined);
+          op.insert = { image: imageUrl };
+          newAttachments.push(
+            JSON.stringify({
+              url: imageUrl,
+              type: "image",
+              created_at: new Date().toISOString(),
+            })
+          );
+        }
       }
     }
+
+    // Update attachments with new images
+    if (newAttachments.length > 0) {
+      updatedAttachments = [...updatedAttachments, ...newAttachments];
+      console.log(newAttachments)
+      await updateIssueAsync({
+        id: issueId,
+        data: {
+          attachments: updatedAttachments,
+        },
+      });
+    }
+
     return rawDelta;
   };
 

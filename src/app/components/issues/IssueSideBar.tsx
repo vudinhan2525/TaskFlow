@@ -6,6 +6,7 @@ import {
   FaPaperclip,
   FaPlus,
   FaTimes,
+  FaTrash,
 } from "react-icons/fa";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
@@ -142,6 +143,58 @@ const IssueSideBar: React.FC = () => {
     attachments: selectedIssue.attachments || [],
   };
 
+  const AttchementCard = ({
+    attachment,
+  }: {
+    attachment: {
+      url: string;
+      type: string;
+      created_at: string;
+    };
+  }) => {
+    return (
+      <div className="relative flex h-32 w-36 flex-col overflow-hidden rounded-xs shadow-2xl">
+        <img
+          src={attachment.url}
+          alt="Attachment"
+          className="h-20 w-full hover:bg-gray-100"
+        />
+
+        <div className="flex flex-col p-1">
+          <span className="truncate text-xs font-medium text-gray-600">
+            {attachment.url}
+          </span>
+          <span className="truncate text-xs text-gray-600">
+            {formatDate(attachment.created_at)}
+          </span>
+        </div>
+
+        <div className="absolute top-1 right-1 z-50 flex flex-row gap-2">
+          <div className="hover:scale-110 cursor-pointer duration-150">
+            <FaEye />
+          </div>
+          <div
+            onClick={() => {
+              const attachments = selectedIssue.attachments.filter(
+                (attch) => JSON.parse(attch).url !== attachment.url,
+              );
+              console.log(attachments)
+              updateIssueAsync({
+                id: selectedIssue.id,
+                data: {
+                  attachments: attachments,
+                },
+              });
+            }}
+            className="hover:scale-110 cursor-pointer duration-150"
+          >
+            <FaTrash />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="z-30 flex flex-col gap-4 overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
       {/* Header */}
@@ -205,7 +258,10 @@ const IssueSideBar: React.FC = () => {
 
         {isShowingTextEditor ? (
           <TextEditor
-            initialValue={selectedIssue?.description || ""}
+            initialDeltaString={selectedIssue?.description || ""}
+            issueId={selectedIssue?.id || ""}
+            projectId={selectedIssue?.project_id || ""}
+            attachments={selectedIssue?.attachments || []}
             handleSave={(newValue: string) => {
               handleUpdateIssue("description", newValue);
               setIsShowingTextEditor(false);
@@ -229,6 +285,18 @@ const IssueSideBar: React.FC = () => {
           />
         )}
       </div>
+
+      {/* Attachments */}
+      {selectedIssue.attachments.length ? (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-bold text-gray-600">Attachments</p>
+          <div className="flex flex-row gap-1">
+            {selectedIssue.attachments.map((attachment, index) => (
+              <AttchementCard key={index} attachment={JSON.parse(attachment)} />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* Details Section */}
       <div className="mb-4">

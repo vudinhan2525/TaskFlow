@@ -14,7 +14,7 @@ const convertBase64ToFile = (base64: string, filename = "upload.png") => {
   return new File([bytes], filename, { type: base64Type });
 };
 
-export const uploadFileToCloudinary = async (base64?: string, fileUpload?: File) => {
+export const uploadFileToCloudinary = async (base64?: string, fileUpload?: File,) => {
   try {
     let file: File;
 
@@ -29,6 +29,7 @@ export const uploadFileToCloudinary = async (base64?: string, fileUpload?: File)
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "unsigned_preset");
+    formData.append("folder", "issue_attachments");
 
     const result = await axios.post(
       "https://api.cloudinary.com/v1_1/dhyruxpgy/image/upload",
