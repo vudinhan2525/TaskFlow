@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Dropdown } from "antd";
 import {
   FaChevronDown,
@@ -6,6 +6,7 @@ import {
   FaPaperclip,
   FaPlus,
   FaTimes,
+  FaTrash,
 } from "react-icons/fa";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
@@ -26,6 +27,9 @@ import { IoIosClose } from "react-icons/io";
 import TextEditor from "../projects/backlog/TextEditor";
 import { TbHexagon3D } from "react-icons/tb";
 import { ISprint } from "@libs/types/index";
+import AttachmentCard from "../projects/backlog/attachmentCard";
+import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
+import Details from "../projects/backlog/details";
 
 const IssueSideBar: React.FC = () => {
   const { selectedIssue, setSelectedIssue } = useIssueSelection();
@@ -89,17 +93,31 @@ const IssueSideBar: React.FC = () => {
   const [summary, setSummary] = useState(selectedIssue?.summary || "");
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [isShowingTextEditor, setIsShowingTextEditor] = useState(false);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
   if (!selectedIssue) return null;
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const files = event.target.files;
-    if (!files) return;
-
-    const fileNames = Array.from(files).map((file) => file.name);
-    toast.info(`Selected files: ${fileNames.join(", ")}`);
+    const file = event.target.files?.[0];
+    if (file?.type.includes("image")) {
+      const response = await uploadFileToCloudinary(undefined, file);
+      const newAttachment = {
+        url: response,
+        type: file.type,
+        uploadFrom: "attachment",
+        created_at: new Date().toISOString(),
+      };
+      await updateIssueAsync({
+        id: selectedIssue.id,
+        data: {
+          attachments: [
+            ...selectedIssue.attachments,
+            JSON.stringify(newAttachment),
+          ],
+        },
+      });
+    }
   };
 
   const handleUpdateIssue = async (key: string, value: string) => {
@@ -115,35 +133,71 @@ const IssueSideBar: React.FC = () => {
     }
   };
 
-  const details = {
-    assignee: {
-      initials: selectedIssue.assignee_id
-        ? selectedIssue.assignee_id.substring(0, 2).toUpperCase()
-        : "NA",
-      name: selectedIssue.assignee_id || "Unassigned",
-    },
-    summary: selectedIssue.summary || "No summary provided",
-    sprint:
-      sprints?.find((s: ISprint) => s.id === selectedIssue.sprint_id)?.name ||
-      "None",
-    storyPoint: selectedIssue.story_point || 0,
-    reporter: {
-      initials: selectedIssue.reporter_id
-        ? selectedIssue.reporter_id.substring(0, 2).toUpperCase()
-        : "NA",
-      name: selectedIssue.reporter_id || "Unknown",
-    },
-    parent: {
-      initials: selectedIssue.parent_id
-        ? selectedIssue.parent_id.substring(0, 2).toUpperCase()
-        : "NA",
-      name: selectedIssue.parent_id || "Unknown",
-    },
-    attachments: selectedIssue.attachments || [],
+  const handleDeleteAttachment = async (attachment: string) => {
+    await updateIssueAsync({
+      id: selectedIssue.id,
+      data: {
+        attachments: selectedIssue.attachments.filter(
+          (a) => JSON.parse(a).url !== attachment,
+        ),
+      },
+    });
+  };
+
+  const AttchementCard = ({
+    attachment,
+  }: {
+    attachment: {
+      url: string;
+      type: string;
+      created_at: string;
+    };
+  }) => {
+    return (
+      <div className="relative flex h-32 w-36 flex-col overflow-hidden rounded-xs shadow-2xl">
+        <img
+          src={attachment.url}
+          alt="Attachment"
+          className="h-20 w-full hover:bg-gray-100"
+        />
+
+        <div className="flex flex-col p-1">
+          <span className="truncate text-xs font-medium text-gray-600">
+            {attachment.url}
+          </span>
+          <span className="truncate text-xs text-gray-600">
+            {formatDate(attachment.created_at)}
+          </span>
+        </div>
+
+        <div className="absolute top-1 right-1 z-50 flex flex-row gap-2">
+          <div className="cursor-pointer duration-150 hover:scale-110">
+            <FaEye />
+          </div>
+          <div
+            onClick={() => {
+              const attachments = selectedIssue.attachments.filter(
+                (attch) => JSON.parse(attch).url !== attachment.url,
+              );
+              console.log(attachments);
+              updateIssueAsync({
+                id: selectedIssue.id,
+                data: {
+                  attachments: attachments,
+                },
+              });
+            }}
+            className="cursor-pointer duration-150 hover:scale-110"
+          >
+            <FaTrash />
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="z-30 flex flex-col gap-4 overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
+    <div className="z-30 flex flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -170,7 +224,7 @@ const IssueSideBar: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 overflow-x-auto">
         {/* Summary */}
         <div className="wiki flex items-center justify-between">
           <input
@@ -205,12 +259,11 @@ const IssueSideBar: React.FC = () => {
 
         {isShowingTextEditor ? (
           <TextEditor
-            initialValue={selectedIssue?.description || ""}
-            handleSave={(newValue: string) => {
-              handleUpdateIssue("description", newValue);
-              setIsShowingTextEditor(false);
-            }}
-            handleCancel={() => {
+            initialDeltaString={selectedIssue?.description || ""}
+            issueId={selectedIssue?.id || ""}
+            projectId={selectedIssue?.project_id || ""}
+            attachments={selectedIssue?.attachments || []}
+            handleClose={() => {
               setIsShowingTextEditor(false);
             }}
           />
@@ -230,149 +283,55 @@ const IssueSideBar: React.FC = () => {
         )}
       </div>
 
-      {/* Details Section */}
-      <div className="mb-4">
-        <div
-          className="flex cursor-pointer items-center justify-between"
-          onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-        >
-          <h2 className="text-md text-left font-bold text-gray-800">Details</h2>
-          <div className="text-gray-500 hover:text-gray-700">
-            {isDetailsOpen ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-        </div>
-        {isDetailsOpen && (
-          <div className="mt-4 space-y-4">
-            {/* Assignee Selection */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Assignee</span>
-              <div className="w-2/3">
-                <Dropdown
-                  menu={{
-                    items: [
-                      ...(projectMembers
-                        ?.filter((member) => !member.is_pending)
-                        .map((member) => ({
-                          key: member.user_id,
-                          label: (
-                            <div className="flex items-center gap-2 p-2 hover:bg-gray-50">
-                              <UserAvatar
-                                userId={member.user_id}
-                                size={24}
-                                isDisplayName={true}
-                              />
-                            </div>
-                          ),
-                          onClick: () =>
-                            handleUpdateIssue("assignee_id", member.user_id),
-                        })) || []),
-                      {
-                        key: "unassigned",
-                        label: (
-                          <div className="flex items-center gap-2 p-2 hover:bg-gray-50">
-                            <UserAvatar
-                              userId=""
-                              size={24}
-                              isDisplayName={true}
-                            />
-                          </div>
-                        ),
-                        onClick: () => handleUpdateIssue("assignee_id", ""),
-                      },
-                    ],
-                  }}
-                  trigger={["click"]}
-                >
-                  <div className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-gray-50">
-                    <UserAvatar
-                      userId={selectedIssue?.assignee_id || ""}
-                      size={24}
-                      isDisplayName={true}
-                    />
-                  </div>
-                </Dropdown>
+      {/* Attachments */}
+      {selectedIssue.attachments.length ? (
+        <div className="flex w-full flex-col gap-2">
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row gap-1">
+              <p className="text-sm font-bold text-gray-600">Attachments</p>
+              <div className="bg-gray-300 px-2 text-sm font-medium text-gray-600">
+                {selectedIssue.attachments.length}
               </div>
             </div>
-
-            {/* Team Selection */}
-            <div className="flex items-center justify-between">
-              <span className="w-1/3 text-sm text-gray-600">Team</span>
-              <select
-                value={selectedIssue?.team_id || ""}
-                onChange={(e) => handleUpdateIssue("team_id", e.target.value)}
-                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-                disabled={!!selectedIssue?.parent_id}
+            <div className="flex flex-row items-center gap-1">
+              <button
+                className="relative cursor-pointer rounded-xs p-1 text-xs text-gray-800 hover:bg-gray-200"
+                onClick={() => fileInputRef.current?.click()}
               >
-                <option value="">Select Team</option>
-              </select>
-            </div>
-
-            {/* Story Points */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Story Points</span>
-              <input
-                type="number"
-                value={details.storyPoint}
-                onChange={(e) =>
-                  handleUpdateIssue("story_point", e.target.value)
-                }
-                min="0"
-                className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-              />
-            </div>
-
-            {/* File Attachments */}
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm text-gray-600">Attachments</span>
+                <FaPlus />
                 <input
                   type="file"
                   onChange={handleFileUpload}
-                  className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
+                  className="absolute top-0 right-0"
                   multiple
+                  style={{ display: "none" }}
+                  ref={fileInputRef}
                 />
-              </div>
-              <div className="space-y-1">
-                {details.attachments.map((attachment, index) => (
-                  <div key={index} className="flex items-center text-sm">
-                    <FaPaperclip className="mr-1 text-gray-500" />
-                    <span className="text-blue-600 hover:underline">
-                      {attachment}
-                    </span>
-                    <button
-                      onClick={() =>
-                        toast.info(`Remove ${attachment} - To be implemented`)
-                      }
-                      className="ml-2 text-red-500 hover:text-red-700"
-                    >
-                      <FaTimes />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Reporter */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Reporter</span>
-              <div className="flex items-center gap-2">
-                <UserAvatar
-                  userId={selectedIssue?.reporter_id || ""}
-                  size={24}
-                  isDisplayName={true}
-                />
-              </div>
-            </div>
-            {/* Parent */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Parent</span>
-              <span className="text-sm text-gray-800">
-                {details.parent.name}
-              </span>
+              </button>
+              <button className="cursor-pointer rounded-xs p-1 text-xs text-gray-800 hover:bg-gray-200">
+                <BsThreeDots />
+              </button>
             </div>
           </div>
-        )}
-      </div>
+          <div className="flex w-full flex-row gap-1 overflow-x-auto">
+            {selectedIssue.attachments.map((attachment, index) => (
+              <AttachmentCard
+                key={index}
+                attachment={JSON.parse(attachment)}
+                handleDeleteAttachment={handleDeleteAttachment}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {/* Details Section */}
+      <Details
+        projectId={selectedIssue.project_id}
+        selectedIssue={selectedIssue}
+        sprints={sprints}
+        handleUpdateIssue={handleUpdateIssue}
+      />
       {/* Date Section */}
       <div className="mb-4">
         <p className="text-sm text-gray-600">

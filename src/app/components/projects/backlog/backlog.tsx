@@ -10,7 +10,6 @@ import {
   PointerSensor,
   closestCenter,
   DragEndEvent,
-  // DragOverEvent,
   DragStartEvent,
   DragOverlay,
 } from "@dnd-kit/core";
@@ -71,8 +70,7 @@ const BackLog = ({
   const { isLoading: isLoadingColumns } = useProjectColumns(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-  const sensors= useSensor(PointerSensor)
-
+  const sensors = useSensor(PointerSensor);
 
   if (isLoadingColumns || isLoadingSprints || isLoadingIssues) {
     return <div>Loading...</div>;
@@ -118,7 +116,7 @@ const BackLog = ({
 
     //Drop into the same sprint
     if (targetSprint?.id == activeSprint?.id) {
-      if(targetSprint?.id==overId) return
+      if (targetSprint?.id == overId) return;
       setSprints((prevSprints) => {
         const newSprints = prevSprints.map((sprint) => ({
           ...sprint,
@@ -136,7 +134,6 @@ const BackLog = ({
         const overIssueIndex = newSprints[targetSprintIndex].issues.findIndex(
           (issue) => issue.id === overId,
         );
-       
 
         newSprints[targetSprintIndex].issues[activeIssueIndex] =
           newSprints[targetSprintIndex].issues[overIssueIndex];
@@ -245,10 +242,10 @@ export default BackLog;
 const IssueCardOverlay = memo(({ issue }: { issue: IIssue }) => {
   return (
     <div className="inline-block">
-      <div className="flex flex-row items-center gap-3 rounded-md  bg-white px-4 py-2 opacity-60">
+      <div className="flex flex-row items-center gap-3 rounded-md bg-white px-4 py-2 opacity-60">
         <div className="flex flex-row items-center gap-1">
           <div className="rounded-sm border-1 border-emerald-500 p-0.5">
-            <FaCheck className="font-normal text-emerald-500" size={12}  />
+            <FaCheck className="font-normal text-emerald-500" size={12} />
           </div>
           <span className="text-xs">{issue.title}</span>
         </div>

@@ -1,36 +1,47 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Quill, { Delta } from "quill";
 import "quill/dist/quill.snow.css";
 import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
 
 export default function TextEditor({
-  initialValue,
-  handleSave,
-  handleCancel,
+  initialDeltaString,
+  issueId,
+  projectId,
+  attachments,
+  handleClose,
 }: {
-  initialValue: string;
-  handleSave: (newValue: string) => void;
-  handleCancel: () => void;
+  initialDeltaString: string;
+  issueId: string;
+  projectId: string;
+  attachments: string[];
+  handleClose: () => void;
 }) {
   const editorRef = useRef(null);
-  const quillRef = useRef(null);
-  const toolbarOptions = [
-    [
-      "bold",
-      "italic",
-      "underline",
-      "strike",
-      "link",
-      "image",
-      "video",
-      { list: "ordered" },
-      { list: "bullet" },
-    ],
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    ["clean"],
-  ];
+  const quillRef = useRef<Quill | null>(null);
+  const [initialAttachmentsOps, setInitialAttachmentsOps] = useState<string[]>(
+    attachments.map((attachment) => JSON.parse(attachment).url),
+  );
+
+  const { updateIssueAsync } = useUpdateIssue({ projectId });
 
   useEffect(() => {
+    const toolbarOptions = [
+      [
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "link",
+        "image",
+        "video",
+        { list: "ordered" },
+        { list: "bullet" },
+      ],
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ["clean"],
+    ];
+
     if (editorRef.current && !quillRef.current) {
       quillRef.current = new Quill(editorRef.current, {
         theme: "snow",
@@ -38,50 +49,97 @@ export default function TextEditor({
           toolbar: toolbarOptions,
         },
       });
+
       try {
-        if (initialValue) {
-          quillRef.current.setContents(JSON.parse(initialValue).delta);
+        if (initialDeltaString) {
+          const delta = JSON.parse(initialDeltaString).delta;
+          quillRef.current.setContents(delta);
+
+          const imageOps = delta.ops
+            .filter((op: any) => op.insert?.image)
+            .map((op: any) => op.insert.image);
+          setInitialAttachmentsOps(imageOps);
         }
       } catch (error) {
         console.log(error);
       }
     }
-  }, []);
+  }, [initialDeltaString]);
 
   const handleSaveDescription = async () => {
-    const rawDelta: Delta = quillRef.current?.getContents();
-    const delta = await handleProcessDelta(rawDelta);
+    if (!quillRef.current) return;
 
-    const plainText = quillRef.current?.getText();
+    const rawDelta: Delta = quillRef.current.getContents();
+    const { delta, updatedAttachments } = await handleProcessDelta(rawDelta);
+
+    const plainText = quillRef.current.getText();
 
     const description = {
       plainText,
       delta,
     };
-    handleSave(JSON.stringify(description));
+    await updateIssueAsync({
+      id: issueId,
+      data: {
+        description: JSON.stringify(description),
+        attachments: updatedAttachments,
+      },
+    });
+    handleClose();
   };
+
   const handleProcessDelta = async (
     rawDelta: Delta,
-  ): Promise<Delta> => {
-    const mediaOps = rawDelta.ops.filter(
-      (op) => typeof op.insert === "object" && 
-        'image' in op.insert && 
-        typeof op.insert.image === 'string' && 
-        op.insert.image.includes("data")
+  ): Promise<{
+    delta: Delta;
+    updatedAttachments: string[];
+  }> => {
+    // Extract current image operations
+    const currentImageOps = rawDelta.ops
+      .filter(
+        (op: any) => typeof op.insert === "object" && "image" in op.insert,
+      )
+      .map((op: any) => op.insert.image);
+
+    const deletedImages = initialAttachmentsOps.filter(
+      (image) => !currentImageOps.includes(image),
     );
 
-    for (const op of mediaOps) {
-      if (!op.attributes) {
-        const image = op.insert as {
-          image: string;
-        };
-        const imageUrl = await uploadFileToCloudinary(image.image,undefined);
-        op.insert = {
-          image: imageUrl,
-        };
+    // Filter out deleted attachments
+    let updatedAttachments = [...attachments].filter((attachment) => {
+      const { url } = JSON.parse(attachment);
+      return !deletedImages.includes(url);
+    });
+
+    // Handle new images
+    const newAttachments = [];
+    for (const op of rawDelta.ops) {
+      if (typeof op.insert === "object" && "image" in op.insert) {
+        const image = op.insert as { image: string };
+        if (!initialAttachmentsOps.includes(image.image)) {
+          // Upload new image to Cloudinary
+          const imageUrl = await uploadFileToCloudinary(image.image, undefined);
+          op.insert = { image: imageUrl };
+          newAttachments.push(
+            JSON.stringify({
+              url: imageUrl,
+              type: "image",
+              uploadFrom: "description",
+              created_at: new Date().toISOString(),
+            }),
+          );
+        }
       }
     }
-    return rawDelta;
+
+    if (newAttachments.length > 0) {
+      updatedAttachments = [...attachments, ...newAttachments];
+    }
+
+    return {
+      delta: rawDelta,
+      updatedAttachments,
+    };
   };
 
   return (
@@ -95,7 +153,7 @@ export default function TextEditor({
           Save
         </button>
         <button
-          onClick={handleCancel}
+          onClick={handleClose}
           className="cursor-pointer rounded-sm bg-transparent px-[10px] py-1 text-sm font-medium text-gray-500 hover:bg-gray-100"
         >
           Cancel
