@@ -30,12 +30,16 @@ const ColumnInputFiled = ({
     setWidth(document.getElementById(field)?.clientWidth || 0);
   }, [field]);
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewValue(e.target.value);
+  };
+
   return (
     <input
       style={{
         width: width,
       }}
-      onChange={(e) => setNewValue(e.target.value)}
+      onChange={handleChange}
       type={inputType}
       onBlur={(e) => {
         if (e.target.value !== issue?.[field]) {

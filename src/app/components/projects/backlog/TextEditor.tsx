@@ -9,24 +9,35 @@ export default function TextEditor({
   issueId,
   projectId,
   attachments,
-  handleSave,
-  handleCancel,
+  handleClose,
 }: {
   initialDeltaString: string;
   issueId: string;
   projectId: string;
   attachments: string[];
-  handleSave: (newValue: string) => void;
-  handleCancel: () => void;
+  handleClose: () => void;
 }) {
   const editorRef = useRef(null);
   const quillRef = useRef<Quill | null>(null);
-  const [initialAttachmentsOps, setInitialAttachmentsOps] = useState<string[]>([])
+  const [initialAttachmentsOps, setInitialAttachmentsOps] = useState<string[]>(
+    attachments.map((attachment) => JSON.parse(attachment).url),
+  );
+
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
   useEffect(() => {
     const toolbarOptions = [
-      ["bold", "italic", "underline", "strike", "link", "image", "video", { list: "ordered" }, { list: "bullet" }],
+      [
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "link",
+        "image",
+        "video",
+        { list: "ordered" },
+        { list: "bullet" },
+      ],
       [{ header: [1, 2, 3, 4, 5, 6, false] }],
       ["clean"],
     ];
@@ -45,8 +56,8 @@ export default function TextEditor({
           quillRef.current.setContents(delta);
 
           const imageOps = delta.ops
-            .filter((op) => op.insert.image)
-            .map((op) => op.insert.image);
+            .filter((op: any) => op.insert?.image)
+            .map((op: any) => op.insert.image);
           setInitialAttachmentsOps(imageOps);
         }
       } catch (error) {
@@ -59,7 +70,7 @@ export default function TextEditor({
     if (!quillRef.current) return;
 
     const rawDelta: Delta = quillRef.current.getContents();
-    const delta = await handleProcessDelta(rawDelta);
+    const { delta, updatedAttachments } = await handleProcessDelta(rawDelta);
 
     const plainText = quillRef.current.getText();
 
@@ -67,36 +78,38 @@ export default function TextEditor({
       plainText,
       delta,
     };
-    handleSave(JSON.stringify(description));
+    await updateIssueAsync({
+      id: issueId,
+      data: {
+        description: JSON.stringify(description),
+        attachments: updatedAttachments,
+      },
+    });
+    handleClose();
   };
 
-  const handleProcessDelta = async (rawDelta: Delta): Promise<Delta> => {
+  const handleProcessDelta = async (
+    rawDelta: Delta,
+  ): Promise<{
+    delta: Delta;
+    updatedAttachments: string[];
+  }> => {
     // Extract current image operations
     const currentImageOps = rawDelta.ops
-      .filter((op) => typeof op.insert === "object" && "image" in op.insert)
-      .map((op) => op.insert.image);
+      .filter(
+        (op: any) => typeof op.insert === "object" && "image" in op.insert,
+      )
+      .map((op: any) => op.insert.image);
 
-    // Identify deleted images by comparing initial and current image operations
     const deletedImages = initialAttachmentsOps.filter(
-      (image) => !currentImageOps.includes(image)
+      (image) => !currentImageOps.includes(image),
     );
 
     // Filter out deleted attachments
-    let updatedAttachments = [...attachments];
-    if (deletedImages.length > 0) {
-      updatedAttachments = attachments.filter((attachment) => {
-        const { url } = JSON.parse(attachment);
-        return !deletedImages.includes(url);
-      });
-
-      // Update the issue with the new attachments list
-      await updateIssueAsync({
-        id: issueId,
-        data: {
-          attachments: updatedAttachments,
-        },
-      });
-    }
+    let updatedAttachments = [...attachments].filter((attachment) => {
+      const { url } = JSON.parse(attachment);
+      return !deletedImages.includes(url);
+    });
 
     // Handle new images
     const newAttachments = [];
@@ -111,26 +124,22 @@ export default function TextEditor({
             JSON.stringify({
               url: imageUrl,
               type: "image",
+              uploadFrom: "description",
               created_at: new Date().toISOString(),
-            })
+            }),
           );
         }
       }
     }
 
-    // Update attachments with new images
     if (newAttachments.length > 0) {
-      updatedAttachments = [...updatedAttachments, ...newAttachments];
-      console.log(newAttachments)
-      await updateIssueAsync({
-        id: issueId,
-        data: {
-          attachments: updatedAttachments,
-        },
-      });
+      updatedAttachments = [...attachments, ...newAttachments];
     }
 
-    return rawDelta;
+    return {
+      delta: rawDelta,
+      updatedAttachments,
+    };
   };
 
   return (
@@ -144,7 +153,7 @@ export default function TextEditor({
           Save
         </button>
         <button
-          onClick={handleCancel}
+          onClick={handleClose}
           className="cursor-pointer rounded-sm bg-transparent px-[10px] py-1 text-sm font-medium text-gray-500 hover:bg-gray-100"
         >
           Cancel
