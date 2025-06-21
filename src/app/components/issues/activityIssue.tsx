@@ -72,7 +72,11 @@ export default function ActivityIssue(props: { issueId: string }) {
       {activeTab === "Comments" && (
         <div className="">
           {user && (
-            <CommentSection issueId={props.issueId} currentUserId={user.id} />
+            <CommentSection
+              issueId={props.issueId}
+              currentUserId={user.id}
+              currentUserName={user.first_name + " " + user.last_name}
+            />
           )}
         </div>
       )}

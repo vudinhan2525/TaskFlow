@@ -23,8 +23,7 @@ export const sprints = {
     projectId: string,
     params: ListSprintsParams = { page: 1, limit: 10 },
   ) =>
-    api.get<PaginatedResponse<Sprint>>(`/project/${projectId}/sprints`, {
+    api.post<PaginatedResponse<Sprint>>(`/sprints/list-sprints`,{ project_id : projectId, page : params.page, limit : params.limit } ,{
       ...config,
-      params,
     }),
 };

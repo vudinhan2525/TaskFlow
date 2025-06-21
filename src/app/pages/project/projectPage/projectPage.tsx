@@ -5,8 +5,8 @@ import { FaMagnifyingGlass } from "react-icons/fa6";
 import ProjectStat from "@libs/app/components/projects/dashboard/projectStat";
 import ProjectTable from "@libs/app/components/projects/dashboard/projectTable";
 import ProjectDeadlines from "@libs/app/components/projects/dashboard/projectDeadlines";
-import ProjectActivity from "@libs/app/components/projects/dashboard/projectActivity";
 import CreateProjectModal from "@libs/app/components/projects/modals/createProjectModal";
+import HistorySection from "@libs/app/components/issues/historySection";
 
 const filterOptions = [
   { value: "newest", label: "Newest" },
@@ -53,7 +53,12 @@ export default function ProjectPage() {
           <ProjectTable />
         </div>
         {/* Recent Activity Card */}
-        <ProjectActivity />
+        <div className="border-[1px] p-6 rounded-md border-gray-200 mt-5"
+        >
+          <p className="mb-6 text-xl font-semibold">Recent Activity</p>
+        <HistorySection/>
+
+        </div>
       </div>
 
       {/* Right sidebar (30%) */}

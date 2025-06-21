@@ -53,7 +53,7 @@ const MetricCards = (props: { data: UserStats }) => {
     },
     {
       title: "Due Soon",
-      value: 18,
+      value: 0,
       icon: <HiClock size={24} />,
       bgColor: "bg-yellow-100",
       textColor: "text-yellow-800",

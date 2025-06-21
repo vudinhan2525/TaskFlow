@@ -109,38 +109,19 @@ const CommentItem: React.FC<CommentItemProps> = ({
         {/* Comment Actions */}
         {!isEditing && (
           <div className="mt-2 flex items-center space-x-4">
-            <button className="text-xs font-medium text-gray-500 hover:text-blue-600">
-              Reply
-            </button>
             {currentUserId === comment.user_id && (
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="text-xs font-medium text-gray-500 hover:text-blue-600"
+                  className="cursor-pointer text-xs font-medium text-gray-500 hover:text-blue-600"
                 >
                   Edit
                 </button>
-                <button className="text-xs font-medium text-gray-500 hover:text-red-600">
+                <button className="cursor-pointer text-xs font-medium text-gray-500 hover:text-red-600">
                   Delete
                 </button>
               </>
             )}
-            <button className="text-xs font-medium text-gray-500 hover:text-blue-600">
-              <svg
-                className="mr-1 inline h-3 w-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-              Like
-            </button>
           </div>
         )}
       </div>
@@ -162,16 +143,16 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     limit: 50,
   });
 
-  const { createComment, isLoading: isCreating } = useCreateComment({
+  const { createCommentAsync, isLoading: isCreating } = useCreateComment({
     issue_id: issueId,
     user_id: currentUserId,
     content: newComment,
   });
 
-  const handleSubmitComment = () => {
+  const handleSubmitComment = async () => {
     if (!newComment.trim()) return;
 
-    createComment();
+    await createCommentAsync();
     setNewComment("");
     setIsExpanded(false);
   };

@@ -191,9 +191,9 @@ export default function HistorySection({ issueId }: { issueId?: string }) {
                     <div className="mt-2 flex items-center space-x-2 text-sm">
                       {change.old_value && (
                         <>
-                          <span className="inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-800 line-through">
+                          <div className="inline-flex max-w-[400px] overflow-auto items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-800 line-through">
                             {change.old_value}
-                          </span>
+                          </div>
                           <svg
                             className="h-3 w-3 text-gray-400"
                             fill="none"
@@ -209,9 +209,9 @@ export default function HistorySection({ issueId }: { issueId?: string }) {
                           </svg>
                         </>
                       )}
-                      <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
+                      <div className="inline-flex max-w-[400px] overflow-auto items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
                         {change.new_value}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 ))}

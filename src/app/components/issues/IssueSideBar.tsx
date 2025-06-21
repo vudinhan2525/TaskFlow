@@ -202,11 +202,7 @@ const IssueSideBar: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            <PiNotePencil size={16} />
-            <span className="text-sm text-gray-600">Add epic</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-sm text-gray-600">
+            <span className="text-xl font-semibold">
               {selectedIssue?.title}
             </span>
           </div>
