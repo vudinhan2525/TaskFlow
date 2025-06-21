@@ -6,13 +6,11 @@ import {
   GetActivitiesParams,
   IActivity,
 } from "@libs/types/issue";
-// Parameters for creating an issue
 
 const config = {
   withCredentials: true,
 };
 
-// Issues endpoints
 export const issues = {
   list: (params: GetIssuesParams) => {
     return api.post<ResponseApi<IIssue[]>>("/issues/list-issue", params, {
@@ -21,29 +19,26 @@ export const issues = {
   },
 
   getById: (projectId: string, issueId: string) =>
-    api.get<IIssue>(`/project/${projectId}/issues/${issueId}`, config),
+    api.get<IIssue>(`/issues/project/${projectId}/${issueId}`, config),
 
-  // Create a new issue
   create: (projectId: string, data: CreateIssueParams) =>
-    api.post<IIssue>(`/project/${projectId}/issues`, data, config),
+    api.post<IIssue>(`/issues/project/${projectId}`, data, config),
 
-  // Update an existing issue
   update: (
     projectId: string,
     issueId: string,
     data: Partial<CreateIssueParams>,
   ) => {
     return api.put<IIssue>(
-      `/project/${projectId}/issues/${issueId}`,
+      `/issues/project/${projectId}/${issueId}`,
       data,
       config,
     );
   },
 
-  // Delete an issue
   delete: (projectId: string, issueId: string) =>
-    api.delete<unknown>(`/project/${projectId}/issues/${issueId}`, config),
+    api.delete(`/issues/project/${projectId}/${issueId}`, config),
 
   getActivities: (data: GetActivitiesParams) =>
-    api.post<ResponseApi<IActivity[]>>(`/issues/list-activities`, data, config),
+    api.post<ResponseApi<IActivity[]>>("/issues/list-activities", data, config),
 };
