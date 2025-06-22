@@ -7,7 +7,13 @@ import { ISprint } from "@libs/types";
 import { IIssue } from "@libs/types/issue";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import { useProjectColumns } from "@libs/hooks/useProject";
-import { typeOptions, priorityOptions } from "../../../../constants/list";
+import { CiSettings } from "react-icons/ci";
+import {
+  StatusDropdown,
+  PriorityDropdown,
+  TypeDropdown,
+  SprintDropdown,
+} from "../../general-components/dropdown/index";
 
 const Details = ({
   projectId,
@@ -58,8 +64,13 @@ const Details = ({
         onClick={() => setIsDetailsOpen(!isDetailsOpen)}
       >
         <p className="text-sm font-bold text-gray-600">Details</p>
-        <div className="text-gray-500 hover:text-gray-700">
-          {isDetailsOpen ? <FaChevronUp /> : <FaChevronDown />}
+        <div className="flex items-center gap-2">
+          <div className="text-gray-500 hover:text-gray-700">
+            <CiSettings className="text-xl" />
+          </div>
+          <div className="text-gray-500 hover:text-gray-700">
+            {isDetailsOpen ? <FaChevronUp /> : <FaChevronDown />}
+          </div>
         </div>
       </div>
       {isDetailsOpen && (
@@ -84,68 +95,46 @@ const Details = ({
           </div>
 
           {/* Sprint */}
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Sprint</span>
-            <select
-              value={selectedIssue.sprint_id || ""}
-              onChange={(e) => handleUpdateIssue("sprint_id", e.target.value)}
-              className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-            >
-              <option value="">None</option>
-              {sprints?.map((sprint) => (
-                <option key={sprint.id} value={sprint.id}>
-                  {sprint.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <SprintDropdown
+            projectId={projectId}
+            issueId={selectedIssue.id}
+            currentSprint={
+              sprints.find((sprint) => sprint.id === selectedIssue.sprint_id) ||
+              sprints[0]
+            }
+          />
 
           {/* Priority */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Priority</span>
-            <select
-              value={selectedIssue.priority}
-              onChange={(e) => handleUpdateIssue("priority", e.target.value)}
-              className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-            >
-              {priorityOptions.map((option) => (
-                <option key={option.name} value={option.name}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
+            <PriorityDropdown
+              projectId={projectId}
+              issueId={selectedIssue.id}
+              priority={selectedIssue.priority}
+            />
           </div>
 
           {/* Type */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Type</span>
-            <select
-              value={selectedIssue.type}
-              onChange={(e) => handleUpdateIssue("type", e.target.value)}
-              className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-            >
-              {typeOptions.map((option) => (
-                <option key={option.name} value={option.name}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
+            <TypeDropdown
+              projectId={projectId}
+              issueId={selectedIssue.id}
+              type={selectedIssue.type}
+            />
           </div>
 
           {/* Status/Column */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-600">Status</span>
-            <select
-              value={selectedIssue.column?.id || ""}
-              onChange={(e) => handleUpdateIssue("column_id", e.target.value)}
-              className="w-2/3 rounded border border-gray-300 px-2 py-1 text-sm"
-            >
-              {columns?.map((col) => (
-                <option key={col.id} value={col.id}>
-                  {col.name}
-                </option>
-              ))}
-            </select>
+            <StatusDropdown
+              projectId={projectId}
+              issueId={selectedIssue.id}
+              column={
+                columns.find((col) => col.id === selectedIssue.column.id) ||
+                columns[0]
+              }
+            />
           </div>
 
           {/* Assignee Selection */}

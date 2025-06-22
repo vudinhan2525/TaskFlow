@@ -19,7 +19,6 @@ import { IoIosPrint } from "react-icons/io";
 import { LuCircleArrowRight } from "react-icons/lu";
 import { CiCircleChevUp } from "react-icons/ci";
 
-
 export const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   id: <FaPlus color="#626f86" />,
   project_id: <FaPlus color="#626f86" />,
@@ -28,7 +27,7 @@ export const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   description: <MdOutlineDescription color="#626f86" />,
   column: <LuCircleArrowRight color="#626f86" />,
   priority: <CiCircleChevUp color="#626f86" />,
-  type:<div/>,
+  type: <div />,
   team_id: <RiTeamFill color="#626f86" />,
   sprint_id: <IoIosPrint color="#626f86" />,
   assignee_id: <CiAt color="#626f86" />,
@@ -78,8 +77,7 @@ export const priorityOptions = [
   { name: "Low", icon: <FcLowPriority size={20} /> },
 ];
 
-export 
-const statusOptions = [
+export const statusOptions = [
   {
     label: "TO DO",
     key: "TO DO",

@@ -105,8 +105,6 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   }, [isEditing, initialIssue, reset]);
 
   const handleFormSubmit: SubmitHandler<IssueFormData> = async (data) => {
-    console.log("Form data:", data);
-    console.log("Project columns:", columns);
     
     // Ensure column_id is set
     if (!data.column_id && columns.length > 0) {
