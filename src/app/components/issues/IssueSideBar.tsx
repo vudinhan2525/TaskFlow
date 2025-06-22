@@ -1,15 +1,8 @@
 import React, { useState, useRef } from "react";
-import { Dropdown } from "antd";
 import {
-  FaChevronDown,
-  FaChevronUp,
-  FaPaperclip,
   FaPlus,
-  FaTimes,
   FaTrash,
 } from "react-icons/fa";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
@@ -17,16 +10,14 @@ import { toast } from "react-toastify";
 import { formatDate } from "@libs/utils/date";
 import ActivityIssue from "@libs/app/components/issues/activityIssue";
 import { useNavigate } from "react-router-dom";
-import { PiNotePencil } from "react-icons/pi";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
 import { AiOutlineLike } from "react-icons/ai";
 import { CiShare2 } from "react-icons/ci";
 import { BsThreeDots } from "react-icons/bs";
 import { IoIosClose } from "react-icons/io";
-import TextEditor from "../projects/backlog/TextEditor";
+import TextEditor from "../projects/backlog/textEditor";
 import { TbHexagon3D } from "react-icons/tb";
-import { ISprint } from "@libs/types/index";
 import AttachmentCard from "../projects/backlog/attachmentCard";
 import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
 import Details from "../projects/backlog/details";
@@ -85,7 +76,6 @@ const IssueSideBar: React.FC = () => {
     },
   ];
   const navigate = useNavigate();
-  const { projectMembers } = useProjectMembers(selectedIssue?.project_id || "");
   const { updateIssueAsync } = useUpdateIssue({
     projectId: selectedIssue?.project_id || "",
   });

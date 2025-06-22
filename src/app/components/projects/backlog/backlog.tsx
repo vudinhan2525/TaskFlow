@@ -9,15 +9,14 @@ import {
   useSensor,
   PointerSensor,
   closestCenter,
-  DragEndEvent,
   DragStartEvent,
+  DragOverEvent,
+  DragEndEvent,
   DragOverlay,
 } from "@dnd-kit/core";
 
 import {
   SortableContext,
-
-  // sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
@@ -54,6 +53,13 @@ const BackLog = ({
   const { projectId = "" } = useParams();
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [sprints, setSprints] = useState<ISprintIssues[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  // item = sprint or issue
+  const [overItemId, setOverItemId] = useState<string | null>(null);
+  const { isLoading: isLoadingColumns } = useProjectColumns(projectId);
+  const { updateIssueAsync } = useUpdateIssue({ projectId });
+
+  const sensors = useSensor(PointerSensor);
 
   useEffect(() => {
     setSprints(
@@ -67,14 +73,6 @@ const BackLog = ({
       }),
     );
   }, [initialIssues, initialSprints]);
-  const { isLoading: isLoadingColumns } = useProjectColumns(projectId);
-  const { updateIssueAsync } = useUpdateIssue({ projectId });
-
-  const sensors = useSensor(PointerSensor);
-
-  if (isLoadingColumns || isLoadingSprints || isLoadingIssues) {
-    return <div>Loading...</div>;
-  }
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -87,11 +85,19 @@ const BackLog = ({
         break;
       }
     }
+    setIsDragging(true);
   };
 
-  // const handleDragOver = (event: DragOverEvent) => {};
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+
+    setOverItemId(over?.id as string);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
+    setIsDragging(false);
+    setActiveIssue(null);
+    setOverItemId(null);
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -195,15 +201,17 @@ const BackLog = ({
         }
       }
     }
-    setActiveIssue(null);
   };
 
+  if (isLoadingColumns || isLoadingSprints || isLoadingIssues) {
+    return <div>Loading...</div>;
+  }
   return (
     <DndContext
       sensors={[sensors]}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
-      // onDragOver={handleDragOver}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <SortableContext
@@ -218,6 +226,8 @@ const BackLog = ({
               key={sprint.id}
               sprint={sprint}
               projectId={projectId}
+              overItemId={overItemId}
+              isDragging={isDragging}
             />
           ))}
         </div>
@@ -249,7 +259,7 @@ const IssueCardOverlay = memo(({ issue }: { issue: IIssue }) => {
           </div>
           <span className="text-xs">{issue.title}</span>
         </div>
-        <span className="text-xs">{issue.description}</span>
+        <span className="text-xs">{issue.summary}</span>
       </div>
     </div>
   );

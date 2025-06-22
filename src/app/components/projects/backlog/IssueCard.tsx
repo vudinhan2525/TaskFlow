@@ -1,11 +1,7 @@
 import { IIssue } from "@libs/types/issue";
 import { FaCheck, FaPlus } from "react-icons/fa";
-import RenderStatusCell from "../list/common/RenderStatusCell";
-import ColumnDropdown from "../list/listTable/ColumnDropdown";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { useState, useRef, useEffect, memo } from "react";
-import { typeOptions, priorityOptions } from "../../../../constants/list";
-import UserAvatar from "../../general-components/user/UserAvatar";
 import { FaEdit } from "react-icons/fa";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -13,6 +9,12 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { BsThreeDots } from "react-icons/bs";
+import {
+  StatusDropdown,
+  PriorityDropdown,
+  TypeDropdown,
+  UserDropdown,
+} from "../../general-components/dropdown/index";
 
 const IssueCard = memo(
   ({
@@ -45,9 +47,7 @@ const IssueCard = memo(
 
     const { updateIssueAsync } = useUpdateIssue({ projectId });
     const { columns } = useProjectColumns(projectId);
-    const [issueSummary, setIssueSummary] = useState(
-      issue?.summary,
-    );
+    const [issueSummary, setIssueSummary] = useState(issue?.summary);
     const [isEditingSummary, setIsEditingSummary] = useState(false);
 
     const summaryInputRef = useRef<HTMLInputElement>(null);
@@ -65,17 +65,6 @@ const IssueCard = memo(
         summaryInputRef.current.focus();
       }
     }, [summaryInputRef, isEditingSummary]);
-
-    const getPriorityIcon = (priority: string) => {
-      const issuePriority = priorityOptions.find(
-        (option) => option.name === priority,
-      );
-      return issuePriority?.icon;
-    };
-    const getIssueTypeIcon = (type: string) => {
-      const issueType = typeOptions.find((option) => option.name === type);
-      return issueType?.icon;
-    };
 
     const handleClickEditDescription = () => {
       setIsEditingSummary(true);
@@ -147,15 +136,17 @@ const IssueCard = memo(
       setSelectedIssue(issue);
       navigate(`/projects/${projectId}/backlog?selectedIssue=${issue.id}`);
     };
+
     return (
       <div
         ref={setNodeRef}
         style={style}
         {...attributes}
         onPointerDown={handlePointerDown}
-        className={`group border-y-1 border-gray-200 bg-white px-2 py-1 shadow-sm transition-all duration-200 hover:bg-gray-100`}
+        className={`group bg-white px-2 py-1 shadow-sm transition-all duration-200 hover:bg-gray-100`}
       >
         <div className="flex items-center justify-between">
+          {/* IssueCardLeft */}
           <div className="flex flex-1 items-center justify-start gap-x-2">
             <div className="flex w-full cursor-pointer flex-row items-center gap-2">
               <input
@@ -210,7 +201,7 @@ const IssueCard = memo(
               <div
                 className={`block text-sm font-light text-gray-500 ${issue?.column?.name === "DONE" ? "line-through" : "underline"}`}
               >
-                {issue?.title}
+                {issue?.title}, {issue.id}
               </div>
 
               <div
@@ -260,99 +251,57 @@ const IssueCard = memo(
               </div>
             </div>
           </div>
-
+          {/* IssueCardRight */}
           <div
-            className="flex w-[35%] min-w-[310px] items-center justify-between"
+            className="grid w-[35%] max-w-[40%] grid-cols-12"
             onPointerDown={stopPropagation}
             onClick={(e) => e.stopPropagation()}
           >
             {/* status dropdown */}
 
-            <ColumnDropdown
-              items={columns.map((column) => ({
-                value: column.name,
-                style: {
-                  padding: 0,
-                  background: "white",
-                },
-                label: (
-                  <div
-                    key={column.id}
-                    className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
-                  >
-                    <RenderStatusCell column={column} />
-                  </div>
-                ),
-                key: column.id,
-                onClick: () => handleChangeIssueValue("column_id", column.id),
-              }))}
-              children={
-                <div className="flex justify-start px-2">
-                  <RenderStatusCell column={issue?.column} />
-                </div>
-              }
-              currentItem={issue?.column?.name}
-            />
-
-            <div className="flex flex-row items-center gap-x-2">
-              {/* type dropdown */}
-              <ColumnDropdown
-                items={typeOptions.map((option) => ({
-                  value: option.name,
-                  style: {
-                    padding: 0,
-                    background: "white",
-                  },
-                  label: (
-                    <div className="flex items-center space-x-2 p-2 pr-4 hover:cursor-pointer hover:bg-gray-300">
-                      {getIssueTypeIcon(option.name)}
-                      <span className="text-sm font-light">{option.name}</span>
-                    </div>
-                  ),
-                  key: option.name,
-                  onClick: () => handleChangeIssueValue("type", option.name),
-                }))}
-                currentItem={issue?.type}
-                children={
-                  <div className="flex items-center rounded-md p-2 hover:cursor-pointer hover:bg-gray-300">
-                    {getIssueTypeIcon(issue?.type)}
-                  </div>
+            <div className="col-span-4 flex items-center">
+              <StatusDropdown
+                projectId={projectId}
+                issueId={issue.id}
+                column={
+                  columns.find((col) => col.id === issue.column.id) ||
+                  columns[0]
                 }
               />
+            </div>
 
-              {/* priority dropdown */}
-              <ColumnDropdown
-                items={priorityOptions.map((option) => ({
-                  value: option.name,
-                  style: {
-                    padding: 0,
-                    background: "white",
-                  },
-                  label: (
-                    <div className="flex items-center space-x-2 p-1 hover:cursor-pointer hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300">
-                      {getPriorityIcon(option.name)}
-                      <span className=" ">{option.name}</span>
-                    </div>
-                  ),
-                  key: option.name,
-                  onClick: () =>
-                    handleChangeIssueValue("priority", option.name),
-                }))}
-                currentItem={issue?.priority}
-                children={
-                  <div className="flex items-center rounded-md p-2 hover:cursor-pointer hover:bg-gray-300">
-                    {getPriorityIcon(issue?.priority)}
-                  </div>
-                }
+            {/* type dropdown */}
+            <div className="col-span-3 flex items-center">
+              <TypeDropdown
+                projectId={projectId}
+                issueId={issue.id}
+                type={issue?.type}
               />
+            </div>
 
-              <div>{issue.story_point}</div>
-
-              <UserAvatar
-                userId={issue?.assignee_id}
-                size={24}
-                isDisplayName={false}
+            {/* priority dropdown */}
+            <div className="col-span-1 flex items-center">
+              <PriorityDropdown
+                projectId={projectId}
+                issueId={issue.id}
+                priority={issue?.priority}
               />
+            </div>
+
+            <div className="col-span-1 flex items-center">
+              {issue.story_point}
+            </div>
+
+            <div className="col-span-2 flex items-center">
+              <UserDropdown
+                projectId={projectId}
+                issueId={issue.id}
+                selectedUserId={issue?.assignee_id || ""}
+                columnField="assignee_id"
+              />
+            </div>
+
+            <div className="col-span-1 flex items-center justify-end">
               <div className="cursor-pointer rounded-sm p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-300">
                 <BsThreeDots />
               </div>

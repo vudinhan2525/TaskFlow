@@ -3,26 +3,26 @@ import { FaPlus } from "react-icons/fa";
 import { Table } from "antd";
 import type { TableProps, TableColumnType } from "antd";
 import { RiTeamFill } from "react-icons/ri";
-import { IIssue, IssuePriority } from "@libs/types/issue";
+import { IIssue, IssuePriority, IssueType } from "@libs/types/issue";
 import { format } from "date-fns";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import ColumnInputFiled from "./listTable/ColumnInputFiled";
-import ColumnDropdown from "./listTable/ColumnDropdown";
-import { IProjectMember } from "@libs/types/projectMember";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import RenderStatusCell from "../../general-components/RenderStatusCell";
-import {
-  columnsIcon,
-  priorityOptions,
-  typeOptions,
-} from "../../../../constants/list";
-import { ISprint } from "@libs/types";
+import { ColumnDropdown } from "../../general-components/dropdown/index";
+
+import { columnsIcon } from "../../../../constants/list";
 import TableColumn from "./listTable/TableColumn";
-import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
 import { PaginationRes } from "@libs/apis/api";
 import { useNavigate } from "react-router-dom";
 import RenderTextCell from "./common/RenderTextCell";
+import {
+  TypeDropdown,
+  StatusDropdown,
+  PriorityDropdown,
+  SprintDropdown,
+} from "../../general-components/dropdown/index";
+import UserDropdown from "../../general-components/dropdown/userDropdown";
+
 interface ListTableProps {
   isLoading: boolean;
   isFetching: boolean;
@@ -50,7 +50,6 @@ const ListTable = ({
 }: ListTableProps) => {
   const { columns } = useProjectColumns(projectId || "");
   const { sprints } = useProjectSprints(projectId || "");
-  const { projectMembers } = useProjectMembers(projectId || "");
   const navigate = useNavigate();
   const [visibleColumns, setVisibleColumns] = useState<
     { key: keyof IIssue; visible: boolean }[]
@@ -93,55 +92,10 @@ const ListTable = ({
       handleVisible,
       handleSort,
       (_, { id, type }) => (
-        <ColumnDropdown
-          items={typeOptions.map((option) => ({
-            value: option.name,
-            style: {
-              padding: 0,
-              background: "white",
-            },
-            label: (
-              <div
-                key={option.id}
-                className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-200 ${
-                  option.name === type &&
-                  "border-l-2 border-emerald-500 bg-gray-300"
-                }`}
-              >
-                <div
-                  className={`flex min-w-[100px] items-center justify-center gap-1 rounded-md py-1 ${option.bgColor}`}
-                >
-                  {option.icon}
-                  <p className={`text-[13px] font-bold ${option.textColor}`}>
-                    {option.name}
-                  </p>
-                </div>
-              </div>
-            ),
-            key: option.id,
-            onClick: () =>
-              handleChangeCellValue(id, "type" as keyof IIssue, option.name),
-          }))}
-          children={
-            <div className="flex min-h-[50px] items-center justify-center px-[12px]">
-              <div
-                className={`flex h-fit min-w-[100px] items-center justify-center gap-1 rounded-md py-1 ${
-                  typeOptions.find((option) => option.name === type)?.bgColor
-                }`}
-              >
-                {typeOptions.find((option) => option.name === type)?.icon}
-                <p
-                  className={`text-[13px] font-bold ${
-                    typeOptions.find((option) => option.name === type)
-                      ?.textColor
-                  }`}
-                >
-                  {type ? type : "-"}
-                </p>
-              </div>
-            </div>
-          }
-          currentItem={type}
+        <TypeDropdown
+          projectId={projectId}
+          issueId={id}
+          type={type as IssueType}
         />
       ),
       {
@@ -211,31 +165,10 @@ const ListTable = ({
       handleVisible,
       handleSort,
       (_, { id, column }) => (
-        <ColumnDropdown
-          items={columns.map((column) => ({
-            value: column.name,
-            style: {
-              padding: 0,
-              background: "white",
-            },
-            label: (
-              <div
-                key={column.id}
-                className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
-              >
-                <RenderStatusCell column={column} />
-              </div>
-            ),
-            key: column.id,
-            onClick: () =>
-              handleChangeCellValue(id, "column_id" as keyof IIssue, column.id),
-          }))}
-          children={
-            <div className="flex justify-start px-2">
-              <RenderStatusCell column={column} />
-            </div>
-          }
-          currentItem={column.name}
+        <StatusDropdown
+          projectId={projectId}
+          issueId={id}
+          column={columns.find((col) => col.id === column.id) || columns[0]}
         />
       ),
       {
@@ -252,38 +185,10 @@ const ListTable = ({
       handleVisible,
       handleSort,
       (_, { id, priority }) => (
-        <ColumnDropdown
-          items={priorityOptions.map((option) => {
-            return {
-              value: option.name,
-              key: option.name,
-              style: {
-                padding: 0,
-                background: "white",
-              },
-              label: (
-                <div
-                  className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
-                >
-                  {option.icon}
-                  <p className="text-sm font-medium text-gray-800">{option.name}</p>
-                </div>
-              ),
-              onClick: () => {
-                handleChangeCellValue(
-                  id,
-                  "priority" as keyof IIssue,
-                  option.name as IssuePriority,
-                );
-              },
-            };
-          })}
-          currentItem={priority}
-          children={
-            <div className="flex items-center justify-start gap-2 rounded-md p-2 hover:cursor-pointer">
-              {priorityOptions.find((option) => option.name === priority)?.icon}
-            </div>
-          }
+        <PriorityDropdown
+          projectId={projectId}
+          issueId={id}
+          priority={priority as IssuePriority}
         />
       ),
       {
@@ -300,39 +205,11 @@ const ListTable = ({
       handleVisible,
       handleSort,
       (_, { id, sprint_id }) => (
-        <ColumnDropdown
-          items={sprints.map((sprint: ISprint) => ({
-            value: sprint.name,
-            key: sprint.id,
-            style: {
-              padding: 0,
-              background: "white",
-            },
-            label: (
-              <div
-                className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
-              >
-                <p className="font-medium text-sm">{sprint.name}</p>
-              </div>
-            ),
-            onClick: () => {
-              handleChangeCellValue(
-                id,
-                "sprint_id" as keyof IIssue,
-                sprint.id as string,
-              );
-            },
-          }))}
-          currentItem={
-            sprints.find((sprint: ISprint) => sprint.id === sprint_id)?.name
-          }
-          children={
-            <RenderTextCell
-              text={
-                sprints.find((sprint: ISprint) => sprint.id === sprint_id)
-                  ?.name
-              }
-            />
+        <SprintDropdown
+          projectId={projectId}
+          issueId={id}
+          currentSprint={
+            sprints.find((sprint) => sprint.id === sprint_id) || sprints[0]
           }
         />
       ),
@@ -351,49 +228,11 @@ const ListTable = ({
       handleSort,
       (_, { id, assignee_id }) => (
         <div className="px-4">
-          <ColumnDropdown
-            items={
-              projectMembers &&
-              projectMembers
-                .map((member: IProjectMember) => ({
-                  value: member.user?.first_name + " " + member.user?.last_name,
-                  key: member.user_id,
-
-                  label: (
-                    <UserAvatar userId={member.user_id} isDisplayName={true} />
-                  ),
-                  onClick: () => {
-                    handleChangeCellValue(
-                      id,
-                      "assignee_id" as keyof IIssue,
-                      member.user_id as string,
-                    );
-                  },
-                }))
-                .concat({
-                  value: "Unasigned",
-                  key: "Unasigned",
-
-                  label: <UserAvatar userId={""} isDisplayName={true} />,
-                  onClick: () => {
-                    handleChangeCellValue(
-                      id,
-                      "assignee_id" as keyof IIssue,
-                      "" as string,
-                    );
-                  },
-                })
-            }
-            // currentItem={
-            //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
-            //     .first_name +
-            //   " " +
-            //   projectMembers?.find((member) => member.user.id === assignee_id)?.user
-            //     .last_name}
-
-            children={
-              <UserAvatar userId={assignee_id || ""} isDisplayName={true} />
-            }
+          <UserDropdown
+            projectId={projectId}
+            issueId={id}
+            selectedUserId={assignee_id || ""}
+            columnField="assignee_id"
           />
         </div>
       ),
@@ -411,48 +250,11 @@ const ListTable = ({
       handleVisible,
       handleSort,
       (_, { id, reporter_id }) => (
-        <ColumnDropdown
-          items={
-            projectMembers &&
-            projectMembers
-              .map((member: IProjectMember) => ({
-                value: member.user?.first_name + " " + member.user?.last_name,
-                key: member.user_id,
-                label: (
-                  <UserAvatar userId={member.user_id} isDisplayName={true} />
-                ),
-                onClick: () => {
-                  handleChangeCellValue(
-                    id,
-                    "reporter_id" as keyof IIssue,
-                    member.user_id as string,
-                  );
-                },
-              }))
-              .concat({
-                value: "Unasigned",
-                key: "Unasigned",
-
-                label: <UserAvatar isDisplayName={true} />,
-                onClick: () => {
-                  handleChangeCellValue(
-                    id,
-                    "reporter_id" as keyof IIssue,
-                    "" as string,
-                  );
-                },
-              })
-          }
-          // currentItem={
-          //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
-          //     .first_name +
-          //   " " +
-          //   projectMembers?.find((member) => member.user.id === reporter_id)?.user
-          //     .last_name}
-
-          children={
-            <UserAvatar userId={reporter_id || ""} isDisplayName={true} />
-          }
+        <UserDropdown
+          projectId={projectId}
+          issueId={id}
+          selectedUserId={reporter_id || ""}
+          columnField="reporter_id"
         />
       ),
       {
@@ -574,7 +376,7 @@ const ListTable = ({
       (_, { created_at }) => (
         <RenderTextCell
           text={format(new Date(created_at), "MM/dd/yyyy")}
-          className="text-sm p-1 font-medium"
+          className="p-1 text-sm font-medium"
         />
       ),
       {
@@ -593,7 +395,7 @@ const ListTable = ({
       (_, { updated_at }) => (
         <RenderTextCell
           text={format(new Date(updated_at), "MM/dd/yyyy")}
-          className="text-sm p-1 font-medium"
+          className="p-1 text-sm font-medium"
         />
       ),
       {
@@ -672,7 +474,6 @@ const ListTable = ({
         rowKey="id"
         loading={isLoading || isFetching}
         scroll={{ x: "max-content", y: 300 }}
-
         pagination={{
           current: pagination?.current_page || 1,
           pageSize: pagination?.limit || 12,
@@ -729,4 +530,3 @@ const ListTable = ({
 };
 
 export default ListTable;
-
