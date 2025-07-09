@@ -10,6 +10,7 @@ import RegisterPage from "@libs/app/pages/auth/registerPage/registerPage";
 import ProjectPage from "@libs/app/pages/project/projectPage/projectPage";
 import SettingsPage from "@libs/app/pages/settings/settingsPage";
 import SprintDetail from "@libs/app/components/sprints/SprintDetail";
+import ChatPage from "@libs/app/pages/chat/ChatPage";
 import AdminLoginPage from "@libs/app/pages/admin/login/AdminLoginPage";
 import AdminLayout from "@libs/app/layouts/adminLayout";
 import AdminRoute from "./AdminRoute";
@@ -99,6 +100,9 @@ const Router = (): React.ReactElement => {
 
           {/* User settings */}
           <Route path="settings" element={<SettingsPage />} />
+
+          {/* Chat route */}
+          <Route path="chat" element={<ChatPage />} />
 
           {/* Fallback for user routes */}
           <Route
