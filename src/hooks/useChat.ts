@@ -1,5 +1,5 @@
-// React hook for chat WebSocket logic: rooms, messages, typing, replies, history
 import { useEffect, useRef, useState, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
 
 export type MessageType = "DIRECT" | "GROUP";
 
@@ -25,15 +25,18 @@ interface UseChatOptions {
   userId: string;
   userName: string;
   wsUrl?: string;
+  authToken?: string;
 }
 
 export function useChat({
   userId,
   userName,
-  wsUrl = "ws://localhost:5003",
+  wsUrl = "http://localhost:5003",
+  authToken,
 }: UseChatOptions) {
-  const ws = useRef<WebSocket | null>(null);
+  const socket = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
   const [currentRoom, setCurrentRoom] = useState<string | null>(null);
   const [messages, setMessages] = useState<Record<string, MessageResponse[]>>(
@@ -41,109 +44,153 @@ export function useChat({
   );
   const [typingUsers, setTypingUsers] = useState<Record<string, string[]>>({});
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const retryCount = useRef(0);
+  const maxRetries = 3;
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Connect WebSocket
   useEffect(() => {
-    ws.current = new window.WebSocket(wsUrl);
-    ws.current.onopen = () => setConnected(true);
-    ws.current.onclose = () => setConnected(false);
-    ws.current.onerror = () => setConnected(false);
+    socket.current = io(wsUrl, {
+      withCredentials: true,
+      extraHeaders: authToken
+        ? { Authorization: `Bearer ${authToken}` }
+        : undefined,
+      transports: ["websocket"], // Force WebSocket to avoid polling
+    });
 
-    ws.current.onmessage = (event) => {
-      console.log("WebSocket message:", event.data);
-      try {
-        const { event: evt, data } = JSON.parse(event.data);
-        switch (evt) {
-          case "connection_ack":
-            // Optionally handle
-            break;
-          case "roomsList":
-            console.log("Setting rooms to:", data);
-            setRooms(data);
-            break;
-          case "messageReceived":
-            setMessages((prev) => {
-              const roomId = data.roomId;
-              return {
-                ...prev,
-                [roomId]: [...(prev[roomId] || []), data],
-              };
-            });
-            break;
-          case "messageHistory":
-            console.log(
-              "Setting messages for room:",
-              data.roomId,
-              data.messages,
-            );
-            setMessages((prev) => ({
-              ...prev,
-              [data.roomId]: [
-                ...(data.messages || []),
-                ...(prev[data.roomId] || []),
-              ],
-            }));
-            setLoadingHistory(false);
-            break;
-          case "userStartedTyping":
-            setTypingUsers((prev) => {
-              const { roomId, userId: typingId } = data;
-              if (typingId === userId) return prev;
-              return {
-                ...prev,
-                [roomId]: Array.from(
-                  new Set([...(prev[roomId] || []), typingId]),
-                ),
-              };
-            });
-            break;
-          case "userJoined":
-            // Optionally handle
-            break;
-          case "error":
-            // Optionally handle error
-            break;
+    socket.current.on("connect", () => {
+      console.log("Socket.IO connected");
+      setConnected(true);
+      setConnectionError(null);
+      retryCount.current = 0;
+    });
+
+    socket.current.on("disconnect", () => {
+      console.log("Socket.IO disconnected");
+      setConnected(false);
+      setConnectionError("Socket.IO connection closed");
+    });
+
+    socket.current.on("connect_error", (error) => {
+      console.error("Socket.IO connection error:", error.message, error.stack);
+      setConnected(false);
+      setConnectionError(
+        `Failed to connect to Socket.IO server: ${error.message}`,
+      );
+    });
+
+    socket.current.on("connection_ack", (data) => {
+      console.log("Connection acknowledged:", data);
+    });
+
+    socket.current.on("roomsList", (data) => {
+      console.log("Received roomsList:", data);
+      if (Array.isArray(data)) {
+        setRooms(data);
+        if (data.length === 0) {
+          console.warn("No rooms returned from backend");
         }
-      } catch {}
-    };
+      } else {
+        console.error("Invalid roomsList data:", data);
+        setConnectionError("Invalid rooms data received");
+      }
+      retryCount.current = 0;
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
+    });
+
+    socket.current.on("roomCreated", (data) => {
+      console.log("Room created:", data);
+      setRooms((prev) => [...prev, data]);
+    });
+
+    socket.current.on("messageReceived", (data) => {
+      console.log("Message received:", data);
+      setMessages((prev) => {
+        const roomId = data.roomId;
+        return {
+          ...prev,
+          [roomId]: [...(prev[roomId] || []), data],
+        };
+      });
+    });
+
+    socket.current.on("messageHistory", (data) => {
+      console.log(
+        "Received messageHistory for room:",
+        data.roomId,
+        data.messages,
+      );
+      setMessages((prev) => ({
+        ...prev,
+        [data.roomId]: [...(data.messages || []), ...(prev[data.roomId] || [])],
+      }));
+      setLoadingHistory(false);
+    });
+
+    socket.current.on("userStartedTyping", (data) => {
+      console.log("User started typing:", data);
+      setTypingUsers((prev) => {
+        const { roomId, userId: typingId } = data;
+        if (typingId === userId) return prev;
+        return {
+          ...prev,
+          [roomId]: Array.from(new Set([...(prev[roomId] || []), typingId])),
+        };
+      });
+    });
+
+    socket.current.on("userJoined", (data) => {
+      console.log("User joined:", data);
+    });
+
+    socket.current.on("error", (data) => {
+      console.error("Backend error:", data.message);
+      setConnectionError(data.message || "Backend error occurred");
+    });
 
     return () => {
-      ws.current?.close();
+      socket.current?.disconnect();
+      if (retryTimeoutRef.current) clearTimeout(retryTimeoutRef.current);
     };
-  }, [wsUrl, userId]);
+  }, [wsUrl, userId, authToken]);
 
-  // Fetch rooms from backend via WebSocket
   const fetchRooms = useCallback(() => {
-    console.log("fetchRooms called, ws.current:", ws.current);
-    if (ws.current && ws.current.readyState === 1) {
-      console.log("Sending getRooms event via WebSocket");
-      ws.current.send(JSON.stringify({ event: "getRooms" }));
-    } else {
-      console.log("WebSocket not ready, cannot send getRooms");
+    if (!socket.current || !socket.current.connected) {
+      console.warn("Socket.IO not connected, cannot send getRooms");
+      if (retryCount.current < maxRetries) {
+        retryCount.current += 1;
+        const delay = Math.pow(2, retryCount.current) * 1000;
+        console.log(
+          `Retrying fetchRooms (${retryCount.current}/${maxRetries}) in ${delay}ms...`,
+        );
+        retryTimeoutRef.current = setTimeout(fetchRooms, delay);
+      } else {
+        setConnectionError("Failed to fetch rooms after multiple attempts");
+      }
+      return;
     }
+    console.log("Sending getRooms event via Socket.IO");
+    socket.current.emit("getRooms");
   }, []);
 
-  // Send event
   const sendEvent = useCallback((event: string, data: any) => {
-    if (ws.current && ws.current.readyState === 1) {
-      ws.current.send(JSON.stringify({ event, data }));
+    if (socket.current && socket.current.connected) {
+      console.log(`Sending ${event} event:`, data);
+      socket.current.emit(event, data);
+    } else {
+      console.warn(`Cannot send ${event}: Socket.IO not connected`);
     }
   }, []);
 
-  // Join room
   const joinRoom = useCallback(
     (roomId: string) => {
       setCurrentRoom(roomId);
       sendEvent("joinRoom", { roomId });
-
-      // Load history
       setLoadingHistory(true);
       sendEvent("getMessageHistory", { roomId, limit: 30 });
     },
     [sendEvent],
   );
 
-  // Send message
   const sendMessage = useCallback(
     (
       roomId: string,
@@ -158,7 +205,14 @@ export function useChat({
     [sendEvent],
   );
 
-  // Load more history (pagination)
+  const createRoom = useCallback(
+    (name: string, type: MessageType, members: string[]) => {
+      console.log("Creating room:", { name, type, members });
+      sendEvent("createRoom", { name, type, members });
+    },
+    [sendEvent],
+  );
+
   const loadHistory = useCallback(
     (roomId: string) => {
       const msgs = messages[roomId] || [];
@@ -173,12 +227,20 @@ export function useChat({
     [messages, sendEvent],
   );
 
-  // Typing event
-  // Remove startTyping if backend does not support typing events
-  const startTyping = () => {};
+  const startTyping = useCallback(() => {
+    // Implement if backend supports typing events
+  }, []);
+
+  useEffect(() => {
+    if (connected) {
+      console.log("Socket.IO connected, calling fetchRooms...");
+      fetchRooms();
+    }
+  }, [connected, fetchRooms]);
 
   return {
     connected,
+    connectionError,
     rooms,
     setRooms,
     currentRoom,
@@ -187,9 +249,10 @@ export function useChat({
     typingUsers,
     joinRoom,
     sendMessage,
+    createRoom,
     loadHistory,
     loadingHistory,
     startTyping,
-    fetchRooms, // expose fetchRooms to trigger room fetching
+    fetchRooms,
   };
 }
