@@ -6,7 +6,7 @@ export const useNotifications = (userId: string) => {
   const { data: notificationsData = [], refetch } = useQuery({
     queryKey: ["notifications", userId],
     queryFn: async () => {
-      const response = await notifications.list();
+      const response = await notifications.list(userId);
       return response.data.data as INotification[];
     },
     enabled: !!userId,

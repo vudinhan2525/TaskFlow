@@ -1,4 +1,4 @@
-import api, { ResponseApi } from "@libs/apis/api";
+import api, { ResponseApi } from "@libs/apis/notiApi";
 import { INotification } from "@libs/types/notification";
 
 const config = {
@@ -9,7 +9,12 @@ const config = {
 };
 
 export const notifications = {
-  list: () => api.get<ResponseApi<INotification[]>>(`/notifications`, config),
+  list: (userId: string) =>
+    api.post<ResponseApi<INotification[]>>(
+      `/notifications/get-all`,
+      { user_id: userId },
+      config,
+    ),
 
   markAsRead: (notificationId: string) =>
     api.put<ResponseApi<INotification>>(
