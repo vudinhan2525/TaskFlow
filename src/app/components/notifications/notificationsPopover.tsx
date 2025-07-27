@@ -2,23 +2,13 @@ import React from "react";
 import { FaBell } from "react-icons/fa";
 import { Popover } from "antd";
 import NotificationList from "./notificationList";
-import { useNotifications } from "@libs/hooks/useNotification";
+import { useNotificationContext } from "@libs/app/context/notification.context";
 
-interface NotificationsPopoverProps {
-  userId: string;
-}
-
-const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({
-  userId,
-}) => {
-  const { unreadCount } = useNotifications(userId);
+const NotificationsPopover: React.FC = () => {
+  const { unreadCount } = useNotificationContext();
 
   return (
-    <Popover
-      content={<NotificationList userId={userId} />}
-      trigger="click"
-      placement="bottom"
-    >
+    <Popover content={<NotificationList />} trigger="click" placement="bottom">
       <div className="relative cursor-pointer rounded-full p-2 text-gray-600 hover:bg-gray-100">
         <FaBell />
         {unreadCount > 0 && (

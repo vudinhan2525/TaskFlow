@@ -5,13 +5,16 @@ import Router from "./routers/router";
 import { store } from "./store";
 import { queryClient } from "./apis/react-query";
 import { ToastContainer } from "react-toastify";
+import { NotificationProvider } from "@libs/app/context/notification.context";
 
 function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <Router />
+          <NotificationProvider>
+            <Router />
+          </NotificationProvider>
         </BrowserRouter>
         <ToastContainer />
       </QueryClientProvider>
@@ -20,4 +23,3 @@ function App() {
 }
 
 export default App;
-
