@@ -9,7 +9,7 @@ const config = {
   },
 };
 
-export const notifications = {
+export const notificationApi = {
   list: (userId: string) =>
     notiApi.post<ResponseApi<INotification[]>>(
       `/notifications/get-all`,
@@ -17,15 +17,15 @@ export const notifications = {
       config,
     ),
 
-  markAsRead: (notificationId: string) =>
+  update: (notificationId: string, body: { isRead: boolean }) =>
     notiApi.put<ResponseApi<INotification>>(
-      `/notifications/${notificationId}/read`,
-      {},
+      `/notifications/${notificationId}`,
+      body,
       config,
     ),
 
-  markAllAsRead: () =>
-    notiApi.put<ResponseApi<void>>(`/notifications/read-all`, {}, config),
+  updateAll: (body: { userId: string; isRead: boolean }) =>
+    notiApi.post<ResponseApi<void>>(`/notifications/update-all`, body, config),
 
   getUnreadCount: () =>
     notiApi.get<ResponseApi<{ count: number }>>(

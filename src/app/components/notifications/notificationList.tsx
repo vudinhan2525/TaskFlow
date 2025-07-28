@@ -8,7 +8,8 @@ import {
 import { useNotificationContext } from "@libs/app/context/notification.context";
 
 const NotificationList: React.FC = () => {
-  const { notifications, unreadCount } = useNotificationContext();
+  const { notifications, unreadCount, markAsRead, markAsReadAll } =
+    useNotificationContext();
 
   const formatDate = (dateString: string) => {
     try {
@@ -49,7 +50,7 @@ const NotificationList: React.FC = () => {
         </div>
         {unreadCount > 0 && (
           <div
-            onClick={() => {}}
+            onClick={() => markAsReadAll()}
             className="cursor-pointer text-gray-600 hover:text-gray-700"
           >
             Mark all as read
@@ -74,7 +75,7 @@ const NotificationList: React.FC = () => {
                     ? "border-l-4 border-l-blue-500 bg-blue-50"
                     : ""
                 }`}
-                onClick={() => {}}
+                onClick={() => markAsRead(notification.id)}
               >
                 <div className="flex items-start gap-3">
                   {/* Icon */}

@@ -1,4 +1,5 @@
 import { connectSocket } from "@libs/apis/notiApi";
+import { notificationApi } from "@libs/apis/notification";
 import { useAuth } from "@libs/hooks/useAuth";
 import { INotification } from "@libs/types/notification";
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -7,6 +8,8 @@ interface NotificationContextType {
   notifications: INotification[];
   setNotifications: React.Dispatch<React.SetStateAction<INotification[]>>;
   unreadCount: number;
+  markAsRead: (id: string) => void;
+  markAsReadAll: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
@@ -23,18 +26,26 @@ export const NotificationProvider: React.FC<{
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [unreadCount, setUnReadCount] = useState(0);
   const { user } = useAuth();
+  const markAsRead = async (notiId: string) => {
+    setNotifications((notis) =>
+      notis.map((el) => (el.id === notiId ? { ...el, is_read: true } : el)),
+    );
+
+    await notificationApi.update(notiId, { isRead: true });
+  };
+  const markAsReadAll = async () => {
+    if (!user?.data.id) return;
+    setNotifications((notis) => notis.map((el) => ({ ...el, is_read: true })));
+    await notificationApi.updateAll({ userId: user?.data.id, isRead: true });
+  };
+
   useEffect(() => {
     if (user?.data.id) {
       const socket = connectSocket(user?.data.id);
 
       socket.on("refresh-list", (data) => {
         const notis: INotification[] = data?.notifications || [];
-
         setNotifications(notis);
-
-        const unreadCount = notis.filter((n) => !n?.is_read).length;
-
-        setUnReadCount(unreadCount);
       });
 
       return () => {
@@ -43,9 +54,19 @@ export const NotificationProvider: React.FC<{
     }
   }, [user?.data.id]);
 
+  useEffect(() => {
+    const unreadCount = notifications.filter((n) => !n?.is_read).length;
+    setUnReadCount(unreadCount);
+  }, [notifications]);
   return (
     <NotificationContext.Provider
-      value={{ notifications, setNotifications, unreadCount }}
+      value={{
+        notifications,
+        setNotifications,
+        unreadCount,
+        markAsRead,
+        markAsReadAll,
+      }}
     >
       {children}
     </NotificationContext.Provider>
