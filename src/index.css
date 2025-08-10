@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 .ant-popover-inner {
-  @apply !p-2;
+  @apply !p-0;
 }
 /* .ant-table-cell {
   padding: 0px 0px !important;
@@ -13,17 +13,17 @@
 .ant-table-tbody > tr > td {
   padding: 0px 0px !important;
 }
-.ant-table-column-sorters{
+.ant-table-column-sorters {
   padding: 8px 0px !important;
 }
-.ant-table-cell{
+.ant-table-cell {
   padding: 0px 4px !important;
 }
-.ant-dropdown-trigger{
+.ant-dropdown-trigger {
   padding: 0px 0px !important;
 }
 
-.backlog--panel-resize-handle::before{
+.backlog--panel-resize-handle::before {
   content: "";
   position: absolute;
   top: 0;
@@ -33,17 +33,3 @@
   background-color: transparent;
   /* background-color: oklch(0.696 0.17 162.48); */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

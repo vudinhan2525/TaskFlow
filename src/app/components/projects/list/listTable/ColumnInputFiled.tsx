@@ -1,14 +1,12 @@
 import { IIssue } from "@libs/types/issue";
-import { useIssue } from "@libs/hooks/useIssue";
-import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 const ColumnInputFiled = ({
-  issueId,
+  issue,
   field,
   inputType = "text",
   handleChangeCellValue,
 }: {
-  issueId: string;
+  issue: IIssue | undefined;
   field: keyof IIssue;
   inputType?: "text" | "number";
   handleChangeCellValue: (
@@ -17,8 +15,6 @@ const ColumnInputFiled = ({
     value: string,
   ) => void;
 }) => {
-  const { projectId } = useParams<{ projectId: string }>();
-  const { issue } = useIssue(projectId || "", issueId);
   const [width, setWidth] = useState(0);
   const [newValue, setNewValue] = useState(
     issue?.[field] || (inputType === "number" ? 0 : ""),
@@ -33,7 +29,7 @@ const ColumnInputFiled = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewValue(e.target.value);
   };
-
+  if (!issue) return <></>;
   return (
     <input
       style={{
@@ -43,7 +39,7 @@ const ColumnInputFiled = ({
       type={inputType}
       onBlur={(e) => {
         if (e.target.value !== issue?.[field]) {
-          handleChangeCellValue(issueId, field, e.target.value);
+          handleChangeCellValue(issue.id, field, e.target.value);
         }
       }}
       value={newValue?.toString()}

@@ -33,6 +33,10 @@ export interface GetIssuesParams {
   limit?: number | string;
   column_ids?: string[];
   status?: IssueStatus[];
+  due_date_from?: string;
+  due_date_to?: string;
+  created_at_from?: string;
+  created_at_to?: string;
 }
 
 export interface CreateIssueParams {

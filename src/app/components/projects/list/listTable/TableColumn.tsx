@@ -34,6 +34,7 @@ const TableColumn = (
     dataIndex: key,
     key,
     render,
+    width: 150,
     sorter: {
       compare: (a: IIssue, b: IIssue) => {
         const aValue = _.get(a, key);

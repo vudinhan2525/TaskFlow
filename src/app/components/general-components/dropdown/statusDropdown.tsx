@@ -26,7 +26,7 @@ const StatusDropdown = ({
   };
   return (
     <ColumnDropdown
-      items={columns.map((column) => ({
+      items={columns.map((column, index) => ({
         value: column.name,
         style: {
           padding: 0,
@@ -37,7 +37,7 @@ const StatusDropdown = ({
             key={column.id}
             className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
           >
-            <RenderStatusCell column={column} />
+            <RenderStatusCell column={column} index={index} />
           </div>
         ),
         key: column?.id,
@@ -45,7 +45,10 @@ const StatusDropdown = ({
       }))}
       children={
         <div className="flex justify-start px-2">
-          <RenderStatusCell column={column} />
+          <RenderStatusCell
+            column={column}
+            index={columns.findIndex((col) => col.id === column.id)}
+          />
         </div>
       }
       currentItem={column?.name}

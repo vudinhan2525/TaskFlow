@@ -1,41 +1,39 @@
 import React, { useState } from "react";
 import { useProjectIssues, useUpdateIssue } from "@libs/hooks/useIssue";
-import ListFilter from "./listFilter";
-import { IIssue } from "@libs/types/issue";
-import { useSearchParams } from "react-router-dom";
+import { GetIssuesParams, IIssue } from "@libs/types/issue";
 import ListTable from "./listTable";
 import { TableRowSelection } from "antd/es/table/interface";
 import UnifiedIssueModal from "@libs/app/components/projects/modals/unifiedIssueModal";
-import {
-  FiltersSearchParams,
-  parseFiltersSearchParams,
-} from "@libs/utils/parseFiltersSearchParams";
+import ListFilter from "@libs/app/components/projects/list/listFilter/listFilter";
+import { useSearchParams } from "react-router-dom";
 
 const List = ({ projectId }: { projectId?: string }) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [searchParams] = useSearchParams();
-  const filtersSearchParams = searchParams.get("filters");
-  const keyword = searchParams.get("keyword");
-  const page = searchParams.get("page");
-  const limit = searchParams.get("limit");
-  const keywordSearchParams = searchParams.get("keyword");
 
-  const filters: FiltersSearchParams = parseFiltersSearchParams(
-    filtersSearchParams || "",
-  );
+  const [searchParams] = useSearchParams();
+
+  const [filters, setFilter] = useState<GetIssuesParams>({
+    keyword: searchParams.get("keyword") || undefined,
+    column_ids:
+      searchParams.get("column_ids")?.split(",").filter(Boolean) || undefined,
+    assignee_ids:
+      searchParams.get("assignee_ids")?.split(",").filter(Boolean) || undefined,
+    page: searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
+    due_date_from: searchParams.get("due_date_from") || undefined,
+    due_date_to: searchParams.get("due_date_to") || undefined,
+    created_at_from: searchParams.get("created_at_from") || undefined,
+    created_at_to: searchParams.get("created_at_to") || undefined,
+    limit: searchParams.get("limit")
+      ? parseInt(searchParams.get("limit")!)
+      : 12,
+    project_id: projectId,
+  });
+
   const {
     issues,
     pagination,
     isLoading: isFetching,
-  } = useProjectIssues({
-    project_id: projectId,
-    keyword: keywordSearchParams || undefined,
-    sprint_ids: filters.sprint_ids,
-    assignee_ids: filters.assignee_ids,
-    column_ids: filters.column_ids,
-    page: page || 1,
-    limit: limit || 12,
-  });
+  } = useProjectIssues(filters);
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
@@ -59,11 +57,15 @@ const List = ({ projectId }: { projectId?: string }) => {
       data: { [field]: value },
     });
   };
-
   return (
     <div className="flex-col gap-4 bg-gray-100 p-4">
       {/* Search and Filters */}
-      <ListFilter setIsCreateModalOpen={setIsCreateModalOpen} />
+      <ListFilter
+        setIsCreateModalOpen={setIsCreateModalOpen}
+        onFiltersChange={(filter) => {
+          setFilter(filter);
+        }}
+      />
 
       <ListTable
         issues={issues || []}
@@ -71,7 +73,7 @@ const List = ({ projectId }: { projectId?: string }) => {
         rowSelection={rowSelection}
         isFetching={isFetching}
         handleChangeCellValue={handleChangeCellValue}
-        keyword={keyword || ""}
+        keyword={filters?.keyword || ""}
         pagination={pagination}
         projectId={projectId || ""}
       />

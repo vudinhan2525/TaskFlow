@@ -78,7 +78,7 @@ const ListTable = ({
     // Summary
     TableColumn("summary", "Summary", (_, { id }) => (
       <ColumnInputFiled
-        issueId={id}
+        issue={issues.find((issue) => issue.id === id)}
         field="summary"
         handleChangeCellValue={handleChangeCellValue}
       />
@@ -158,7 +158,7 @@ const ListTable = ({
     // Points
     TableColumn("story_point", "Story Point", (_, { id }) => (
       <ColumnInputFiled
-        issueId={id}
+        issue={issues.find((issue) => issue.id === id)}
         field="story_point"
         inputType="number"
         handleChangeCellValue={handleChangeCellValue}
