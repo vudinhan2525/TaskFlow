@@ -9,6 +9,7 @@ const TableColumn = (
   key: string,
   title: string,
   render: (value: string, record: IIssue) => React.ReactNode,
+  width ?: number,
 ): TableColumnType<IIssue> => {
   return {
     title: (
@@ -34,7 +35,7 @@ const TableColumn = (
     dataIndex: key,
     key,
     render,
-    width: 150,
+    width: width ? width : 150,
     sorter: {
       compare: (a: IIssue, b: IIssue) => {
         const aValue = _.get(a, key);

@@ -90,7 +90,7 @@ const ListTable = ({
         issueId={id}
         column={columns.find((col) => col.id === column.id) || columns[0]}
       />
-    )),
+    ), 200),
     // Priority
     TableColumn("priority", "Priority", (_, { id, priority }) => (
       <PriorityDropdown

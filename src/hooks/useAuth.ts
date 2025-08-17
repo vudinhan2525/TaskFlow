@@ -39,6 +39,17 @@ export function useAuth() {
 
   const register = useMutation({
     mutationFn: auth.register,
+    onSuccess: (_, variables) => {
+      navigate("/verify-otp", { state: { email: variables.email } });
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      dispatch(setError(error.response.data.message));
+    },
+  });
+
+  const verifyOtp = useMutation({
+    mutationFn: auth.verify,
     onSuccess: ({ data }) => {
       dispatch(setUser(data.data));
       queryClient.setQueryData(["currentUser"], data.data);
@@ -49,6 +60,7 @@ export function useAuth() {
       dispatch(setError(error.response.data.message));
     },
   });
+
 
   const logout = async () => {
     try {
@@ -79,6 +91,7 @@ export function useAuth() {
     login,
     register,
     logout,
+    verifyOtp,
     updateUser: updateUser.mutate,
   };
 }

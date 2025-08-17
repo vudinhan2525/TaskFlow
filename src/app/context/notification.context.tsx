@@ -2,6 +2,7 @@ import { connectSocket } from "@libs/apis/notiApi";
 import { notificationApi } from "@libs/apis/notification";
 import { useAuth } from "@libs/hooks/useAuth";
 import { INotification } from "@libs/types/notification";
+import _ from "lodash";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface NotificationContextType {
@@ -40,8 +41,9 @@ export const NotificationProvider: React.FC<{
   };
 
   useEffect(() => {
-    if (user?.data.id) {
-      const socket = connectSocket(user?.data.id);
+    const userId = _.get(user,'data.id');
+    if (userId) {
+      const socket = connectSocket(userId);
 
       socket.on("refresh-list", (data) => {
         const notis: INotification[] = data?.notifications || [];
@@ -52,7 +54,7 @@ export const NotificationProvider: React.FC<{
         socket.disconnect();
       };
     }
-  }, [user?.data.id]);
+  }, [user]);
 
   useEffect(() => {
     const unreadCount = notifications.filter((n) => !n?.is_read).length;
