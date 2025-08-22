@@ -21,12 +21,10 @@ const IssueCard = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const isChildIssue = !!issue.parent_id;
-  const titleClasses = `font-medium mb-2 line-clamp-2 text-sm`;
   if (isChildIssue) return <></>;
   if (isDragging) {
     return (
-      <div className="h-[120px] w-full border-2 border-gray-300 z-50 
-      border-dashed rounded-md"></div>
+      <div className="z-50 h-[120px] w-full rounded-md border-2 border-dashed border-gray-300 bg-gray-200"></div>
     );
   }
   return (
@@ -37,9 +35,9 @@ const IssueCard = ({
     >
       {/* Header with issue key and menu */}
       <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <TypeBadge type={issue.type} isShowLabel={false} />
-          <span className="ml-2">{issue.id.toUpperCase()}</span>
+          <span className="">{issue.title}</span>
         </div>
         {isHovered && (
           <div className="text-gray-400 hover:text-gray-600">
@@ -49,24 +47,38 @@ const IssueCard = ({
       </div>
 
       {/* Issue title */}
-      <h3 className={titleClasses}>{issue.title}</h3>
+      <h3 className={`mb-2 line-clamp-2 text-sm font-medium`}>
+        {issue.summary}
+      </h3>
+
+      {/* Issue metadata */}
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <PriorityBadge priority={issue.priority} isShowLabel={false} />
+        {issue.story_point > 0 && (
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+            {issue.story_point} {issue.story_point === 1 ? "point" : "points"}
+          </span>
+        )}
+
+        {/* Attachments indicator */}
+        {issue.attachments.length > 0 && (
+          <div className={`text-xs text-gray-500`}>
+            <span className="flex items-center">
+              <span className="mr-1">📎</span>
+              {issue.attachments.length}
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* Footer with assignee and date */}
       <div
         className={`mt-3 flex items-center justify-between text-xs text-gray-500`}
       >
+        <UserAvatar userId={issue.assignee_id} />
         <span title={issue.updated_at}>
           Updated {formatDate(issue.updated_at)}
         </span>
-        <div className="flex flex-row gap-1">
-          {issue.story_point > 0 && (
-            <span className="flex items-center rounded-sm bg-gray-100 px-2 text-center text-xs text-gray-700">
-              {issue.story_point}
-            </span>
-          )}
-          <PriorityBadge priority={issue.priority} />
-          <UserAvatar userId={issue.assignee_id} isDisplayName={false} />
-        </div>
       </div>
     </div>
   );

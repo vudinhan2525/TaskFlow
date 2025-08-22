@@ -6,8 +6,8 @@ import { FaChevronDown } from "react-icons/fa";
 import dayjs from "dayjs";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useProjectColumns } from "@libs/hooks/useProject";
-import RenderStatusCell from "@libs/app/components/general-components/RenderStatusCell";
 import { GetIssuesParams } from "@libs/types/issue";
+import StatusBadge from "@libs/app/components/general-components/badge/statusBadge";
 
 const { RangePicker } = DatePicker;
 
@@ -185,7 +185,7 @@ export default function ListFilter({
                 key={column.id}
                 className={`flex items-center rounded-2xl border-[2px] ${filters?.column_ids?.includes(column.id) ? "border-blue-500" : "border-transparent"}`}
               >
-                <RenderStatusCell column={column} index={i} size="medium" />
+                <StatusBadge column={column} index={i} size="medium" />
               </div>
             ))}
           </div>

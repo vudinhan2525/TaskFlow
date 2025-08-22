@@ -8,7 +8,6 @@ import {
   FaCode,
   FaTasks,
   FaGlobe,
-  // FaStar,
   FaUserPlus,
 } from "react-icons/fa";
 import {
@@ -24,7 +23,6 @@ import {
   arrayMove,
   SortableContext,
   useSortable,
-  // horizontalListSortingStrategy,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -33,7 +31,7 @@ import { useProject } from "../../../hooks/useProject";
 import AddProjectMemberModal from "./modals/addProjectMemberModal";
 
 interface NavItem {
-  id: string;
+  id: string; 
   label: string;
   icon: React.ReactElement;
   route: string;
@@ -70,7 +68,7 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative ${isDragging ? "pointer-events-none z-50" : "pointer-events-auto"}`}
+      className={`relative w-full ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
       {...attributes}
       {...listeners}
     >
@@ -88,9 +86,6 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
           {item.icon}
         </span>
         <span className="whitespace-nowrap">{item.label}</span>
-        {/* {isActive && (
-          <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-sm bg-green-600"></div>
-        )} */}
       </Link>
     </div>
   );
@@ -209,12 +204,6 @@ const ProjectNavbar = (): React.ReactElement => {
       });
     }
   };
-
-  // const toggleStar = () => {
-  //   setIsStarred(!isStarred);
-  //   // Here you would typically call an API to save the starred state
-  // };
-
   return (
     <div className="flex h-full flex-col justify-between border-gray-200 bg-white shadow-sm">
       <div className="flex flex-col space-y-6">
@@ -271,9 +260,9 @@ const ProjectNavbar = (): React.ReactElement => {
         <div className="w-full">
           <nav className="scrollbar-hide nav-item flex w-full flex-col items-center space-x-1">
             <DndContext
+              onDragEnd={handleDragEnd}
               sensors={sensors}
               collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
             >
               <SortableContext
                 items={items}
@@ -292,9 +281,7 @@ const ProjectNavbar = (): React.ReactElement => {
         </div>
       </div>
 
-      <div>
-        
-      </div>
+      <div></div>
 
       <AddProjectMemberModal
         isOpen={isAddMemberModalOpen}

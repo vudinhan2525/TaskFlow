@@ -50,6 +50,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   initialIssue,
 }) => {
   const { columns = [] } = useProjectColumns(projectId);
+  console.log("Columns:", columns);
 
   const { createIssue, isLoading: isCreating } = useCreateIssue({
     projectId,
