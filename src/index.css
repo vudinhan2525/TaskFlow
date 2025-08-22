@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* Thanh cuộn chung */
+::-webkit-scrollbar {
+  width: 4px;   /* độ rộng scrollbar dọc */
+  height: 4px;  /* độ cao scrollbar ngang */
+}
+
+/* Phần rãnh của scrollbar */
+::-webkit-scrollbar-track {
+  background: transparent;  /* hoặc #f1f1f1 nếu muốn có màu nền */
+}
+
+/* Thanh kéo (thumb) */
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;   /* màu thanh kéo */
+  border-radius: 4px;    /* bo tròn */
+}
+
+/* Hover vào thanh kéo */
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+
 .ant-popover-inner {
   @apply !p-0;
 }
@@ -32,4 +55,8 @@
   height: 100%;
   background-color: transparent;
   /* background-color: oklch(0.696 0.17 162.48); */
+}
+.relative.pointer-events-auto{
+  z-index: 10;
+  width: 100%;
 }

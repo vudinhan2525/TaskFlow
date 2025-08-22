@@ -8,7 +8,6 @@ const ListPage = () => {
       <div className="flex-1">
         <List projectId={projectId} />
       </div>
-      {/* <IssueSideBar /> */}
     </div>
   );
 };

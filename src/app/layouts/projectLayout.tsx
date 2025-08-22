@@ -22,9 +22,13 @@ const ProjectLayout = (): React.ReactElement => {
   }
 
   return (
-    <div className="flex flex-col flex-1 overflow-auto">
-      <ProjectNavbar />
-      <Outlet />
+    <div className="flex w-full flex-1 flex-row h-screen overflow-hidden">
+      <div className="w-[15%] h-full">
+        <ProjectNavbar />
+      </div>
+      <div className="w-[85%] h-screen overflow-auto">
+        <Outlet />
+      </div>
     </div>
   );
 };

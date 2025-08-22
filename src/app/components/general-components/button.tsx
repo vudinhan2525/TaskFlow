@@ -24,7 +24,7 @@ interface ButtonProps {
 
 const variantStyles = {
   primary:
-    "border border-emerald-600 bg-emerald-500 text-white hover:bg-emerald-700 hover:border-emerald-700",
+    "transform rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2 font-medium text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:cursor-pointer hover:from-emerald-600 hover:to-teal-700 hover:shadow-lg",
   secondary: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
   dark: "border border-gray-800 bg-gray-800 text-white hover:bg-gray-900 hover:border-gray-900",
   light: "border border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-200",
