@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { users } from "@libs/apis/user";
+import { IUser } from "@libs/types/user";
 
 export function useUserById(userId: string) {
   const {
@@ -89,4 +90,22 @@ export function useGetUserStats(id: string, isSprintId: boolean) {
     error,
     refetch,
   };
+}
+
+export function useUpdateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (
+      data: {
+        user_id: string;
+      } & Partial<IUser>,
+    ) => {
+      const response = await users.updateUser(data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+    },
+  });
 }

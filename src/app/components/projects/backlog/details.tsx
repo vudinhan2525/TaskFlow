@@ -1,5 +1,5 @@
 import { useState } from "react";
-import UserAvatar from "../../general-components/user/UserAvatar";
+import UserAvatar from "../../general-components/user/userAvatar";
 import { FaChevronRight } from "react-icons/fa";
 import { FaChevronDown } from "react-icons/fa";
 import { Dropdown } from "antd";

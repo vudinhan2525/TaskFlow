@@ -37,7 +37,7 @@ const TypeDropdown = ({
             border: "none",
             boxShadow: "none",
           },
-          label: <TypeBadge type={option.name as IssueType} />,
+          label: <TypeBadge type={option.name as IssueType} className="p-2" />,
           onClick: () => {
             handleChangeType(option.name as IssueType);
           },

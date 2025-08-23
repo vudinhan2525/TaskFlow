@@ -2,6 +2,7 @@ import { useUserById } from "@libs/hooks/useUser";
 import { Avatar } from "antd";
 import { FaUserAltSlash } from "react-icons/fa";
 
+
 export default function UserAvatar({
   userId,
   size = 28,
@@ -17,7 +18,6 @@ export default function UserAvatar({
     return (
       <div className="flex flex-row items-center justify-start gap-2">
         <div
-          style={{ width: size, height: size }}
           className="flex items-center justify-center rounded-full bg-gray-200 p-1"
         >
           <FaUserAltSlash />
@@ -32,6 +32,7 @@ export default function UserAvatar({
     <div className="flex flex-row items-center gap-2">
       <Avatar
         size={size}
+        src={user?.avatar}
         shape="circle"
         style={{
           backgroundColor: "rgba(161, 157, 157)",

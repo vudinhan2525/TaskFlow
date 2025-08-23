@@ -2,7 +2,7 @@ import { IIssue } from "@libs/types/issue";
 import { useState } from "react";
 import PriorityBadge from "../../general-components/badge/priorityBadge";
 import TypeBadge from "../../general-components/badge/typeBadge";
-import UserAvatar from "../../general-components/user/UserAvatar";
+import UserAvatar from "../../general-components/user/userAvatar";
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
