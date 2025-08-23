@@ -8,21 +8,21 @@ export interface IIssue {
   assignee_id: string;
   parent_id?: string;
   reporter_id?: string;
-  team_id?: string;
+  // team_id?: string;
   type: "Bug" | "Task" | "Story" | "Epic";
   column: IColumn;
   priority: IssuePriority;
   summary: string;
   description: string;
   story_point: number;
-  labels?: string[];
+  // labels?: string[];
   attachments: string[];
   created_at: string;
   updated_at: string;
 }
 
 export type IssueStatus = "TO DO" | "IN PROGRESS" | "DONE";
-export type IssuePriority = "Low" | "Medium" | "High";
+export type IssuePriority = "Lowest" | "Low" | "Medium" | "High" | "Highest";
 export type IssueType = "Bug" | "Task" | "Story" | "Epic";
 export interface GetIssuesParams {
   project_id?: string;

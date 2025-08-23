@@ -1,5 +1,5 @@
 import { IIssue } from "@libs/types/issue";
-import { FaCheck, FaPlus } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { useState, useRef, useEffect, memo } from "react";
 import { FaEdit } from "react-icons/fa";
@@ -8,10 +8,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
-import { BsThreeDots } from "react-icons/bs";
+import CustomInput from "./customInput";
 import {
   StatusDropdown,
-  PriorityDropdown,
+  // PriorityDropdown,
   TypeDropdown,
   UserDropdown,
 } from "../../general-components/dropdown/index";
@@ -145,70 +145,73 @@ const IssueCard = memo(
         onPointerDown={handlePointerDown}
         className={`group bg-white px-2 py-1 shadow-sm transition-all duration-200 hover:bg-gray-100`}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           {/* IssueCardLeft */}
           <div className="flex flex-1 items-center justify-start gap-x-2">
-            <div className="flex w-full cursor-pointer flex-row items-center gap-2">
-              <input
+            <div className="flex w-full cursor-pointer items-center gap-4 ">
+              <div className="flex items-center gap-2 ">
+                <input
                 type="checkbox"
-                style={{
-                  opacity:
+                  style={{
+                    opacity:
+                      selectedIssues &&
+                      selectedIssues[issue.sprint_id || ""] &&
+                      selectedIssues[issue.sprint_id || ""].find(
+                        (i) => i.id === issue.id,
+                      )
+                        ? "100"
+                        : "",
+                  }}
+                  onPointerDown={stopPropagation}
+                  checked={
                     selectedIssues &&
                     selectedIssues[issue.sprint_id || ""] &&
                     selectedIssues[issue.sprint_id || ""].find(
                       (i) => i.id === issue.id,
                     )
-                      ? "100"
-                      : "",
-                }}
-                onPointerDown={stopPropagation}
-                checked={
-                  selectedIssues &&
-                  selectedIssues[issue.sprint_id || ""] &&
-                  selectedIssues[issue.sprint_id || ""].find(
-                    (i) => i.id === issue.id,
-                  )
-                    ? true
-                    : false
-                }
-                onChange={() => {
-                  if (
-                    selectedIssues &&
-                    selectedIssues[issue.sprint_id || ""] &&
-                    selectedIssues[issue.sprint_id || ""].includes(issue)
-                  ) {
-                    let temp: IIssue[] = selectedIssues[issue.sprint_id || ""];
-                    temp = temp.filter((i: IIssue) => i.id !== issue.id);
-                    setSelectIssues({ [issue.sprint_id || ""]: temp });
-                    if (temp.length === 0) {
-                      setIsSprintIssuesChecked(false);
-                    }
-                  } else {
-                    const existingIssues =
-                      selectedIssues[issue.sprint_id || ""] || [];
-                    const newIssues = [...existingIssues, issue];
-                    setSelectIssues({ [issue.sprint_id || ""]: newIssues });
-                    setIsSprintIssuesChecked(true);
+                      ? true
+                      : false
                   }
-                }}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 focus:ring-blue-500"
-              />
+                  onChange={() => {
+                    if (
+                      selectedIssues &&
+                      selectedIssues[issue.sprint_id || ""] &&
+                      selectedIssues[issue.sprint_id || ""].includes(issue)
+                    ) {
+                      let temp: IIssue[] =
+                        selectedIssues[issue.sprint_id || ""];
+                      temp = temp.filter((i: IIssue) => i.id !== issue.id);
+                      setSelectIssues({ [issue.sprint_id || ""]: temp });
+                      if (temp.length === 0) {
+                        setIsSprintIssuesChecked(false);
+                      }
+                    } else {
+                      const existingIssues =
+                        selectedIssues[issue.sprint_id || ""] || [];
+                      const newIssues = [...existingIssues, issue];
+                      setSelectIssues({ [issue.sprint_id || ""]: newIssues });
+                      setIsSprintIssuesChecked(true);
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 focus:ring-blue-500"
+                />
 
-              <div className="rounded-sm border-1 border-emerald-500 p-0.5">
-                <FaCheck className="font-normal text-emerald-500" size={12} />
-              </div>
+                <div className="rounded-sm border-1 border-emerald-500 p-0.5">
+                  <FaCheck className="font-normal text-emerald-500" size={12} />
+                </div>
 
-              <div
-                className={`block text-sm font-light text-gray-500 ${issue?.column?.name === "DONE" ? "line-through" : "underline"}`}
-              >
-                {issue?.title}, {issue.id}
+                <div
+                  className={`block text-sm font-light text-gray-500 ${issue?.column?.name === "DONE" ? "line-through" : "underline"}`}
+                >
+                  {issue?.title}
+                </div>
               </div>
 
               <div
                 onClick={(e) => {
                   e.stopPropagation();
                 }}
-                className="group flex flex-1 items-center gap-2"
+                className="group flex flex-1 items-center gap-2 text-clip"
               >
                 {isEditingSummary ? (
                   <input
@@ -220,10 +223,10 @@ const IssueCard = memo(
                       setIsEditingSummary(false);
                     }}
                     onChange={(e) => setIssueSummary(e.target.value)}
-                    className={`w-full rounded-sm border-2 border-emerald-500 px-2 py-1 outline-none`}
+                    className={`w-full rounded-sm border-2 border-emerald-500 px-2 py-1  outline-none`}
                   />
                 ) : (
-                  <span className="text-sm">{issueSummary}</span>
+                  <span className="text-sm font-thin">{issueSummary}</span>
                 )}
 
                 {!isEditingSummary && (
@@ -236,30 +239,16 @@ const IssueCard = memo(
                   </div>
                 )}
               </div>
-
-              {/* epic dropdown */}
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className={`${isEditingSummary ? "block" : "hidden"} group-hover:block`}
-              >
-                <div className="flex items-center gap-2 rounded-sm border-1 border-gray-300 px-3 py-0.5">
-                  <FaPlus className="text-gray-500" size={12} />
-                  <span className="text-sm text-gray-500">Epic</span>
-                </div>
-              </div>
             </div>
           </div>
           {/* IssueCardRight */}
           <div
-            className="grid w-[35%] max-w-[40%] grid-cols-12"
+            className="grid w-[35%] min-w-[500px] grid-cols-12 gap-1"
             onPointerDown={stopPropagation}
             onClick={(e) => e.stopPropagation()}
           >
             {/* status dropdown */}
-
-            <div className="col-span-4 flex items-center">
+            <div className="col-span-3 flex items-center">
               <StatusDropdown
                 projectId={projectId}
                 issueId={issue.id}
@@ -269,9 +258,8 @@ const IssueCard = memo(
                 }
               />
             </div>
-
             {/* type dropdown */}
-            <div className="col-span-3 flex items-center">
+            <div className="col-span-3 flex items-center hover:cursor-pointer">
               <TypeDropdown
                 projectId={projectId}
                 issueId={issue.id}
@@ -279,32 +267,24 @@ const IssueCard = memo(
               />
             </div>
 
-            {/* priority dropdown */}
-            <div className="col-span-1 flex items-center">
-              <PriorityDropdown
-                projectId={projectId}
-                issueId={issue.id}
-                priority={issue?.priority}
+            {/* {/* story point */}
+            <div className="col-span-2 flex items-center">
+              <CustomInput
+                field="story_point"
+                // label="-"
+                value={issue.story_point || "-"}
+                handleUpdateIssue={handleChangeIssueValue}
               />
             </div>
 
-            <div className="col-span-1 flex items-center">
-              {issue.story_point}
-            </div>
-
-            <div className="col-span-2 flex items-center">
+            {/* assignee */}
+            <div className="col-span-3 flex items-center">
               <UserDropdown
                 projectId={projectId}
                 issueId={issue.id}
                 selectedUserId={issue?.assignee_id || ""}
                 columnField="assignee_id"
               />
-            </div>
-
-            <div className="col-span-1 flex items-center justify-end">
-              <div className="cursor-pointer rounded-sm p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-300">
-                <BsThreeDots />
-              </div>
             </div>
           </div>
         </div>

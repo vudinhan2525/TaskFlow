@@ -1,6 +1,6 @@
 import ColumnDropdown from "./columnDropdown";
 import { IProjectMember } from "@libs/types/projectMember";
-import UserAvatar from "../user/UserAvatar";
+import UserAvatar from "../user/userAvatar";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 

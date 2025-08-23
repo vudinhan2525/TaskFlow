@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import {
   FaPlus,
-  FaTrash,
 } from "react-icons/fa";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
@@ -12,7 +11,6 @@ import ActivityIssue from "@libs/app/components/issues/activityIssue";
 import { useNavigate } from "react-router-dom";
 import { IoLockClosedOutline } from "react-icons/io5";
 import { FaEye } from "react-icons/fa";
-import { AiOutlineLike } from "react-icons/ai";
 import { CiShare2 } from "react-icons/ci";
 import { BsThreeDots } from "react-icons/bs";
 import { IoIosClose } from "react-icons/io";
@@ -21,6 +19,7 @@ import { TbHexagon3D } from "react-icons/tb";
 import AttachmentCard from "../projects/backlog/attachmentCard";
 import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
 import Details from "../projects/backlog/details";
+
 
 const IssueSideBar: React.FC = () => {
   const { selectedIssue, setSelectedIssue } = useIssueSelection();
@@ -41,14 +40,14 @@ const IssueSideBar: React.FC = () => {
         toast.info("Watch issue not implemented yet");
       },
     },
-    {
-      key: "like",
-      icon: <AiOutlineLike />,
-      label: "Like Issue",
-      onClick: () => {
-        toast.info("Like issue not implemented yet");
-      },
-    },
+    // {
+    //   key: "like",
+    //   icon: <AiOutlineLike />,
+    //   label: "Like Issue",
+    //   onClick: () => {
+    //     toast.info("Like issue not implemented yet");
+    //   },
+    // },
     {
       key: "share",
       icon: <CiShare2 />,
@@ -81,7 +80,6 @@ const IssueSideBar: React.FC = () => {
   });
   const { sprints } = useProjectSprints(selectedIssue?.project_id || "");
   const [summary, setSummary] = useState(selectedIssue?.summary || "");
-  const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [isShowingTextEditor, setIsShowingTextEditor] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   if (!selectedIssue) return null;
@@ -134,65 +132,13 @@ const IssueSideBar: React.FC = () => {
     });
   };
 
-  const AttchementCard = ({
-    attachment,
-  }: {
-    attachment: {
-      url: string;
-      type: string;
-      created_at: string;
-    };
-  }) => {
-    return (
-      <div className="relative flex h-32 w-36 flex-col overflow-hidden rounded-xs shadow-2xl">
-        <img
-          src={attachment.url}
-          alt="Attachment"
-          className="h-20 w-full hover:bg-gray-100"
-        />
-
-        <div className="flex flex-col p-1">
-          <span className="truncate text-xs font-medium text-gray-600">
-            {attachment.url}
-          </span>
-          <span className="truncate text-xs text-gray-600">
-            {formatDate(attachment.created_at)}
-          </span>
-        </div>
-
-        <div className="absolute top-1 right-1 z-50 flex flex-row gap-2">
-          <div className="cursor-pointer duration-150 hover:scale-110">
-            <FaEye />
-          </div>
-          <div
-            onClick={() => {
-              const attachments = selectedIssue.attachments.filter(
-                (attch) => JSON.parse(attch).url !== attachment.url,
-              );
-              console.log(attachments);
-              updateIssueAsync({
-                id: selectedIssue.id,
-                data: {
-                  attachments: attachments,
-                },
-              });
-            }}
-            className="cursor-pointer duration-150 hover:scale-110"
-          >
-            <FaTrash />
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="z-30 flex flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
-            <span className="text-xl font-semibold">
+            <span className="text-xl text-gray-600 font-semibold">
               {selectedIssue?.title}
             </span>
           </div>
@@ -224,7 +170,8 @@ const IssueSideBar: React.FC = () => {
                 handleUpdateIssue("summary", summary);
               }
             }}
-            className="w-full cursor-pointer rounded border-2 border-transparent bg-transparent p-2 text-sm font-semibold text-gray-900 outline-none hover:bg-gray-200 focus:border-emerald-500"
+            className="w-full cursor-pointer rounded border-2 
+            border-transparent bg-transparent p-2 text-sm font-semibold text-gray-500 outline-none hover:bg-gray-200 focus:border-emerald-500"
           />
         </div>
         <div className="flex flex-row gap-2">
@@ -241,7 +188,7 @@ const IssueSideBar: React.FC = () => {
 
       {/* Description */}
       <div className="flex w-full flex-col items-start gap-1">
-        <p className="text-sm font-bold text-gray-600">Description</p>
+        <p className="text-sm font-bold text-gray-600 py-1">Description</p>
 
         {isShowingTextEditor ? (
           <TextEditor
@@ -256,15 +203,15 @@ const IssueSideBar: React.FC = () => {
         ) : (
           <input
             value={
-              selectedIssue?.description
+              selectedIssue?.description && selectedIssue.description[0] === '{'
                 ? JSON.parse(selectedIssue?.description || "{}")?.plainText
-                : ""
+                : selectedIssue?.description
             }
             onClick={() => {
               setIsShowingTextEditor(true);
             }}
             placeholder="Add a description"
-            className="w-full rounded border border-gray-300 px-2 py-1 text-sm outline-none hover:bg-gray-100 focus:border-emerald-500"
+            className="w-full rounded border border-gray-300 p-2 text-sm outline-none hover:bg-gray-100 focus:border-emerald-500"
           />
         )}
       </div>

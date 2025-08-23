@@ -1,13 +1,12 @@
-import { useState, memo } from "react";
+import { useState, memo, useMemo } from "react";
 import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import Button from "@libs/app/components/general-components/button";
-import UnifiedIssueModal from "@libs/app/components/projects/modals/unifiedIssueModal";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import { formatSprintDate } from "../../../../utils/date";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { ISprint } from "@libs/types/index";
-import IssueCard from "./IssueCard";
+import IssueCard from "./issueCard";
 import { statusOptions } from "@libs/constants/list";
 import { MenuProps, Dropdown } from "antd";
 import { BsThreeDots } from "react-icons/bs";
@@ -22,7 +21,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { useDeleteSprint } from "@libs/hooks/useSprint";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
-import { IoIosResize } from "react-icons/io";
+// import { IoIosResize } from "react-icons/io";
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
 }
@@ -53,13 +52,12 @@ const ScrumSprint = memo(
     const { updateIssueAsync } = useUpdateIssue({
       projectId,
       onClose: () => {
-        setIsUpdateSprintModalOpen(false);
+        // setIsUpdateSprintModalOpen(false);
       },
     });
     const { selectedIssues, setSelectIssues } = useIssueSelection();
     const [isOpenButtonMenu, setIsOpenButtonMenu] = useState(false);
-    const [isUpdateSprintModalOpen, setIsUpdateSprintModalOpen] =
-      useState(false);
+   
     const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] =
       useState(false);
     const [isDeleteSprintModalOpen, setIsDeleteSprintModalOpen] =
@@ -70,16 +68,17 @@ const ScrumSprint = memo(
     );
     const [isExpanded, setIsExpanded] = useState(true);
     const { columns } = useProjectColumns(projectId);
+    const estimate = useMemo(() => {
+      return sprint.issues.reduce((total, issue) => {
+        return total + (issue.story_point || 0);
+      }, 0);
+    }, [sprint.issues]);
 
     const buttonItems: MenuProps["items"] = [
       {
-        label: "Complete Sprint",
-        key: "complete-sprint",
-      },
-      {
         label: "Edit Sprint",
         key: "edit-sprint",
-        onClick: () => setIsCreateSprintModalOpen(true),
+        // onClick: () => setIsUpdateSprintModalOpen(true),
       },
       {
         label: "Delete Sprint",
@@ -146,7 +145,7 @@ const ScrumSprint = memo(
                   )}
                 </button>
                 <div className="flex flex-row items-center space-x-4">
-                  <h3 className="text-md font-semibold text-gray-900">
+                  <h3 className="text-md font-semibold text-gray-700">
                     {sprint?.name}
                   </h3>
                   <div className="flex items-center space-x-3 text-sm">
@@ -186,7 +185,24 @@ const ScrumSprint = memo(
                     variant="secondary"
                     className="rounded-lg border border-gray-300 bg-white px-1 py-1 text-sm text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
                   >
-                    Complete Sprint
+                    {new Date(sprint.date_started).getTime() <
+                    new Date().getTime() ? (
+                      <span 
+                      onClick={()=>{
+                        // setIsUpdateSprintModalOpen(true)
+                      }}
+                      className="text-xs text-gray-500">
+                        Complete Sprint
+                      </span>
+                    ) : (
+                      <span 
+                         onClick={()=>{
+                        // setIsUpdateSprintModalOpen(true)
+                      }}
+                      className="text-xs text-gray-500">
+                        Start Sprint
+                      </span>
+                    )}
                   </Button>
 
                   <Dropdown
@@ -211,9 +227,6 @@ const ScrumSprint = memo(
               </div>
             </div>
           </div>
-          {/* {overItemId === sprint.id && isDragging && (
-          <div className="w-full border-t-1 border-emerald-500" />
-        )} */}
           {/* Body */}
           {isExpanded && (
             <div className="flex flex-col gap-2 divide-y divide-gray-100 bg-[#f8f8f8] p-2">
@@ -257,22 +270,15 @@ const ScrumSprint = memo(
                 onClick={() => {
                   setIsCreateIssueModalOpen(true);
                 }}
-                className="flex items-center space-x-2 rounded-sm bg-transparent p-2 hover:cursor-pointer hover:bg-gray-200"
+                className="flex items-center space-x-2 rounded-sm bg-transparent p-2 text-gray-700 hover:cursor-pointer hover:bg-gray-200"
               >
                 <FaPlus size={16} />
-                <span className="text-sm font-medium text-gray-700">
-                  Create Issue
-                </span>
+                <span className="text-sm font-semibold">Create Issue</span>
               </div>
             </div>
           )}
 
-          <UnifiedIssueModal
-            isOpen={isUpdateSprintModalOpen}
-            onClose={() => setIsUpdateSprintModalOpen(false)}
-            projectId={projectId}
-            sprintId={sprint?.id}
-          />
+         
 
           <ConfirmDeleteModal
             title={`Delete Sprint ${sprint?.name}`}
@@ -301,21 +307,19 @@ const ScrumSprint = memo(
           />
         </div>
 
-        <div className="flex flex-row items-center">
-          <div className="group flex flex-1 flex-row items-center justify-center gap-2">
-            <div className="flex-1 border-b-2 border-gray-300 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-            <div className="group cursor-row-resize text-gray-500 transition-colors hover:text-gray-900">
-              <IoIosResize />
-            </div>
-
-            <div className="flex flex-1 flex-row items-center gap-1">
-              <div className="flex-1 border-b-2 border-gray-300 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="flex gap-2">
-                <span>{sprint.issues.length} work items</span>
-                <div className="h-full w-[1px] border-r border-gray-300" />
-                <span>Estimate: 0</span>
-              </div>
+        <div className="flex h-full flex-row items-center">
+          <div className="flex flex-1 flex-row items-center justify-end gap-1">
+            <div className="flex h-full gap-2">
+              <span className="text-sm text-gray-400">
+                {sprint.issues.length} work items
+              </span>
+              <span className="text-sm font-semibold text-gray-400">|</span>
+              <span className="text-sm text-gray-400">
+                Estimate:{" "}
+                <span className="text-sm font-semibold text-gray-600">
+                  {estimate}
+                </span>
+              </span>
             </div>
           </div>
         </div>

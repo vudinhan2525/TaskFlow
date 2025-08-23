@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
-import UserAvatar from "@libs/app/components/general-components/user/UserAvatar";
+import UserAvatar from "@libs/app/components/general-components/user/userAvatar";
 import {
   useProject,
   useProjectColumns,

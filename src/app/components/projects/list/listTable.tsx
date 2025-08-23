@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { Table } from "antd";
 import type { TableProps, TableColumnType } from "antd";
-import { RiTeamFill } from "react-icons/ri";
 import { IIssue, IssuePriority, IssueType } from "@libs/types/issue";
 import { format } from "date-fns";
 import { useProjectSprints } from "@libs/hooks/useSprint";
@@ -52,11 +51,13 @@ const ListTable = ({
   const tableColumns: TableColumnType<IIssue>[] = [
     // Type
     TableColumn("type", "Type", (_, { id, type }) => (
-      <TypeDropdown
-        projectId={projectId}
-        issueId={id}
-        type={type as IssueType}
-      />
+      <div className="px-4">
+        <TypeDropdown
+          projectId={projectId}
+          issueId={id}
+          type={type as IssueType}
+        />
+      </div>
     )),
     // Title
     TableColumn("title", "Title", (_, { title }) => (
@@ -84,30 +85,32 @@ const ListTable = ({
       />
     )),
     // Status
-    TableColumn("column.name", "Status", (_, { id, column }) => (
-      <StatusDropdown
-        projectId={projectId}
-        issueId={id}
-        column={columns.find((col) => col.id === column.id) || columns[0]}
-      />
-    ), 200),
-    // Priority
-    TableColumn("priority", "Priority", (_, { id, priority }) => (
-      <PriorityDropdown
-        projectId={projectId}
-        issueId={id}
-        priority={priority as IssuePriority}
-      />
-    )),
+    TableColumn(
+      "column.name",
+      "Status",
+      (_, { id, column }) => (
+        <div className="px-4">
+          <StatusDropdown
+            projectId={projectId}
+            issueId={id}
+            column={columns.find((col) => col.id === column.id) || columns[0]}
+          />
+        </div>
+      ),
+      200,
+    ),
+
     // Sprint
     TableColumn("sprint_id", "Sprint", (_, { id, sprint_id }) => (
-      <SprintDropdown
-        projectId={projectId}
-        issueId={id}
-        currentSprint={
-          sprints.find((sprint) => sprint.id === sprint_id) || sprints[0]
-        }
-      />
+      <div className="px-4">
+        <SprintDropdown
+          projectId={projectId}
+          issueId={id}
+          currentSprint={
+            sprints.find((sprint) => sprint.id === sprint_id) || sprints[0]
+          }
+        />
+      </div>
     )),
     // Assignee
     TableColumn("assignee_id", "Assignee", (_, { id, assignee_id }) => (
@@ -122,20 +125,32 @@ const ListTable = ({
     )),
     // Reporter
     TableColumn("reporter_id", "Reporter", (_, { id, reporter_id }) => (
-      <UserDropdown
-        projectId={projectId}
-        issueId={id}
-        selectedUserId={reporter_id || ""}
-        columnField="reporter_id"
-      />
+      <div className="px-4">
+        <UserDropdown
+          projectId={projectId}
+          issueId={id}
+          selectedUserId={reporter_id || ""}
+          columnField="reporter_id"
+        />
+      </div>
+    )),
+    // Priority
+    TableColumn("priority", "Priority", (_, { id, priority }) => (
+      <div className="px-4 py-1">
+        <PriorityDropdown
+          projectId={projectId}
+          issueId={id}
+          priority={priority as IssuePriority}
+        />
+      </div>
     )),
     // Team
-    TableColumn("team_id", "Team", (_, { team_id }) => (
-      <span className="inline-flex items-center gap-1">
-        <RiTeamFill className="text-gray-500" />
-        {team_id || "-"}
-      </span>
-    )),
+    // TableColumn("team_id", "Team", (_, { team_id }) => (
+    //   <span className="inline-flex items-center gap-1">
+    //     <RiTeamFill className="text-gray-500" />
+    //     {team_id || "-"}
+    //   </span>
+    // )),
     // Parent Issue
     TableColumn("parent_id", "Parent Issue", (_, { parent_id }) => (
       <span className="px-4 text-sm text-gray-500">
@@ -143,18 +158,18 @@ const ListTable = ({
       </span>
     )),
     // Labels
-    TableColumn("labels", "Labels", (_, { labels }) => (
-      <div className="flex flex-wrap gap-1">
-        {labels?.map((label) => (
-          <span
-            key={label}
-            className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
-          >
-            {label}
-          </span>
-        )) || "-"}
-      </div>
-    )),
+    // TableColumn("labels", "Labels", (_, { label }) => (
+    //   <div className="flex flex-wrap gap-1">
+    //     {labels?.map((label) => (
+    //       <span
+    //         key={label}
+    //         className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
+    //       >
+    //         {label}
+    //       </span>
+    //     )) || "-"}
+    //   </div>
+    // )),
     // Points
     TableColumn("story_point", "Story Point", (_, { id }) => (
       <ColumnInputFiled
