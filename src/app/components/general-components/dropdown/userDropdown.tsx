@@ -9,11 +9,13 @@ const UserDropdown = ({
   issueId,
   selectedUserId,
   columnField,
+  isDisplayname = true,
 }: {
   projectId: string;
   issueId: string;
   selectedUserId: string;
   columnField: string;
+  isDisplayname?: boolean;
 }) => {
   const { projectMembers } = useProjectMembers(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
@@ -46,7 +48,7 @@ const UserDropdown = ({
           })
       }
       children={
-        <UserAvatar userId={selectedUserId || ""} isDisplayName={true} />
+        <UserAvatar userId={selectedUserId || ""} isDisplayName={isDisplayname} />
       }
     />
   );

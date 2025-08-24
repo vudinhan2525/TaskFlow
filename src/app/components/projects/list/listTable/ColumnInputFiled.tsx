@@ -15,16 +15,13 @@ const ColumnInputFiled = ({
     value: string,
   ) => void;
 }) => {
-  const [width, setWidth] = useState(0);
+
   const [newValue, setNewValue] = useState(
     issue?.[field] || (inputType === "number" ? 0 : ""),
   );
   useEffect(() => {
     setNewValue(issue?.[field] || (inputType === "number" ? 0 : ""));
   }, [issue, field, inputType]);
-  useEffect(() => {
-    setWidth(document.getElementById(field)?.clientWidth || 0);
-  }, [field]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewValue(e.target.value);
@@ -32,9 +29,6 @@ const ColumnInputFiled = ({
   if (!issue) return <></>;
   return (
     <input
-      style={{
-        width: width,
-      }}
       onChange={handleChange}
       type={inputType}
       onBlur={(e) => {

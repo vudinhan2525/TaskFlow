@@ -5,11 +5,13 @@ import _ from "lodash";
 import React from "react";
 import { FaPlus, FaListUl } from "react-icons/fa";
 
+const fixedField = ["title", "type"];
+
 const TableColumn = (
   key: string,
   title: string,
   render: (value: string, record: IIssue) => React.ReactNode,
-  width ?: number,
+  width?: number,
 ): TableColumnType<IIssue> => {
   return {
     title: (
@@ -34,6 +36,7 @@ const TableColumn = (
     ),
     dataIndex: key,
     key,
+    fixed: fixedField.includes(key),
     render,
     width: width ? width : 150,
     sorter: {

@@ -1,22 +1,23 @@
 import React from "react";
 import { Check, X } from "lucide-react";
-// import { DatePicker } from "antd";
 
 const CustomInput = ({
   field,
   value,
   inputType = "number",
   handleUpdateIssue,
+  className
 }: {
   field: string;
   value?: string | number;
   inputType?: "string" | "number" | "date";
   handleUpdateIssue: (field: string, value: any) => void;
+  className?: string;
 }) => {
   const [show, setShow] = React.useState(false);
   const [updatedValue, setUpdatedValue] = React.useState(value);
   return (
-    <div className="relative w-full">
+    <div className={`relative w-full ${className}`}>
       {show ? (
         <input
           type={inputType}
@@ -26,7 +27,7 @@ const CustomInput = ({
         />
       ) : (
         <span
-          className={`cursor-pointer text-sm font-thin ${value ? "rounded-sm bg-gray-200 px-2 py-0.5 text-gray-900" : "text-gray-500 font-semibold text-sm"}`}
+          className={`cursor-pointer text-sm font-thin ${value ? "rounded-sm bg-gray-200 px-2 py-0.5 text-gray-900" : "text-sm font-semibold text-gray-500"}`}
           onClick={() => setShow(true)}
         >
           {value ? value : "None"}
@@ -34,11 +35,11 @@ const CustomInput = ({
       )}
 
       {show && (
-        <div className="absolute top-full right-0 z-50 flex translate-y-1 gap-1 ">
+        <div className="absolute top-full right-0 z-50 flex translate-y-1 gap-1">
           <button
-          style={{
-            boxShadow: "4px 8px 16px rgba(0,0,0,0.2)"
-          }}
+            style={{
+              boxShadow: "4px 8px 16px rgba(0,0,0,0.2)",
+            }}
             onClick={() => {
               handleUpdateIssue(field, updatedValue); // Assuming label is the key to update
               setShow(false);
@@ -49,8 +50,8 @@ const CustomInput = ({
           </button>
           <button
             style={{
-            boxShadow: "-4px 8px 16px rgba(0,0,0,0.2)"
-          }}
+              boxShadow: "-4px 8px 16px rgba(0,0,0,0.2)",
+            }}
             onClick={() => {
               setShow(false);
             }}

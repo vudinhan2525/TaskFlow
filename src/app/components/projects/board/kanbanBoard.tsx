@@ -115,6 +115,7 @@ export default function KanbanBoard() {
 
         return newColumns;
       });
+      setActiveColumn(overId);
       return;
     }
 
