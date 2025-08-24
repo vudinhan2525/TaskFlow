@@ -15,6 +15,7 @@ import {
   SprintDropdown,
 } from "../../general-components/dropdown/index";
 import CustomInput from "./customInput";
+import CustomDatePicker from "../../general-components/customDatePicker";
 
 const Details = ({
   projectId,
@@ -170,8 +171,18 @@ const Details = ({
               type={selectedIssue.type}
             />
           </div>
-        
 
+          {/* Due Date to Complete */}
+          <div className="flex items-center">
+            <span className="min-w-[35%] text-xs font-semibold text-gray-700">
+              Due Date To
+            </span>
+            <CustomDatePicker
+              field="due_date_to"
+              issue={selectedIssue}
+              projectId={projectId}
+            />
+          </div>
           {/* Status/Column */}
           <div className="flex items-center">
             <span className="min-w-[35%] text-xs font-semibold text-gray-700">

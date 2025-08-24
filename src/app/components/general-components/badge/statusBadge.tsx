@@ -78,10 +78,12 @@ const StatusBadge = ({
   column,
   index,
   size = "small",
+  className,
 }: {
   column: IColumn;
   index?: number;
   size?: "small" | "medium" | "large";
+  className?: string;
 }) => {
   if (!column) return <></>;
 
@@ -97,7 +99,7 @@ const StatusBadge = ({
 
   return (
     <div
-      className={`flex cursor-pointer items-center gap-2 rounded p-2 transition-colors duration-200 ${selectedStatus.hoverBg}`}
+      className={`flex cursor-pointer items-center gap-2 rounded transition-colors duration-200 ${selectedStatus.hoverBg} ${className}`}
     >
       <div
         className={`rounded-2xl ${selectedStatus.bgColor} flex items-center gap-1 ${currentSize.button}`}

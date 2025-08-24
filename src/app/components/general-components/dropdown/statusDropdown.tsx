@@ -39,7 +39,7 @@ const StatusDropdown = ({
             border: "none",
             boxShadow: "none",
           },
-          label: <StatusBadge column={column} index={index} />,
+          label: <StatusBadge column={column} index={index} className="p-2" />,
           onClick: () => {
             handleChangeStatus(column.id);
           },

@@ -8,17 +8,20 @@ export interface IIssue {
   assignee_id: string;
   parent_id?: string;
   reporter_id?: string;
-  // team_id?: string;
   type: "Bug" | "Task" | "Story" | "Epic";
   column: IColumn;
   priority: IssuePriority;
   summary: string;
   description: string;
   story_point: number;
-  // labels?: string[];
   attachments: string[];
   created_at: string;
   updated_at: string;
+  completed_at: string;
+  due_date_from:string;
+  due_date_to:string;
+  // labels?: string[];
+  // team_id?: string;
 }
 
 export type IssueStatus = "TO DO" | "IN PROGRESS" | "DONE";

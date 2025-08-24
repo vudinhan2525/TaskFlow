@@ -115,7 +115,7 @@ export function useUpdateIssue({
   const {
     mutate: updateIssue,
     mutateAsync: updateIssueAsync,
-    isPending: isLoading,
+    isPending: isLoading, 
     isSuccess,
     error,
   } = useMutation({

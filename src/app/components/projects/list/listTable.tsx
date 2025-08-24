@@ -2,14 +2,13 @@ import { useRef } from "react";
 import { Table } from "antd";
 import type { TableProps, TableColumnType } from "antd";
 import { IIssue, IssuePriority, IssueType } from "@libs/types/issue";
-import { format } from "date-fns";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import ColumnInputFiled from "./listTable/ColumnInputFiled";
 import TableColumn from "./listTable/TableColumn";
 import { PaginationRes } from "@libs/apis/api";
 import { useNavigate } from "react-router-dom";
-import RenderTextCell from "./common/RenderTextCell";
+
 import {
   TypeDropdown,
   StatusDropdown,
@@ -17,7 +16,7 @@ import {
   SprintDropdown,
 } from "../../general-components/dropdown/index";
 import UserDropdown from "../../general-components/dropdown/userDropdown";
-
+import CustomDatePicker from "../../general-components/customDatePicker";
 interface ListTableProps {
   isLoading: boolean;
   isFetching: boolean;
@@ -63,7 +62,7 @@ const ListTable = ({
     TableColumn("title", "Title", (_, { title }) => (
       <div className="p-2">
         {keyword ? (
-          <p className="line-clamp-1">
+          <p className="font-semibold text-gray-300">
             {title.slice(0, title.toLowerCase().indexOf(keyword.toLowerCase()))}
             <span className="text-emerald-500">{keyword}</span>
             {title.slice(
@@ -72,33 +71,33 @@ const ListTable = ({
             )}
           </p>
         ) : (
-          title
+          <p className="font-[600] text-gray-900">{title}</p>
         )}
       </div>
     )),
     // Summary
-    TableColumn("summary", "Summary", (_, { id }) => (
-      <ColumnInputFiled
-        issue={issues.find((issue) => issue.id === id)}
-        field="summary"
-        handleChangeCellValue={handleChangeCellValue}
-      />
-    )),
-    // Status
     TableColumn(
-      "column.name",
-      "Status",
-      (_, { id, column }) => (
-        <div className="px-4">
-          <StatusDropdown
-            projectId={projectId}
-            issueId={id}
-            column={columns.find((col) => col.id === column.id) || columns[0]}
-          />
-        </div>
+      "summary",
+      "Summary",
+      (_, { id }) => (
+        <ColumnInputFiled
+          issue={issues.find((issue) => issue.id === id)}
+          field="summary"
+          handleChangeCellValue={handleChangeCellValue}
+        />
       ),
-      200,
+      250,
     ),
+    // Status
+    TableColumn("column.name", "Status", (_, { id, column }) => (
+      <div className="px-4">
+        <StatusDropdown
+          projectId={projectId}
+          issueId={id}
+          column={columns.find((col) => col.id === column.id) || columns[0]}
+        />
+      </div>
+    )),
 
     // Sprint
     TableColumn("sprint_id", "Sprint", (_, { id, sprint_id }) => (
@@ -135,15 +134,20 @@ const ListTable = ({
       </div>
     )),
     // Priority
-    TableColumn("priority", "Priority", (_, { id, priority }) => (
-      <div className="px-4 py-1">
-        <PriorityDropdown
-          projectId={projectId}
-          issueId={id}
-          priority={priority as IssuePriority}
-        />
-      </div>
-    )),
+    TableColumn(
+      "priority",
+      "Priority",
+      (_, { id, priority }) => (
+        <div className="px-4 py-1">
+          <PriorityDropdown
+            projectId={projectId}
+            issueId={id}
+            priority={priority as IssuePriority}
+          />
+        </div>
+      ),
+      100,
+    ),
     // Team
     // TableColumn("team_id", "Team", (_, { team_id }) => (
     //   <span className="inline-flex items-center gap-1">
@@ -170,20 +174,50 @@ const ListTable = ({
     //     )) || "-"}
     //   </div>
     // )),
+
     // Points
-    TableColumn("story_point", "Story Point", (_, { id }) => (
-      <ColumnInputFiled
-        issue={issues.find((issue) => issue.id === id)}
-        field="story_point"
-        inputType="number"
-        handleChangeCellValue={handleChangeCellValue}
+    TableColumn(
+      "story_point",
+      "Story Point",
+      (_, { id }) => (
+        <ColumnInputFiled
+          issue={issues.find((issue) => issue.id === id)}
+          field="story_point"
+          inputType="number"
+          handleChangeCellValue={handleChangeCellValue}
+        />
+      ),
+      120,
+    ),
+
+    // Due Date From
+    TableColumn("due_date_from", "Due Date From", (_, { id }) => (
+      <CustomDatePicker
+        field="due_date_from"
+        projectId={projectId}
+        className="px-2"
+        issue={issues.find((issue) => issue.id === id)!}
       />
     )),
+
+    // Due Date To
+    TableColumn("due_date_to", "Due Date To", (_, { id }) => (
+      <CustomDatePicker
+        field="due_date_to"
+        projectId={projectId}
+        className="px-2"
+        issue={issues.find((issue) => issue.id === id)!}
+      />
+    )),
+
     // Created
-    TableColumn("created_at", "Created At", (_, { created_at }) => (
-      <RenderTextCell
-        text={format(new Date(created_at), "MM/dd/yyyy")}
-        className="p-1 text-sm font-medium"
+    TableColumn("created_at", "Created At", (_, { id }) => (
+      <CustomDatePicker
+        field="created_at"
+        projectId={projectId}
+        className="px-2"
+        isEditable={false}
+        issue={issues.find((issue) => issue.id === id)!}
       />
     )),
   ];
@@ -195,6 +229,7 @@ const ListTable = ({
         dataSource={issues}
         bordered={true}
         rowSelection={{ ...rowSelection }}
+        scroll={{ y: 1000, x: 1000 }} // y = chiều cao cố định, x = tổng chiều rộng table
         rowKey="id"
         loading={isLoading || isFetching}
         pagination={{

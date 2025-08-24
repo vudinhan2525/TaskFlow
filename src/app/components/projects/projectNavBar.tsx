@@ -126,13 +126,13 @@ const ProjectNavbar = (): React.ReactElement => {
     {
       id: "roadmap",
       label: "Roadmap",
-      icon: <FaChartBar />,
+      icon: <FaCalendarAlt />,
       route: `/projects/${currentProjectId}/roadmap`,
     },
     {
       id: "sprints",
       label: "Sprints",
-      icon: <FaCalendarAlt />,
+      icon: <FaChartBar />,
       route: `/projects/${currentProjectId}/sprints`,
     },
     {

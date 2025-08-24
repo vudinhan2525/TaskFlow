@@ -1,4 +1,4 @@
-import { IIssue } from "@libs/types/issue";
+  import { IIssue } from "@libs/types/issue";
 import { useState } from "react";
 import PriorityBadge from "../../general-components/badge/priorityBadge";
 import TypeBadge from "../../general-components/badge/typeBadge";

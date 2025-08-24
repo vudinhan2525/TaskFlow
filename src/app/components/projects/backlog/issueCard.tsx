@@ -15,6 +15,7 @@ import {
   TypeDropdown,
   UserDropdown,
 } from "../../general-components/dropdown/index";
+import CustomDatePicker from "../../general-components/customDatePicker";
 
 const IssueCard = memo(
   ({
@@ -148,10 +149,10 @@ const IssueCard = memo(
         <div className="flex items-center">
           {/* IssueCardLeft */}
           <div className="flex flex-1 items-center justify-start gap-x-2">
-            <div className="flex w-full cursor-pointer items-center gap-4 ">
-              <div className="flex items-center gap-2 ">
+            <div className="flex w-full cursor-pointer items-center gap-4">
+              <div className="flex items-center gap-2">
                 <input
-                type="checkbox"
+                  type="checkbox"
                   style={{
                     opacity:
                       selectedIssues &&
@@ -223,7 +224,7 @@ const IssueCard = memo(
                       setIsEditingSummary(false);
                     }}
                     onChange={(e) => setIssueSummary(e.target.value)}
-                    className={`w-full rounded-sm border-2 border-emerald-500 px-2 py-1  outline-none`}
+                    className={`w-full rounded-sm border-2 border-emerald-500 px-2 py-1 outline-none`}
                   />
                 ) : (
                   <span className="text-sm font-thin">{issueSummary}</span>
@@ -267,23 +268,36 @@ const IssueCard = memo(
               />
             </div>
 
-            {/* {/* story point */}
-            <div className="col-span-2 flex items-center">
-              <CustomInput
-                field="story_point"
-                // label="-"
-                value={issue.story_point || "-"}
-                handleUpdateIssue={handleChangeIssueValue}
+            {/* due date to */}
+            <div className="col-span-3 flex items-center">
+              <CustomDatePicker
+                issue={issue}
+                field="due_date_to"
+                projectId={projectId}
               />
             </div>
 
+            {/* {/* story point */}
+            <div className="col-span-2 flex items-center">
+              <div className="flex w-full items-center justify-center">
+                <CustomInput
+                  field="story_point"
+                  className="flex items-center justify-center"
+                  // label="-"
+                  value={issue.story_point || "-"}
+                  handleUpdateIssue={handleChangeIssueValue}
+                />
+              </div>
+            </div>
+
             {/* assignee */}
-            <div className="col-span-3 flex items-center">
+            <div className="col-span-1 flex items-center">
               <UserDropdown
                 projectId={projectId}
                 issueId={issue.id}
                 selectedUserId={issue?.assignee_id || ""}
                 columnField="assignee_id"
+                isDisplayname={false}
               />
             </div>
           </div>
