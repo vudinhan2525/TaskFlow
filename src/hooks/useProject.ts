@@ -164,7 +164,7 @@ export function useProject(projectId: string) {
   };
 }
 
-export function useProjectColumns(projectId: string) {
+export function useProjectColumns(projectId: string | undefined) {
   const {
     data: columnsData,
     isLoading,

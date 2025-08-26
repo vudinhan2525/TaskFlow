@@ -24,4 +24,6 @@ export const users = {
   }) => api.post<ResponseApi<void>>("/users/change-password", data, config),
   getUserStats: (body: { id: string; is_sprintId: boolean }) =>
     api.post<ResponseApi<UserStats>>(`/users/stats/`, body, config),
+  updateUser: ( data: Partial<IUser>) =>
+    api.put<ResponseApi<IUser>>(`/users`, data, config),
 };

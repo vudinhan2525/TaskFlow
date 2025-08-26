@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectIssues } from "@libs/hooks/useIssue";
@@ -9,19 +9,11 @@ import CreateSprintModal from "@libs/app/components/projects/modals/createSprint
 import Button from "@libs/app/components/general-components/button";
 import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
 
-
 const BackLogPage: React.FC = () => {
   const { projectId = "" } = useParams();
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [backLogMinWidth, setBackLogMinWidth] = useState(0);
-  useEffect(() => {
-    if (containerRef.current) {
-      setBackLogMinWidth(
-        Math.round((containerRef.current?.clientWidth || 0) * 0.6),
-      );
-    }
-  }, []);
+
   const { selectedIssue } = useIssueSelection();
   const { sprints: initialSprints, isLoading: isLoadingSprints } =
     useProjectSprints(projectId || "");
@@ -31,19 +23,18 @@ const BackLogPage: React.FC = () => {
     });
 
   return (
-    <div
-      ref={containerRef}
-      className="flex flex-1 flex-col gap-4 overflow-auto p-4"
-    >
+    <div ref={containerRef} className="flex h-full flex-col gap-4 p-4 pb-28">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Backlog</h1>
+        <h1 className="text-2xl font-bold text-gray-700">Backlog</h1>
         <Button
           onClick={() => setIsCreateSprintModalOpen(true)}
           variant="primary"
+          className="font-semibold"
         >
           Create Sprint
         </Button>
       </div>
+
       <div className="flex flex-1 overflow-auto">
         <PanelGroup
           className="flex w-full flex-1"
@@ -57,12 +48,8 @@ const BackLogPage: React.FC = () => {
             minSize={50}
             maxSize={100}
           >
-            <div className="h-full overflow-auto">
-              <div
-                style={{
-                  minWidth: backLogMinWidth,
-                }}
-              >
+            <div className="h-full overflow-auto pr-4">
+              <div>
                 <BackLog
                   initialSprints={initialSprints}
                   initialIssues={initialIssues}
@@ -76,10 +63,9 @@ const BackLogPage: React.FC = () => {
           {selectedIssue && (
             <PanelResizeHandle
               style={{
-                width: "2px",
                 backgroundColor: "oklch(0.696 0.17 162.48)",
               }}
-              className="backlog--panel-resize-handle relative w-1 cursor-col-resize bg-gray-300 text-emerald-500 opacity-0 hover:opacity-100"
+              className="backlog--panel-resize-handle relative w-[2px] cursor-col-resize bg-gray-300 pl-[2px] text-emerald-500 opacity-0 hover:opacity-100"
             />
           )}
 
@@ -91,7 +77,7 @@ const BackLogPage: React.FC = () => {
               maxSize={50}
               minSize={30}
             >
-              <div className="h-full overflow-y-auto">
+              <div className="h-full overflow-y-auto pr-4">
                 <IssueSideBar />
               </div>
             </Panel>

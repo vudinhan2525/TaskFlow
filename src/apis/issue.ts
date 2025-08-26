@@ -6,7 +6,7 @@ import {
   GetActivitiesParams,
   IActivity,
 } from "@libs/types/issue";
-
+  
 const config = {
   withCredentials: true,
 };

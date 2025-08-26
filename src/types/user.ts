@@ -8,6 +8,7 @@ export interface IUser {
   created_at: string;
   updated_at: string;
   role: UserRole;
+  avatar?: string;
 }
 
 export interface GetUserParams {
@@ -27,3 +28,5 @@ export interface LoginUserRequest {
   email: string;
   password: string;
 }
+
+

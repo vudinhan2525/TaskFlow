@@ -235,10 +235,10 @@ const BackLog = ({
 
       {activeIssue && (
         <DragOverlay
-          dropAnimation={{
-            duration: 500,
-            easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
-          }}
+          // dropAnimation={{
+          //   duration: 500,
+          //   easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+          // }}
         >
           <IssueCardOverlay issue={activeIssue} />
         </DragOverlay>

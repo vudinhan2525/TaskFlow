@@ -81,7 +81,7 @@ export const Header = () => {
         {isAuthenticated && (
           <div className="flex w-1/4 items-center justify-end space-x-2">
             {/* Notifications */}
-            <NotificationsPopover userId={user?.data?.id || ""} />
+            <NotificationsPopover />
             {/* Project Invitations */}
             <ProjectInvitationsPopover userId={user?.data?.id || ""} />
             {/* Settings Icon */}

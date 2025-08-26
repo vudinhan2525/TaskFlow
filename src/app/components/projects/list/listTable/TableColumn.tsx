@@ -1,87 +1,18 @@
+import { columnsIcon } from "@libs/constants/list";
 import { IIssue } from "@libs/types/issue";
-import { Dropdown, MenuProps, TableColumnType } from "antd";
+import { TableColumnType } from "antd";
+import _ from "lodash";
 import React from "react";
-import {
-  FaAngleDown,
-  FaPlus,
-  FaArrowDown,
-  FaListUl,
-  FaArrowUp,
-} from "react-icons/fa";
-import { LuX } from "react-icons/lu";
-import { columnsIcon } from "../../../../../constants/list";
-import { FaCheck } from "react-icons/fa6";
-import { MdHideSource } from "react-icons/md";
+import { FaPlus, FaListUl } from "react-icons/fa";
+
+const fixedField = ["title", "type"];
 
 const TableColumn = (
-  key: keyof IIssue,
+  key: string,
   title: string,
-  visibleColumns: { key: keyof IIssue; visible: boolean }[],
-  handleVisible: (key: keyof IIssue) => void,
-  handleSort: (
-    key: keyof IIssue,
-    sortOrder: "ascend" | "descend" | null,
-  ) => void,
   render: (value: string, record: IIssue) => React.ReactNode,
-  options: {
-    multiple?: number;
-    sortOrder?: "ascend" | "descend" | null;
-    sorter?: (a: IIssue, b: IIssue) => number;
-    align?: "start" | "center" | "end";
-    colSpan?: number;
-    width?: number;
-  } = {},
+  width?: number,
 ): TableColumnType<IIssue> => {
-  const items: MenuProps["items"] = [
-    {
-      label: (
-        <div className="flex items-center gap-2">
-          <FaArrowUp className="h-3 w-3" />
-          <p className="text-xs text-[#6c757d]">Sort {"A -> Z"}</p>
-          {options.sortOrder === "ascend" && (
-            <FaCheck className="h-3 w-3 text-emerald-500" />
-          )}
-        </div>
-      ),
-      key: "sort-asc",
-      onClick: () => handleSort(key, "ascend"),
-    },
-    {
-      label: (
-        <div className="flex items-center gap-2">
-          <FaArrowDown className="h-3 w-3" />
-          <p className="text-xs text-[#6c757d]">Sort {"Z -> A"}</p>
-          {options.sortOrder === "descend" && (
-            <FaCheck className="h-3 w-3 text-emerald-500" />
-          )}
-        </div>
-      ),
-      key: "sort-desc",
-      onClick: () => handleSort(key, "descend"),
-    },
-    {
-      label: (
-        <div className={`flex items-center gap-2`}>
-          <LuX className="h-3 w-3" />
-          <p className="text-xs text-[#6c757d]">Clear Sort</p>
-        </div>
-      ),
-      disabled: options.sortOrder === null,
-      key: "clear-sort",
-      onClick: () => handleSort(key, null),
-    },
-    {
-      label: (
-        <div className="flex items-center gap-2">
-          <MdHideSource className="h-3 w-3" />
-          <p className="text-xs text-[#6c757d]">Hide field</p>
-        </div>
-      ),
-      key: "hide-field",
-      onClick: () => handleVisible(key),
-    },
-  ].filter((item) => item.disabled !== true);
-
   return {
     title: (
       <div
@@ -101,33 +32,17 @@ const TableColumn = (
           </div>
           <span className="text-xs font-bold text-[#6c757d]">{title}</span>
         </div>
-
-        <div className="z-10 cursor-pointer opacity-0 group-hover:opacity-100">
-          <Dropdown menu={{ items }} trigger={["click"]}>
-            <FaAngleDown className="h-3 w-3 text-[#6c757d]" />
-          </Dropdown>
-        </div>
       </div>
     ),
     dataIndex: key,
     key,
-    sortOrder: options.sortOrder,
-    hidden: !visibleColumns.find((column) => column.key === key)?.visible,
+    fixed: fixedField.includes(key),
     render,
-    width: options.width || 140,
-    sortIcon: () => {
-      if (options.sortOrder === null) return <div></div>;
-      if (options.sortOrder === "ascend") return <FaArrowUp />;
-      if (options.sortOrder === "descend") return <FaArrowDown />;
-    },
+    width: width ? width : 150,
     sorter: {
-      multiple: options.multiple,
       compare: (a: IIssue, b: IIssue) => {
-        if (options.sortOrder === null) {
-          return 0;
-        }
-        const aValue = a[key as keyof IIssue];
-        const bValue = b[key as keyof IIssue];
+        const aValue = _.get(a, key);
+        const bValue = _.get(b, key);
         if (typeof aValue === "number" && typeof bValue === "number") {
           return aValue - bValue;
         } else if (typeof aValue === "string" && typeof bValue === "string") {

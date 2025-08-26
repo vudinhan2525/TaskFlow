@@ -16,26 +16,19 @@ import { IColumn } from "@libs/types/project";
 import { Popover } from "antd";
 import { ReactNode, useState } from "react";
 import { LuEllipsisVertical } from "react-icons/lu";
+import type { CSSProperties } from "react";
+import { CSS } from "@dnd-kit/utilities";
 
-const Issue = ({
-  issue,
-  isDragging,
-}: {
-  issue: IIssue;
-  isDragging?: boolean;
-}) => {
-  return <IssueCard issue={issue} isDragging={isDragging} />;
-};
 
 const SortableIssue = ({ issue }: { issue: IIssue }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: issue.id });
-
-  const style = {
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
+  const isDragging = attributes["aria-pressed"];
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
     transition,
+    cursor: isDragging ? "grabbing" : "default",
+    touchAction: "none",
   };
 
   return (
@@ -46,7 +39,7 @@ const SortableIssue = ({ issue }: { issue: IIssue }) => {
       {...listeners}
       className="cursor-grab"
     >
-      <Issue issue={issue} />
+      <IssueCard issue={issue} isDragging={isDragging} />
     </div>
   );
 };
@@ -173,7 +166,7 @@ export const KanbanColumn = ({
   return (
     <div ref={setNodeRef} className="mx-2 w-80 rounded bg-gray-100 p-2">
       <div className="mb-3 flex items-center justify-between p-2">
-        <h2 className="text-lg font-bold">{column.name}</h2>
+        <h2 className="text-base font-thin text-gray-500">{column.name}</h2>
         <Popover
           content={content}
           trigger="click"

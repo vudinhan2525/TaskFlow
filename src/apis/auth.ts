@@ -10,6 +10,10 @@ export const auth = {
     api.post<ResponseApi<IUser>>("/users/register", data, {
       withCredentials: true,
     }),
+  verify: (data: { otp: string, email: string }) =>
+    api.post<ResponseApi<IUser>>("/users/verify", data, {
+      withCredentials: true,
+    }),
   getCurrentUser: () =>
     api.get<ResponseApi<IUser>>("/users/get-me", {
       withCredentials: true

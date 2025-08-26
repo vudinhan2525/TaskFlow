@@ -1,8 +1,8 @@
-import RenderStatusCell from "../RenderStatusCell";
 import ColumnDropdown from "./columnDropdown";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { IColumn } from "@libs/types/project";
+import StatusBadge from "../badge/statusBadge";
 
 const StatusDropdown = ({
   projectId,
@@ -24,31 +24,34 @@ const StatusDropdown = ({
       },
     });
   };
+
+  const currentColumn = columns.find((col) => col.id === column.id);
+
   return (
     <ColumnDropdown
-      items={columns.map((column) => ({
-        value: column.name,
-        style: {
-          padding: 0,
-          background: "white",
-        },
-        label: (
-          <div
-            key={column.id}
-            className={`flex items-center p-2 hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
-          >
-            <RenderStatusCell column={column} />
-          </div>
-        ),
-        key: column?.id,
-        onClick: () => handleChangeStatus(column?.id),
-      }))}
+      items={columns.map((column, index) => {
+        return {
+          value: column.name,
+          key: column.id,
+          style: {
+            padding: 0,
+            background: "white",
+            border: "none",
+            boxShadow: "none",
+          },
+          label: <StatusBadge column={column} index={index} className="p-2" />,
+          onClick: () => {
+            handleChangeStatus(column.id);
+          },
+        };
+      })}
+      currentItem={undefined}
       children={
-        <div className="flex justify-start px-2">
-          <RenderStatusCell column={column} />
-        </div>
+        <StatusBadge
+          column={currentColumn || column}
+          index={columns.findIndex((col) => col.id === column.id)}
+        />
       }
-      currentItem={column?.name}
     />
   );
 };

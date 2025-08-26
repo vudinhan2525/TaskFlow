@@ -1,4 +1,5 @@
-import api, { ResponseApi } from "@libs/apis/api";
+import { ResponseApi } from "@libs/apis/api";
+import notiApi from "@libs/apis/notiApi";
 import { INotification } from "@libs/types/notification";
 
 const config = {
@@ -8,25 +9,33 @@ const config = {
   },
 };
 
-export const notifications = {
-  list: () => api.get<ResponseApi<INotification[]>>(`/notifications`, config),
-
-  markAsRead: (notificationId: string) =>
-    api.put<ResponseApi<INotification>>(
-      `/notifications/${notificationId}/read`,
-      {},
+export const notificationApi = {
+  list: (userId: string) =>
+    notiApi.post<ResponseApi<INotification[]>>(
+      `/notifications/get-all`,
+      { user_id: userId },
       config,
     ),
 
-  markAllAsRead: () =>
-    api.put<ResponseApi<void>>(`/notifications/read-all`, {}, config),
+  update: (notificationId: string, body: { isRead: boolean }) =>
+    notiApi.put<ResponseApi<INotification>>(
+      `/notifications/${notificationId}`,
+      body,
+      config,
+    ),
+
+  updateAll: (body: { userId: string; isRead: boolean }) =>
+    notiApi.post<ResponseApi<void>>(`/notifications/update-all`, body, config),
 
   getUnreadCount: () =>
-    api.get<ResponseApi<{ count: number }>>(
+    notiApi.get<ResponseApi<{ count: number }>>(
       `/notifications/unread-count`,
       config,
     ),
 
   delete: (notificationId: string) =>
-    api.delete<ResponseApi<void>>(`/notifications/${notificationId}`, config),
+    notiApi.delete<ResponseApi<void>>(
+      `/notifications/${notificationId}`,
+      config,
+    ),
 };

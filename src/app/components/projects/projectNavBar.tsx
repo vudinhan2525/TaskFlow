@@ -8,7 +8,6 @@ import {
   FaCode,
   FaTasks,
   FaGlobe,
-  FaStar,
   FaUserPlus,
 } from "react-icons/fa";
 import {
@@ -24,7 +23,7 @@ import {
   arrayMove,
   SortableContext,
   useSortable,
-  horizontalListSortingStrategy,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";
@@ -32,7 +31,7 @@ import { useProject } from "../../../hooks/useProject";
 import AddProjectMemberModal from "./modals/addProjectMemberModal";
 
 interface NavItem {
-  id: string;
+  id: string; 
   label: string;
   icon: React.ReactElement;
   route: string;
@@ -69,16 +68,16 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative ${isDragging ? "pointer-events-none z-50" : "pointer-events-auto"}`}
+      className={`relative w-full ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
       {...attributes}
       {...listeners}
     >
       <Link
         to={item.route}
-        className={`group relative flex items-center px-4 py-3 text-sm font-medium no-underline transition-all duration-150 ${
+        className={`group relative flex w-full items-center px-6 py-3 text-sm font-medium no-underline transition-all duration-150 ${
           isActive
-            ? "border-b-2 border-green-600 bg-green-50 text-green-600"
-            : "border-b-2 border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:text-green-600"
+            ? "border-green-600 bg-green-50 text-green-600"
+            : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:text-green-600"
         }`}
       >
         <span
@@ -87,9 +86,6 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
           {item.icon}
         </span>
         <span className="whitespace-nowrap">{item.label}</span>
-        {isActive && (
-          <div className="absolute right-0 bottom-0 left-0 h-0.5 rounded-t-sm bg-green-600"></div>
-        )}
       </Link>
     </div>
   );
@@ -99,7 +95,7 @@ const ProjectNavbar = (): React.ReactElement => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  const [isStarred, setIsStarred] = useState(false);
+  // const [isStarred, setIsStarred] = useState(false);
   const { project } = useProject(projectId || ""); // Assuming this returns project data
 
   const getNavItems = (currentProjectId: string): NavItem[] => [
@@ -130,13 +126,13 @@ const ProjectNavbar = (): React.ReactElement => {
     {
       id: "roadmap",
       label: "Roadmap",
-      icon: <FaChartBar />,
+      icon: <FaCalendarAlt />,
       route: `/projects/${currentProjectId}/roadmap`,
     },
     {
       id: "sprints",
       label: "Sprints",
-      icon: <FaCalendarAlt />,
+      icon: <FaChartBar />,
       route: `/projects/${currentProjectId}/sprints`,
     },
     {
@@ -208,36 +204,31 @@ const ProjectNavbar = (): React.ReactElement => {
       });
     }
   };
-
-  const toggleStar = () => {
-    setIsStarred(!isStarred);
-    // Here you would typically call an API to save the starred state
-  };
-
   return (
-    <div className="border-b border-gray-200 bg-white shadow-sm">
-      {/* Project Header */}
-      <div className="border-b border-gray-100 px-6 py-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            {/* Project Avatar */}
-            <div className="flex h-10 w-10 items-center justify-center rounded bg-green-600 text-sm font-semibold text-white">
-              {project?.name?.substring(0, 2)?.toUpperCase() || "PR"}
-            </div>
-
-            {/* Project Info */}
-            <div className="flex items-center space-x-3">
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">
-                  {project?.name || "Project Name"}
-                </h1>
-                <p className="text-sm text-gray-500">
-                  {project?.key || "PROJ"} • Software project
-                </p>
+    <div className="flex h-full flex-col justify-between border-gray-200 bg-white shadow-sm">
+      <div className="flex flex-col space-y-6">
+        {/* Project Header */}
+        <div className="border-b border-gray-100 px-6 py-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {/* Project Avatar */}
+              <div className="flex h-10 w-10 items-center justify-center rounded bg-green-600 text-sm font-semibold text-white">
+                {project?.name?.substring(0, 2)?.toUpperCase() || "PR"}
               </div>
 
-              {/* Star Button */}
-              <button
+              {/* Project Info */}
+              <div className="flex items-center space-x-3">
+                <div>
+                  <h1 className="text-md font-semibold text-gray-900">
+                    {project?.name || "Project Name"}
+                  </h1>
+                  <p className="text-sm text-gray-500">
+                    {project?.key || "PROJ"} • Software project
+                  </p>
+                </div>
+
+                {/* Star Button */}
+                {/* <button
                 onClick={toggleStar}
                 className="rounded p-1 transition-colors hover:bg-gray-100"
                 title={isStarred ? "Remove from starred" : "Add to starred"}
@@ -247,45 +238,50 @@ const ProjectNavbar = (): React.ReactElement => {
                 ) : (
                   <FaStar className="h-4 w-4 text-gray-400 hover:text-yellow-500" />
                 )}
-              </button>
+              </button> */}
+              </div>
             </div>
-          </div>
-          <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsAddMemberModalOpen(true)}
+              className="flex cursor-pointer items-center space-x-2 text-gray-500 duration-300 hover:scale-110"
+            >
+              {/* <button
               className="inline-flex cursor-pointer items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
               title="Add people"
             >
-              <FaUserPlus className="mr-2 h-4 w-4" />
               Add people
+            </button> */}
+              <FaUserPlus className="mr-2 h-4 w-4" />
             </button>
           </div>
         </div>
+
+        {/* Navigation Tabs */}
+        <div className="w-full">
+          <nav className="scrollbar-hide nav-item flex w-full flex-col items-center space-x-1">
+            <DndContext
+              onDragEnd={handleDragEnd}
+              sensors={sensors}
+              collisionDetection={closestCenter}
+            >
+              <SortableContext
+                items={items}
+                strategy={verticalListSortingStrategy}
+              >
+                {items.map((item) => (
+                  <SortableNavItem
+                    key={item.id}
+                    item={item}
+                    isActive={location.pathname === item.route}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </nav>
+        </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="px-6">
-        <nav className="scrollbar-hide flex items-center space-x-1 overflow-x-auto">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={items}
-              strategy={horizontalListSortingStrategy}
-            >
-              {items.map((item) => (
-                <SortableNavItem
-                  key={item.id}
-                  item={item}
-                  isActive={location.pathname === item.route}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
-        </nav>
-      </div>
+      <div></div>
 
       <AddProjectMemberModal
         isOpen={isAddMemberModalOpen}

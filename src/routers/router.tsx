@@ -16,6 +16,7 @@ import AdminLayout from "@libs/app/layouts/adminLayout";
 import AdminRoute from "./AdminRoute";
 import UsersPage from "@libs/app/pages/admin/users/UsersPage";
 import ProjectsPage from "@libs/app/pages/admin/projects/ProjectsPage";
+import VerifyPage from "@libs/app/pages/auth/verifyPage/verifyPage";
 
 // Lazy load components
 const ProjectReport = lazy(
@@ -61,6 +62,7 @@ const Router = (): React.ReactElement => {
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/verify-otp" element={<VerifyPage />} />
 
         {/* Admin routes */}
         <Route path="/admin">

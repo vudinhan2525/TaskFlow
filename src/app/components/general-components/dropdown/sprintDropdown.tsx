@@ -23,7 +23,7 @@ const SprintDropdown = ({
       },
     });
   };
-
+  if (!currentSprint) return <></>;
   return (
     <ColumnDropdown
       items={sprints.map((sprint: ISprint) => ({

@@ -6,15 +6,16 @@ import {
   DragStartEvent,
   KeyboardSensor,
   PointerSensor,
-  rectIntersection,
   useSensor,
   useSensors,
+  DragOverlay,
+  closestCorners,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
+  horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { IColumn } from "@libs/types/project";
 import { IIssue } from "@libs/types/issue";
@@ -23,6 +24,7 @@ import { useAddProjectColumn, useProjectColumns } from "@libs/hooks/useProject";
 import { LuCirclePlus } from "react-icons/lu";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
+import IssueCard from "./issueCard";
 
 export default function KanbanBoard() {
   const { projectId } = useParams();
@@ -69,12 +71,12 @@ export default function KanbanBoard() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    // Don't do anything if we're hovering over ourselves
-    if (activeId === overId) return;
+    if (activeId === overId) {
+      return;
+    }
     // Check if we're hovering over a column
     const isOverColumn = columns.some((col) => col.id === overId);
     if (isOverColumn) {
-      console.log("Dropped onto a column");
       // We're dropping onto a column directly
       setColumns((prevColumns) => {
         // Find which column the active issue belongs to
@@ -113,6 +115,7 @@ export default function KanbanBoard() {
 
         return newColumns;
       });
+      setActiveColumn(overId);
       return;
     }
 
@@ -134,7 +137,6 @@ export default function KanbanBoard() {
     // Only proceed if we're over a different column or we're reordering within the same column
     if (activeColumn !== overColumnId) {
       const prevColumns = [...columns];
-
       const sourceColumnIndex = prevColumns.findIndex((column) =>
         column.issues.some((issue) => issue.id === activeId),
       );
@@ -144,8 +146,9 @@ export default function KanbanBoard() {
         (column) => column.id === overColumnId,
       );
 
-      if (sourceColumnIndex === -1 || targetColumnIndex === -1)
+      if (sourceColumnIndex === -1 || targetColumnIndex === -1) {
         return prevColumns;
+      }
 
       // Get the active issue
       const issueToMove = prevColumns[sourceColumnIndex].issues.find(
@@ -156,6 +159,7 @@ export default function KanbanBoard() {
 
       // Create new columns array
       const newColumns = [...prevColumns];
+
 
       // Remove from source
       newColumns[sourceColumnIndex] = {
@@ -178,6 +182,7 @@ export default function KanbanBoard() {
           ...newColumns[targetColumnIndex].issues.slice(overIssueIndex + 1),
         ],
       };
+      setActiveColumn(newColumns[targetColumnIndex].id);
       setColumns(newColumns);
     }
   };
@@ -260,18 +265,20 @@ export default function KanbanBoard() {
   }, [initialColumns]);
   return (
     <div className="p-4">
-      <h1 className="mb-6 p-2 text-2xl font-bold">Kanban Board</h1>
+      <h1 className="mb-6 p-2 text-2xl font-bold text-gray-700">
+        Kanban Board
+      </h1>
       <div className="flex">
         <DndContext
           sensors={sensors}
-          collisionDetection={rectIntersection}
+          collisionDetection={closestCorners}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           <SortableContext
             items={columns.map((col) => col.id)}
-            strategy={verticalListSortingStrategy}
+            strategy={horizontalListSortingStrategy}
           >
             {columns.map((column) => (
               <KanbanColumn
@@ -309,7 +316,11 @@ export default function KanbanBoard() {
               </div>
             </div>
           </SortableContext>
-          {/* <DragOverlay>{activeIssue ? <Issue issue={activeIssue} isDragging /> : null}</DragOverlay> */}
+          <DragOverlay>
+            {activeIssue ? (
+              <IssueCard issue={activeIssue} isDragging={false} />
+            ) : null}
+          </DragOverlay>
         </DndContext>
       </div>
     </div>

@@ -18,13 +18,17 @@ export function useProjectIssues(body: GetIssuesParams) {
       body.status,
       body.assignee_ids,
       body.column_ids,
+      body.created_at_from,
+      body.created_at_to,
       body.page,
     ],
     queryFn: async () => {
       const response = await issues.list(body);
       return response.data;
     },
+    enabled: !!body?.project_id,
   });
+
   return {
     issues: issuesData?.data || [],
     pagination: issuesData?.pagination,
@@ -111,7 +115,7 @@ export function useUpdateIssue({
   const {
     mutate: updateIssue,
     mutateAsync: updateIssueAsync,
-    isPending: isLoading,
+    isPending: isLoading, 
     isSuccess,
     error,
   } = useMutation({
