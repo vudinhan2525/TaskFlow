@@ -25,6 +25,8 @@ import { LuCirclePlus } from "react-icons/lu";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
 import IssueCard from "./issueCard";
+// import { GetIssuesParams } from "@libs/types/issue";
+import PageFilter from "@libs/app/components/projects/list/listFilter/pageFilter";
 
 export default function KanbanBoard() {
   const { projectId } = useParams();
@@ -32,10 +34,13 @@ export default function KanbanBoard() {
   const [columns, setColumns] = useState<IColumn[]>(initialColumns);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
+
   const [newColumnText, setNewColumnText] = useState("");
+
   const { createColumn } = useAddProjectColumn({
     setColumns: setColumns,
   });
+
   const { updateIssue } = useUpdateIssue({
     projectId: projectId || "",
     isNotToasting: true,
@@ -160,7 +165,6 @@ export default function KanbanBoard() {
       // Create new columns array
       const newColumns = [...prevColumns];
 
-
       // Remove from source
       newColumns[sourceColumnIndex] = {
         ...newColumns[sourceColumnIndex],
@@ -264,10 +268,9 @@ export default function KanbanBoard() {
     }
   }, [initialColumns]);
   return (
-    <div className="p-4">
-      <h1 className="mb-6 p-2 text-2xl font-bold text-gray-700">
-        Kanban Board
-      </h1>
+    <div className="flex flex-col gap-4 p-4">
+      <h1 className="p-2 text-2xl font-bold text-gray-700">Kanban Board</h1>
+      <PageFilter />
       <div className="flex">
         <DndContext
           sensors={sensors}

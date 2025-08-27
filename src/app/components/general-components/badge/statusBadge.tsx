@@ -1,5 +1,6 @@
 import { IColumn } from "@libs/types/project";
-
+import { useProjectColumns } from "@libs/hooks/useProject";
+import { useParams } from "react-router-dom";
 export const statusColors = [
   {
     order: 1,
@@ -86,6 +87,8 @@ const StatusBadge = ({
   className?: string;
 }) => {
   if (!column) return <></>;
+  const { projectId } = useParams<{ projectId: string }>();
+  const { columns } = useProjectColumns(projectId || "");
 
   const selectedStatus =
     typeof index === "number"
@@ -93,10 +96,11 @@ const StatusBadge = ({
           ((index % statusColors.length) + statusColors.length) %
             statusColors.length
         ]
-      : statusColors[1];
-
+      : statusColors[
+          columns.findIndex((col) => col.id === column.id) % statusColors.length
+        ];
   const currentSize = sizeClasses[size];
-
+  if (!selectedStatus) return <></>;
   return (
     <div
       className={`flex cursor-pointer items-center gap-2 rounded transition-colors duration-200 ${selectedStatus.hoverBg} ${className}`}

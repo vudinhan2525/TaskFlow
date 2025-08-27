@@ -1,55 +1,35 @@
 import Button from "@libs/app/components/general-components/button";
-import { Popover, DatePicker } from "antd";
+import { Popover, DatePicker, Checkbox } from "antd";
 import Search from "antd/es/input/Search";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import dayjs from "dayjs";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { GetIssuesParams } from "@libs/types/issue";
 import StatusBadge from "@libs/app/components/general-components/badge/statusBadge";
-
+import TypeBadge, {
+  typeOptions,
+} from "@libs/app/components/general-components/badge/typeBadge";
+import PriorityBadge, {
+  priorityOptions,
+} from "@libs/app/components/general-components/badge/priorityBadge";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
+import UserAvatar from "@libs/app/components/general-components/user/userAvatar";
 const { RangePicker } = DatePicker;
 
-interface ListFilterProps {
-  setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+interface PageFilterProps {
   onFiltersChange?: (filters: GetIssuesParams) => void;
 }
-
-// const mockWorkTypes = [
-//   { id: "1", name: "Bug", icon: "🐛" },
-//   { id: "2", name: "Task", icon: "✓" },
-//   { id: "3", name: "Story", icon: "📖" },
-//   { id: "4", name: "Epic", icon: "⚡" },
-// ];
-
-// const mockAssignees = [
-//   {
-//     id: "1",
-//     name: "John Doe",
-//     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-//   },
-//   {
-//     id: "2",
-//     name: "Jane Smith",
-//     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane",
-//   },
-//   {
-//     id: "3",
-//     name: "Mike Johnson",
-//     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mike",
-//   },
-// ];
-
-export default function ListFilter({
-  setIsCreateModalOpen,
+export default function PageFilter({
   onFiltersChange,
-}: ListFilterProps) {
+}: PageFilterProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { projectId } = useParams<{ projectId: string }>();
   const [params] = useSearchParams();
   const getSearchParams = () => new URLSearchParams(window.location.search);
 
+  const { projectMembers } = useProjectMembers(projectId || "");
   const { columns } = useProjectColumns(projectId);
   const [filters, setFilters] = useState<GetIssuesParams>({
     keyword: params.get("keyword") || "",
@@ -59,6 +39,9 @@ export default function ListFilter({
     created_at_from: params.get("created_at_from") || undefined,
     created_at_to: params.get("created_at_to") || undefined,
     assignee_ids: params.get("assignee_ids")?.split(",").filter(Boolean) || [],
+    types: (params.get("types")?.split(",").filter(Boolean) as any) || [],
+    priorities:
+      (params.get("priorities")?.split(",").filter(Boolean) as any) || [],
     page: params.get("page") ? parseInt(params.get("page")!) : 1,
     limit: params.get("limit") ? parseInt(params.get("limit")!) : 12,
     project_id: projectId,
@@ -93,6 +76,7 @@ export default function ListFilter({
     window.history.pushState({}, "", newUrl);
   };
   const handleSaveFilters = () => {
+    console.log(filters)
     updateURL(filters);
     setIsPopoverOpen(false);
     onFiltersChange?.(filters);
@@ -104,6 +88,8 @@ export default function ListFilter({
       due_date_from: undefined,
       due_date_to: undefined,
       column_ids: [],
+      priorities: [],
+      types: [],
       created_at_from: undefined,
       created_at_to: undefined,
       assignee_ids: [],
@@ -126,12 +112,14 @@ export default function ListFilter({
     if (filters.column_ids && filters.column_ids.length > 0) count++;
     if (filters.created_at_from && filters.created_at_to) count++;
     if (filters.assignee_ids && filters.assignee_ids.length > 0) count++;
+    if (filters.priorities && filters.priorities.length > 0) count++;
+    if (filters.types && filters.types.length > 0) count++;
     return count;
   };
 
   const dropdownFilter = () => (
     <div className="w-[500px] rounded-lg bg-white shadow-lg">
-      <div className="flex items-center justify-between border-b-[1px] border-gray-200 px-4 py-3">
+      <div className="flex items-center justify-between border-b-[1px] border-gray-200 px-4 py-2">
         <span className="text-[15px] font-bold text-gray-600">FILTERS</span>
         <button
           onClick={handleClearFilters}
@@ -143,8 +131,8 @@ export default function ListFilter({
 
       <div className="flex max-h-[400px] flex-col gap-4 overflow-y-auto px-4 py-4">
         {/* Due Date */}
-        <div>
-          <p className="mb-2 font-semibold text-gray-700">Due date</p>
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray-700">Due date</p>
           <RangePicker
             className="w-full"
             value={
@@ -163,8 +151,8 @@ export default function ListFilter({
         </div>
 
         {/* Status */}
-        <div>
-          <p className="mb-2 font-semibold text-gray-700">Status</p>
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray-700">Status</p>
           <div className="flex flex-wrap gap-2">
             {columns.map((column, i) => (
               <div
@@ -190,10 +178,31 @@ export default function ListFilter({
             ))}
           </div>
         </div>
+        {/* Priority */}
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray-700">Work type</p>
+          <div className="flex flex-row items-center gap-4">
+            {priorityOptions.map((priority) => (
+              <div
+                onClick={() => {
+                  const currentIds = filters.priorities || [];
+                  const newIds = currentIds.includes(priority.name)
+                    ? currentIds.filter((id) => id !== priority.name)
+                    : [...currentIds, priority.name];
+                  setFilters({ ...filters, priorities: newIds });
+                }}
+                key={priority.name}
+                className={`flex items-center rounded-2xl border-[2px] ${filters?.priorities?.includes(priority.name) ? "border-blue-500" : "border-transparent"}`}
+              >
+                <PriorityBadge priority={priority.name} isShowLabel={false} />
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Created at */}
-        <div>
-          <p className="mb-2 font-semibold text-gray-700">Created at</p>
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray-700">Created at</p>
           <RangePicker
             className="w-full"
             value={
@@ -212,60 +221,53 @@ export default function ListFilter({
         </div>
 
         {/* Work Type */}
-        {/* <div>
-          <p className="mb-2 font-semibold text-gray-700">Work type</p>
-          <div className="space-y-2">
-            {mockWorkTypes.map((workType) => (
-              <div key={workType.id} className="flex items-center">
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray-700">Work type</p>
+          <div className="flex flex-row flex-wrap gap-2">
+            {typeOptions.map((workType) => (
+              <div key={workType.id} className="flex items-center gap-1">
                 <Checkbox
-                  checked={filters.work_type_ids?.includes(workType.id)}
+                  checked={filters.types?.includes(workType.id)}
                   onChange={(e) => {
-                    const currentIds = filters.work_type_ids || [];
+                    const currentIds = filters.types || [];
                     const newIds = e.target.checked
                       ? [...currentIds, workType.id]
                       : currentIds.filter((id) => id !== workType.id);
-                    setFilters({ ...filters, work_type_ids: newIds });
+                    setFilters({ ...filters, types: newIds });
                   }}
-                >
-                  <span className="flex items-center gap-2">
-                    <span>{workType.icon}</span>
-                    {workType.name}
-                  </span>
-                </Checkbox>
+                ></Checkbox>
+                <TypeBadge type={workType.id} />
+              
               </div>
             ))}
           </div>
-        </div> */}
+        </div>
 
         {/* Assignee */}
-        {/* <div>
-          <p className="mb-2 font-semibold text-gray-700">Assignee</p>
-          <div className="space-y-2">
-            {mockAssignees.map((assignee) => (
-              <div key={assignee.id} className="flex items-center">
-                <Checkbox
-                  checked={filters.assignee_ids?.includes(assignee.id)}
-                  onChange={(e) => {
-                    const currentIds = filters.assignee_ids || [];
-                    const newIds = e.target.checked
-                      ? [...currentIds, assignee.id]
-                      : currentIds.filter((id) => id !== assignee.id);
-                    setFilters({ ...filters, assignee_ids: newIds });
-                  }}
-                >
-                  <span className="flex items-center gap-2">
-                    <img
-                      src={assignee.avatar}
-                      alt={assignee.name}
-                      className="h-6 w-6 rounded-full"
-                    />
-                    {assignee.name}
-                  </span>
-                </Checkbox>
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray-700">Assignee</p>
+          <div className="flex flex-row  gap-2 ">
+            {projectMembers?.map((assignee) => (
+              <div
+                key={assignee.id}
+                onClick={() => {
+                  const currentIds = filters.assignee_ids || [];
+                  const newIds = currentIds.includes(assignee.id)
+                    ? currentIds.filter((id) => id !== assignee.id)
+                    : [...currentIds, assignee.id];
+                  setFilters({ ...filters, assignee_ids: newIds });
+                }}
+                className={`flex items-center rounded-full border-[2px] ${filters?.assignee_ids?.includes(assignee.id) ? "border-blue-500" : "border-transparent"}`}
+              >
+                <UserAvatar
+                  size={40}
+                  isDisplayName={false}
+                  userId={assignee.user_id}
+                />
               </div>
             ))}
           </div>
-        </div> */}
+        </div>
       </div>
 
       <div className="flex justify-end gap-2 border-t border-gray-200 px-4 py-3">
@@ -288,15 +290,7 @@ export default function ListFilter({
 
   return (
     <div className="mb-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-800">Issues</h2>
-        <Button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Create Issue
-        </Button>
-      </div>
+     
 
       <div className="flex items-center gap-4">
         <Search
