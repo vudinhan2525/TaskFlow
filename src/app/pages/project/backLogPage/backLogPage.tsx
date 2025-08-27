@@ -8,24 +8,27 @@ import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import Button from "@libs/app/components/general-components/button";
 import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
+import PageFilter from "@libs/app/components/projects/list/listFilter/pageFilter";
+import { GetIssuesParams } from "@libs/types/issue";
 
 const BackLogPage: React.FC = () => {
   const { projectId = "" } = useParams();
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
+  const [filters, setFilters] = useState<GetIssuesParams>({
+    project_id: projectId,
+  });
   const { selectedIssue } = useIssueSelection();
   const { sprints: initialSprints, isLoading: isLoadingSprints } =
     useProjectSprints(projectId || "");
   const { issues: initialIssues, isLoading: isLoadingIssues } =
-    useProjectIssues({
-      project_id: projectId,
-    });
+    useProjectIssues(filters);
 
   return (
     <div ref={containerRef} className="flex h-full flex-col gap-4 p-4 pb-28">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-700">Backlog</h1>
+      <h1 className="p-2 text-2xl font-bold text-gray-700">Backlog Page</h1>
+        
         <Button
           onClick={() => setIsCreateSprintModalOpen(true)}
           variant="primary"
@@ -34,6 +37,11 @@ const BackLogPage: React.FC = () => {
           Create Sprint
         </Button>
       </div>
+      <PageFilter
+        onFiltersChange={(filter) => {
+          setFilters(filter);
+        }}
+      />
 
       <div className="flex flex-1 overflow-auto">
         <PanelGroup

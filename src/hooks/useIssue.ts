@@ -18,6 +18,8 @@ export function useProjectIssues(body: GetIssuesParams) {
       body.status,
       body.assignee_ids,
       body.column_ids,
+      body.types,
+      body.priorities,
       body.created_at_from,
       body.created_at_to,
       body.page,

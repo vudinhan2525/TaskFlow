@@ -8,7 +8,7 @@ export interface IIssue {
   assignee_id: string;
   parent_id?: string;
   reporter_id?: string;
-  type: "Bug" | "Task" | "Story" | "Epic";
+  type: IssueType;
   column: IColumn;
   priority: IssuePriority;
   summary: string;
@@ -18,8 +18,8 @@ export interface IIssue {
   created_at: string;
   updated_at: string;
   completed_at: string;
-  due_date_from:string;
-  due_date_to:string;
+  due_date_from: string;
+  due_date_to: string;
   // labels?: string[];
   // team_id?: string;
 }
@@ -30,12 +30,14 @@ export type IssueType = "Bug" | "Task" | "Story" | "Epic";
 export interface GetIssuesParams {
   project_id?: string;
   keyword?: string;
+  types?: IssueType[];
+  priorities?: IssuePriority[];
+  status?: IssueStatus[];
   sprint_ids?: string[];
   assignee_ids?: string[];
   page?: number | string;
   limit?: number | string;
   column_ids?: string[];
-  status?: IssueStatus[];
   due_date_from?: string;
   due_date_to?: string;
   created_at_from?: string;

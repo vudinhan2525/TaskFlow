@@ -76,8 +76,8 @@ const IssueCard = ({
         className={`mt-3 flex items-center justify-between text-xs text-gray-500`}
       >
         <UserAvatar userId={issue.assignee_id} />
-        <span title={issue.updated_at}>
-          Updated {formatDate(issue.updated_at)}
+        <span title={issue.created_at}>
+          Created {formatDate(issue.created_at)}
         </span>
       </div>
     </div>
