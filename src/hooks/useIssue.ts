@@ -23,6 +23,7 @@ export function useProjectIssues(body: GetIssuesParams) {
       body.created_at_from,
       body.created_at_to,
       body.page,
+      body.limit,
     ],
     queryFn: async () => {
       const response = await issues.list(body);

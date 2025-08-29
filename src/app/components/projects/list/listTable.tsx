@@ -1,14 +1,13 @@
 import { useRef } from "react";
-import { Table } from "antd";
+import { Table, Skeleton } from "antd";
 import type { TableProps, TableColumnType } from "antd";
 import { IIssue, IssuePriority, IssueType } from "@libs/types/issue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import ColumnInputFiled from "./listTable/ColumnInputFiled";
-import TableColumn from "./listTable/TableColumn";
+import TableColumn from "./listTable/tableColumn";
 import { PaginationRes } from "@libs/apis/api";
 import { useNavigate } from "react-router-dom";
-
 import {
   TypeDropdown,
   StatusDropdown,
@@ -222,28 +221,54 @@ const ListTable = ({
     )),
   ];
 
+  type DataTypeWithKey = IIssue & { key: React.Key };
+
   return (
     <div ref={tableContainerRef} className="relative">
-      <Table
-        columns={tableColumns}
-        dataSource={issues}
-        bordered={true}
-        rowSelection={{ ...rowSelection }}
-        scroll={{ y: 1000, x: 1000 }} // y = chiều cao cố định, x = tổng chiều rộng table
-        rowKey="id"
-        loading={isLoading || isFetching}
-        pagination={{
-          current: pagination?.current_page || 1,
-          pageSize: pagination?.limit || 12,
-          total: pagination?.total_items || 0,
-          showSizeChanger: false,
-        }}
-        onChange={(pagination) => {
-          const url = new URL(window.location.href);
-          url.searchParams.set("page", pagination.current?.toString() || "1");
-          navigate(url.search);
-        }}
-      />
+      {isLoading || isFetching ? (
+        <Table
+          rowKey="key"
+          pagination={false}
+          bordered={true}
+          scroll={{ y: 1000, x: 1000 }}
+          dataSource={
+            [...Array(8)].map((_, index) => ({
+              key: `key${index}`,
+            })) as DataTypeWithKey[]
+          }
+          columns={tableColumns.map((column) => ({
+            ...column,
+            render: function renderPlaceholder() {
+              return (
+                <div className="flex items-center justify-center  p-2">
+                  <Skeleton active={true} title paragraph={false} />
+                </div>
+              );
+            },
+          }))}
+        />
+      ) : (
+        <Table
+          columns={tableColumns}
+          dataSource={issues}
+          bordered={true}
+          rowSelection={{ ...rowSelection }}
+          scroll={{ y: 1000, x: 1000 }}
+          rowKey="id"
+          pagination={{
+            current: pagination?.current_page! + 1,
+            pageSize: pagination?.limit,
+            total: pagination?.total_items,
+            showSizeChanger: false,
+          }}
+          onChange={(pagination) => {
+            console.log("Pagination:", pagination)  
+            const url = new URL(window.location.href);
+            url.searchParams.set("page", pagination.current?.toString() || "1");
+            navigate(url.search);
+          }}
+        />
+      )}
     </div>
   );
 };

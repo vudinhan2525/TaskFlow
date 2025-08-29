@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -25,8 +25,7 @@ import { LuCirclePlus } from "react-icons/lu";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
 import IssueCard from "./issueCard";
-// import { GetIssuesParams } from "@libs/types/issue";
-import PageFilter from "@libs/app/components/projects/list/listFilter/pageFilter";
+import PageFilter from "@libs/app/components/general-components/pageFilter";
 
 export default function KanbanBoard() {
   const { projectId } = useParams();
@@ -53,52 +52,123 @@ export default function KanbanBoard() {
   );
 
   // When drag starts, set the active issue
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const issueId = active.id as string;
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event;
+      const issueId = active.id as string;
 
-    // Find the active issue across all columns
-    for (const column of columns) {
-      const issue = column.issues.find((issue) => issue.id === issueId);
-      if (issue) {
-        setActiveIssue(issue);
-        setActiveColumn(column.id);
-        break;
+      // Find the active issue across all columns
+      for (const column of columns) {
+        const issue = column.issues.find((issue) => issue.id === issueId);
+        if (issue) {
+          setActiveIssue(issue);
+          setActiveColumn(column.id);
+          break;
+        }
       }
-    }
-  };
+    },
+    [columns,activeIssue],
+  );
 
   // Handler for when item is dragged over a droppable area
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over || !activeIssue) return;
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over || !activeIssue) return;
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+      const activeId = active.id as string;
+      const overId = over.id as string;
 
-    if (activeId === overId) {
-      return;
-    }
-    // Check if we're hovering over a column
-    const isOverColumn = columns.some((col) => col.id === overId);
-    if (isOverColumn) {
-      // We're dropping onto a column directly
-      setColumns((prevColumns) => {
-        // Find which column the active issue belongs to
+      if (activeId === overId) {
+        return;
+      }
+      // Check if we're hovering over a column
+      const isOverColumn = columns.some((col) => col.id === overId);
+      if (isOverColumn) {
+        // We're dropping onto a column directly
+        setColumns((prevColumns) => {
+          // Find which column the active issue belongs to
+          const sourceColumnIndex = prevColumns.findIndex((column) =>
+            column.issues.some((issue) => issue.id === activeId),
+          );
+
+          if (sourceColumnIndex === -1) return prevColumns;
+
+          // Remove from the source column
+          const newColumns = [...prevColumns];
+          const activeIssue = newColumns[sourceColumnIndex].issues.find(
+            (issue) => issue.id === activeId,
+          );
+
+          if (!activeIssue) return prevColumns;
+
+          newColumns[sourceColumnIndex] = {
+            ...newColumns[sourceColumnIndex],
+            issues: newColumns[sourceColumnIndex].issues.filter(
+              (issue) => issue.id !== activeId,
+            ),
+          };
+
+          // Add to the target column (at the end)
+          const targetColumnIndex = prevColumns.findIndex(
+            (column) => column.id === overId,
+          );
+
+          if (targetColumnIndex === -1) return prevColumns;
+
+          newColumns[targetColumnIndex] = {
+            ...newColumns[targetColumnIndex],
+            issues: [...newColumns[targetColumnIndex].issues, activeIssue],
+          };
+
+          return newColumns;
+        });
+        setActiveColumn(overId);
+        return;
+      }
+
+      // We're over an issue
+      // Find out which column the over issue belongs to
+      let overColumnId = null;
+      let overIssue = null;
+
+      for (const column of columns) {
+        overIssue = column.issues.find((issue) => issue.id === overId);
+        if (overIssue) {
+          overColumnId = column.id;
+          break;
+        }
+      }
+
+      if (!overColumnId || !overIssue) return;
+
+      // Only proceed if we're over a different column or we're reordering within the same column
+      if (activeColumn !== overColumnId) {
+        const prevColumns = [...columns];
         const sourceColumnIndex = prevColumns.findIndex((column) =>
           column.issues.some((issue) => issue.id === activeId),
         );
 
-        if (sourceColumnIndex === -1) return prevColumns;
+        // Find the target column index
+        const targetColumnIndex = prevColumns.findIndex(
+          (column) => column.id === overColumnId,
+        );
 
-        // Remove from the source column
-        const newColumns = [...prevColumns];
-        const activeIssue = newColumns[sourceColumnIndex].issues.find(
+        if (sourceColumnIndex === -1 || targetColumnIndex === -1) {
+          return prevColumns;
+        }
+
+        // Get the active issue
+        const issueToMove = prevColumns[sourceColumnIndex].issues.find(
           (issue) => issue.id === activeId,
         );
 
-        if (!activeIssue) return prevColumns;
+        if (!issueToMove) return prevColumns;
 
+        // Create new columns array
+        const newColumns = [...prevColumns];
+
+        // Remove from source
         newColumns[sourceColumnIndex] = {
           ...newColumns[sourceColumnIndex],
           issues: newColumns[sourceColumnIndex].issues.filter(
@@ -106,161 +176,102 @@ export default function KanbanBoard() {
           ),
         };
 
-        // Add to the target column (at the end)
-        const targetColumnIndex = prevColumns.findIndex(
-          (column) => column.id === overId,
-        );
-
-        if (targetColumnIndex === -1) return prevColumns;
-
-        newColumns[targetColumnIndex] = {
-          ...newColumns[targetColumnIndex],
-          issues: [...newColumns[targetColumnIndex].issues, activeIssue],
-        };
-
-        return newColumns;
-      });
-      setActiveColumn(overId);
-      return;
-    }
-
-    // We're over an issue
-    // Find out which column the over issue belongs to
-    let overColumnId = null;
-    let overIssue = null;
-
-    for (const column of columns) {
-      overIssue = column.issues.find((issue) => issue.id === overId);
-      if (overIssue) {
-        overColumnId = column.id;
-        break;
-      }
-    }
-
-    if (!overColumnId || !overIssue) return;
-
-    // Only proceed if we're over a different column or we're reordering within the same column
-    if (activeColumn !== overColumnId) {
-      const prevColumns = [...columns];
-      const sourceColumnIndex = prevColumns.findIndex((column) =>
-        column.issues.some((issue) => issue.id === activeId),
-      );
-
-      // Find the target column index
-      const targetColumnIndex = prevColumns.findIndex(
-        (column) => column.id === overColumnId,
-      );
-
-      if (sourceColumnIndex === -1 || targetColumnIndex === -1) {
-        return prevColumns;
-      }
-
-      // Get the active issue
-      const issueToMove = prevColumns[sourceColumnIndex].issues.find(
-        (issue) => issue.id === activeId,
-      );
-
-      if (!issueToMove) return prevColumns;
-
-      // Create new columns array
-      const newColumns = [...prevColumns];
-
-      // Remove from source
-      newColumns[sourceColumnIndex] = {
-        ...newColumns[sourceColumnIndex],
-        issues: newColumns[sourceColumnIndex].issues.filter(
-          (issue) => issue.id !== activeId,
-        ),
-      };
-
-      // Find where to insert in target
-      const overIssueIndex = newColumns[targetColumnIndex].issues.findIndex(
-        (issue) => issue.id === overId,
-      );
-      // Insert in target
-      newColumns[targetColumnIndex] = {
-        ...newColumns[targetColumnIndex],
-        issues: [
-          ...newColumns[targetColumnIndex].issues.slice(0, overIssueIndex + 1),
-          issueToMove,
-          ...newColumns[targetColumnIndex].issues.slice(overIssueIndex + 1),
-        ],
-      };
-      setActiveColumn(newColumns[targetColumnIndex].id);
-      setColumns(newColumns);
-    }
-  };
-
-  // When drag ends
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    setActiveIssue(null);
-    setActiveColumn(null);
-
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Update issue status in backend
-    if (projectId) {
-      const targetColumn = columns.find((col) =>
-        col.issues.some((issue) => issue.id === overId),
-      );
-      if (targetColumn) {
-        updateIssue({
-          id: activeId,
-          data: {
-            column_id: targetColumn.id,
-          },
-        });
-      }
-    }
-    if (activeId === overId) return;
-
-    const isOverColumn = columns.some((col) => col.id === overId);
-
-    if (isOverColumn) {
-      return;
-    }
-    // We're dropping onto another issue
-    setColumns((prevColumns) => {
-      // Find the column containing our active issue
-      const activeColumnIndex = prevColumns.findIndex((column) =>
-        column.issues.some((issue) => issue.id === activeId),
-      );
-
-      // Find the column containing the issue we're dropping onto
-      const overColumnIndex = prevColumns.findIndex((column) =>
-        column.issues.some((issue) => issue.id === overId),
-      );
-
-      if (activeColumnIndex === -1 || overColumnIndex === -1)
-        return prevColumns;
-
-      // Same column reordering
-      if (activeColumnIndex === overColumnIndex) {
-        const column = prevColumns[activeColumnIndex];
-        const oldIndex = column.issues.findIndex(
-          (issue) => issue.id === activeId,
-        );
-        const newIndex = column.issues.findIndex(
+        // Find where to insert in target
+        const overIssueIndex = newColumns[targetColumnIndex].issues.findIndex(
           (issue) => issue.id === overId,
         );
-
-        const newColumns = [...prevColumns];
-        newColumns[activeColumnIndex] = {
-          ...column,
-          issues: arrayMove(column.issues, oldIndex, newIndex),
+        // Insert in target
+        newColumns[targetColumnIndex] = {
+          ...newColumns[targetColumnIndex],
+          issues: [
+            ...newColumns[targetColumnIndex].issues.slice(
+              0,
+              overIssueIndex + 1,
+            ),
+            issueToMove,
+            ...newColumns[targetColumnIndex].issues.slice(overIssueIndex + 1),
+          ],
         };
-
-        return newColumns;
+        setActiveColumn(newColumns[targetColumnIndex].id);
+        setColumns(newColumns);
       }
+    },
+    [columns,activeIssue],
+  );
 
-      return prevColumns; // Cross-column movement was handled in dragOver
-    });
-  };
+  // When drag ends
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      setActiveIssue(null);
+      setActiveColumn(null);
+
+      if (!over) return;
+
+      const activeId = active.id as string;
+      const overId = over.id as string;
+
+      // Update issue status in backend
+      if (projectId) {
+        const targetColumn = columns.find((col) =>
+          col.issues.some((issue) => issue.id === overId),
+        );
+        if (targetColumn) {
+          updateIssue({
+            id: activeId,
+            data: {
+              column_id: targetColumn.id,
+            },
+          });
+        }
+      }
+      if (activeId === overId) return;
+
+      const isOverColumn = columns.some((col) => col.id === overId);
+
+      if (isOverColumn) {
+        return;
+      }
+      // We're dropping onto another issue
+      setColumns((prevColumns) => {
+        // Find the column containing our active issue
+        const activeColumnIndex = prevColumns.findIndex((column) =>
+          column.issues.some((issue) => issue.id === activeId),
+        );
+
+        // Find the column containing the issue we're dropping onto
+        const overColumnIndex = prevColumns.findIndex((column) =>
+          column.issues.some((issue) => issue.id === overId),
+        );
+
+        if (activeColumnIndex === -1 || overColumnIndex === -1)
+          return prevColumns;
+
+        // Same column reordering
+        if (activeColumnIndex === overColumnIndex) {
+          const column = prevColumns[activeColumnIndex];
+          const oldIndex = column.issues.findIndex(
+            (issue) => issue.id === activeId,
+          );
+          const newIndex = column.issues.findIndex(
+            (issue) => issue.id === overId,
+          );
+
+          const newColumns = [...prevColumns];
+          newColumns[activeColumnIndex] = {
+            ...column,
+            issues: arrayMove(column.issues, oldIndex, newIndex),
+          };
+
+          return newColumns;
+        }
+
+        return prevColumns; // Cross-column movement was handled in dragOver
+      });
+    },
+    [columns,activeIssue],
+  );
 
   useEffect(() => {
     if (initialColumns.length > 0) {

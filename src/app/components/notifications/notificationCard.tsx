@@ -11,6 +11,7 @@ import {
   LuUser,
 } from "react-icons/lu";
 import { TbAlertTriangle } from "react-icons/tb";
+  
 const renderNotificationCard = (notification: INotification): JSX.Element => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const refData = notification.reference_data as any;
@@ -27,7 +28,7 @@ const renderNotificationCard = (notification: INotification): JSX.Element => {
           </span>
           {" assigned you to "}
           <span className="font-medium text-blue-600">
-            {refData.title || notification.reference_id}
+            {refData?.title || notification.reference_id}
           </span>
         </div>
       );
@@ -36,18 +37,18 @@ const renderNotificationCard = (notification: INotification): JSX.Element => {
       return (
         <div>
           <span className="font-medium text-purple-600">
-            {refData.actorName || "Someone"}
+            {refData?.actorName || "Someone"}
           </span>
           {" mentioned you in "}
           <span className="font-medium text-gray-900">
-            {refData.issueKey || notification.reference_id}
+            {refData?.issueKey || notification.reference_id}
           </span>
-          {refData.commentText && (
+          {refData?.commentText && (
             <div className="mt-1 text-sm text-gray-600 italic">
               "
-              {refData.commentText.length > 100
-                ? refData.commentText.substring(0, 100) + "..."
-                : refData.commentText}
+              {refData?.commentText.length > 100
+                ? refData?.commentText.substring(0, 100) + "..."
+                : refData?.commentText}
               "
             </div>
           )}

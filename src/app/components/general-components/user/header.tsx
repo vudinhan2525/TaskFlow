@@ -1,7 +1,5 @@
-import { useState } from "react";
+import { useState,lazy } from "react";
 import { FaGear } from "react-icons/fa6";
-import NotificationsPopover from "../../notifications/notificationsPopover";
-import ProjectInvitationsPopover from "@libs/app/components/projects/projectInvitationsPopover";
 import { useAuth } from "@libs/hooks/useAuth";
 import DropdownAntd from "../dropdown";
 import Image from "../image";
@@ -10,9 +8,14 @@ import Button from "../button";
 import { useSelector } from "react-redux";
 import { RootState } from "@libs/store";
 import { useNavigate } from "react-router-dom";
-import UnifiedIssueModal from "../../projects/modals/unifiedIssueModal";
 import { useUserProjects } from "@libs/hooks/useProject";
 import SearchHeader from "@libs/app/components/general-components/user/search";
+
+// Lazy load Component
+const NotificationsPopover= lazy(() => import("../../notifications/notificationsPopover"));
+const ProjectInvitationsPopover= lazy(() => import("../../projects/projectInvitationsPopover"));
+const CreateIssueModal= lazy(() => import("../../projects/modals/createIssueModal"));
+
 export const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
@@ -150,10 +153,12 @@ export const Header = () => {
         )}
       </header>
 
-      <UnifiedIssueModal
-        isOpen={isCreateIssueModalOpen}
-        onClose={handleCloseIssueModal}
-      />
+      {isCreateIssueModalOpen && (
+        <CreateIssueModal
+          isOpen={isCreateIssueModalOpen}
+          onClose={handleCloseIssueModal}
+        />
+      )}
     </div>
   );
 };

@@ -11,7 +11,6 @@ import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import CustomInput from "./customInput";
 import {
   StatusDropdown,
-  // PriorityDropdown,
   TypeDropdown,
   UserDropdown,
 } from "../../general-components/dropdown/index";
@@ -134,6 +133,7 @@ const IssueCard = memo(
     };
 
     const handleIssueCardClick = () => {
+      console.log("click issue card", issue.id);
       setSelectedIssue(issue);
       navigate(`/projects/${projectId}/backlog?selectedIssue=${issue.id}`);
     };
@@ -148,103 +148,103 @@ const IssueCard = memo(
       >
         <div className="flex items-center">
           {/* IssueCardLeft */}
-          <div className="flex flex-1 items-center justify-start gap-x-2">
-            <div className="flex w-full cursor-pointer items-center gap-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  style={{
-                    opacity:
-                      selectedIssues &&
-                      selectedIssues[issue.sprint_id || ""] &&
-                      selectedIssues[issue.sprint_id || ""].find(
-                        (i) => i.id === issue.id,
-                      )
-                        ? "100"
-                        : "",
-                  }}
-                  onPointerDown={stopPropagation}
-                  checked={
+          <div className="grid grid-cols-12 w-full cursor-pointer items-center justify-start gap-4">
+            {/* ISSUE TITLE AND CHECKBOX */}
+            <div className="flex flex-row items-center gap-2 col-span-3">
+              <input
+                type="checkbox"
+                style={{
+                  opacity:
                     selectedIssues &&
                     selectedIssues[issue.sprint_id || ""] &&
                     selectedIssues[issue.sprint_id || ""].find(
                       (i) => i.id === issue.id,
                     )
-                      ? true
-                      : false
-                  }
-                  onChange={() => {
-                    if (
-                      selectedIssues &&
-                      selectedIssues[issue.sprint_id || ""] &&
-                      selectedIssues[issue.sprint_id || ""].includes(issue)
-                    ) {
-                      let temp: IIssue[] =
-                        selectedIssues[issue.sprint_id || ""];
-                      temp = temp.filter((i: IIssue) => i.id !== issue.id);
-                      setSelectIssues({ [issue.sprint_id || ""]: temp });
-                      if (temp.length === 0) {
-                        setIsSprintIssuesChecked(false);
-                      }
-                    } else {
-                      const existingIssues =
-                        selectedIssues[issue.sprint_id || ""] || [];
-                      const newIssues = [...existingIssues, issue];
-                      setSelectIssues({ [issue.sprint_id || ""]: newIssues });
-                      setIsSprintIssuesChecked(true);
+                      ? "100"
+                      : "",
+                }}
+                onPointerDown={stopPropagation}
+                checked={
+                  selectedIssues &&
+                  selectedIssues[issue.sprint_id || ""] &&
+                  selectedIssues[issue.sprint_id || ""].find(
+                    (i) => i.id === issue.id,
+                  )
+                    ? true
+                    : false
+                }
+                onChange={() => {
+                  if (
+                    selectedIssues &&
+                    selectedIssues[issue.sprint_id || ""] &&
+                    selectedIssues[issue.sprint_id || ""].includes(issue)
+                  ) {
+                    let temp: IIssue[] = selectedIssues[issue.sprint_id || ""];
+                    temp = temp.filter((i: IIssue) => i.id !== issue.id);
+                    setSelectIssues({ [issue.sprint_id || ""]: temp });
+                    if (temp.length === 0) {
+                      setIsSprintIssuesChecked(false);
                     }
-                  }}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 focus:ring-blue-500"
-                />
+                  } else {
+                    const existingIssues =
+                      selectedIssues[issue.sprint_id || ""] || [];
+                    const newIssues = [...existingIssues, issue];
+                    setSelectIssues({ [issue.sprint_id || ""]: newIssues });
+                    setIsSprintIssuesChecked(true);
+                  }
+                }}
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 focus:ring-blue-500"
+              />
 
-                <div className="rounded-sm border-1 border-emerald-500 p-0.5">
-                  <FaCheck className="font-normal text-emerald-500" size={12} />
-                </div>
-
-                <div
-                  className={`block text-sm font-light text-gray-500 ${issue?.column?.name === "DONE" ? "line-through" : "underline"}`}
-                >
-                  {issue?.title}
-                </div>
+              <div className="rounded-sm border-1 border-emerald-500 p-0.5">
+                <FaCheck className="font-normal text-emerald-500" size={12} />
               </div>
 
               <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="group flex flex-1 items-center gap-2 text-clip"
+                className={`block truncate text-sm font-light text-gray-500 ${issue?.column?.name === "DONE" ? "line-through" : "underline"}`}
               >
-                {isEditingSummary ? (
-                  <input
-                    type="text"
-                    ref={summaryInputRef}
-                    value={issueSummary}
-                    onBlur={() => {
-                      handleChangeIssueValue("summary", issueSummary);
-                      setIsEditingSummary(false);
-                    }}
-                    onChange={(e) => setIssueSummary(e.target.value)}
-                    className={`w-full rounded-sm border-2 border-emerald-500 px-2 py-1 outline-none`}
-                  />
-                ) : (
-                  <span className="text-sm font-thin">{issueSummary}</span>
-                )}
-
-                {!isEditingSummary && (
-                  <div
-                    onPointerDown={stopPropagation}
-                    onClick={handleClickEditDescription}
-                    className="hidden group-hover:block"
-                  >
-                    <FaEdit size={16} />
-                  </div>
-                )}
+                {issue?.title}
               </div>
+            </div>
+            {/* ISSUE SUMMARY */}
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="group relative flex items-center gap-2 text-clip max-w-40 col-span-9"
+            >
+              {isEditingSummary ? (
+                <input
+                  type="text"
+                  ref={summaryInputRef}
+                  value={issueSummary}
+                  onBlur={() => {
+                    handleChangeIssueValue("summary", issueSummary);
+                    setIsEditingSummary(false);
+                  }}
+                  onChange={(e) => setIssueSummary(e.target.value)}
+                  className={`w-full truncate rounded-sm border-2 border-emerald-500 px-2 py-1 outline-none`}
+                />
+              ) : (
+                <span className="truncate text-sm font-thin text-gray-800">
+                  {issueSummary}
+                </span>
+              )}
+
+              {!isEditingSummary && (
+                <div
+                  onPointerDown={stopPropagation}
+                  onClick={handleClickEditDescription}
+                  className="absolute right-[-20px] hidden group-hover:block"
+                >
+                  <FaEdit size={16} className="text-gray-700" />
+                </div>
+              )}
             </div>
           </div>
           {/* IssueCardRight */}
           <div
-            className="grid w-[35%] min-w-[500px] grid-cols-12 gap-1"
+            className="grid w-[35%] min-w-[400px] max-w-[45%] grid-cols-12 gap-1"
             onPointerDown={stopPropagation}
             onClick={(e) => e.stopPropagation()}
           >
