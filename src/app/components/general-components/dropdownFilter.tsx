@@ -1,12 +1,8 @@
 import Button from "@libs/app/components/general-components/button";
-import { Popover, DatePicker, Checkbox } from "antd";
-import Search from "antd/es/input/Search";
-import { useState } from "react";
-import { FaChevronDown } from "react-icons/fa";
+import { DatePicker, Checkbox } from "antd";
+
 import dayjs from "dayjs";
-import { useParams, useSearchParams } from "react-router-dom";
-import { useProjectColumns } from "@libs/hooks/useProject";
-import { GetIssuesParams } from "@libs/types/issue";
+
 import StatusBadge from "@libs/app/components/general-components/badge/statusBadge";
 import TypeBadge, {
   typeOptions,
@@ -14,110 +10,30 @@ import TypeBadge, {
 import PriorityBadge, {
   priorityOptions,
 } from "@libs/app/components/general-components/badge/priorityBadge";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import UserAvatar from "@libs/app/components/general-components/user/userAvatar";
 const { RangePicker } = DatePicker;
+import { useParams } from "react-router-dom";
+import { useProjectMembers } from "@libs/hooks/useProjectMember";
 
-interface PageFilterProps {
-  onFiltersChange?: (filters: GetIssuesParams) => void;
-}
-export default function PageFilter({
-  onFiltersChange,
-}: PageFilterProps) {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+import { useProjectColumns } from "@libs/hooks/useProject";
+
+const DropdownFilter = ({
+  handleClearFilters,
+  handleSaveFilters,
+  setIsPopoverOpen,
+  filters,
+  setFilters,
+}: {
+  handleClearFilters: () => void;
+  handleSaveFilters: () => void;
+  setIsPopoverOpen: (isOpen: boolean) => void;
+  filters: any;
+  setFilters: (filters: any) => void;
+}) => {
   const { projectId } = useParams<{ projectId: string }>();
-  const [params] = useSearchParams();
-  const getSearchParams = () => new URLSearchParams(window.location.search);
-
   const { projectMembers } = useProjectMembers(projectId || "");
   const { columns } = useProjectColumns(projectId);
-  const [filters, setFilters] = useState<GetIssuesParams>({
-    keyword: params.get("keyword") || "",
-    due_date_from: params.get("due_date_from") || undefined,
-    due_date_to: params.get("due_date_to") || undefined,
-    column_ids: params.get("column_ids")?.split(",").filter(Boolean) || [],
-    created_at_from: params.get("created_at_from") || undefined,
-    created_at_to: params.get("created_at_to") || undefined,
-    assignee_ids: params.get("assignee_ids")?.split(",").filter(Boolean) || [],
-    types: (params.get("types")?.split(",").filter(Boolean) as any) || [],
-    priorities:
-      (params.get("priorities")?.split(",").filter(Boolean) as any) || [],
-    page: params.get("page") ? parseInt(params.get("page")!) : 1,
-    limit: params.get("limit") ? parseInt(params.get("limit")!) : 12,
-    project_id: projectId,
-  });
-  const updateURL = (newFilters: GetIssuesParams) => {
-    const params = new URLSearchParams();
-
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (
-        value &&
-        value !== "" &&
-        (Array.isArray(value) ? value.length > 0 : true)
-      ) {
-        if (Array.isArray(value)) {
-          params.set(key, value.join(","));
-        } else {
-          params.set(key, value.toString());
-        }
-      }
-    });
-
-    const currentParams = getSearchParams();
-    const preserveParams = ["projectId", "page", "limit"];
-    preserveParams.forEach((param) => {
-      const value = currentParams.get(param);
-      if (value && !params.has(param)) {
-        params.set(param, value);
-      }
-    });
-
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-    window.history.pushState({}, "", newUrl);
-  };
-  const handleSaveFilters = () => {
-    console.log(filters)
-    updateURL(filters);
-    setIsPopoverOpen(false);
-    onFiltersChange?.(filters);
-  };
-
-  const handleClearFilters = () => {
-    const clearedFilters: GetIssuesParams = {
-      keyword: "",
-      due_date_from: undefined,
-      due_date_to: undefined,
-      column_ids: [],
-      priorities: [],
-      types: [],
-      created_at_from: undefined,
-      created_at_to: undefined,
-      assignee_ids: [],
-      project_id: projectId,
-    };
-    setFilters(clearedFilters);
-    updateURL(clearedFilters);
-    onFiltersChange?.(clearedFilters);
-  };
-
-  const handleKeywordSearch = (value: string) => {
-    const newFilters = { ...filters, keyword: value };
-    updateURL(newFilters);
-    onFiltersChange?.(newFilters);
-  };
-  const getActiveFilterCount = () => {
-    let count = 0;
-    if (filters.keyword) count++;
-    if (filters.due_date_from && filters.due_date_to) count++;
-    if (filters.column_ids && filters.column_ids.length > 0) count++;
-    if (filters.created_at_from && filters.created_at_to) count++;
-    if (filters.assignee_ids && filters.assignee_ids.length > 0) count++;
-    if (filters.priorities && filters.priorities.length > 0) count++;
-    if (filters.types && filters.types.length > 0) count++;
-    return count;
-  };
-
-  const dropdownFilter = () => (
+  return (
     <div className="w-[500px] rounded-lg bg-white shadow-lg">
       <div className="flex items-center justify-between border-b-[1px] border-gray-200 px-4 py-2">
         <span className="text-[15px] font-bold text-gray-600">FILTERS</span>
@@ -161,7 +77,7 @@ export default function PageFilter({
                   if (currentIds?.includes(column.id)) {
                     setFilters({
                       ...filters,
-                      column_ids: currentIds.filter((id) => id !== column.id),
+                      column_ids: currentIds.filter((id: string) => id !== column.id),
                     });
                   } else {
                     setFilters({
@@ -187,7 +103,7 @@ export default function PageFilter({
                 onClick={() => {
                   const currentIds = filters.priorities || [];
                   const newIds = currentIds.includes(priority.name)
-                    ? currentIds.filter((id) => id !== priority.name)
+                    ? currentIds.filter((id: string) => id !== priority.name)
                     : [...currentIds, priority.name];
                   setFilters({ ...filters, priorities: newIds });
                 }}
@@ -232,12 +148,11 @@ export default function PageFilter({
                     const currentIds = filters.types || [];
                     const newIds = e.target.checked
                       ? [...currentIds, workType.id]
-                      : currentIds.filter((id) => id !== workType.id);
+                      : currentIds.filter((id: string) => id !== workType.id);
                     setFilters({ ...filters, types: newIds });
                   }}
                 ></Checkbox>
                 <TypeBadge type={workType.id} />
-              
               </div>
             ))}
           </div>
@@ -246,14 +161,14 @@ export default function PageFilter({
         {/* Assignee */}
         <div className="flex flex-col gap-1">
           <p className="font-semibold text-gray-700">Assignee</p>
-          <div className="flex flex-row  gap-2 ">
+          <div className="flex flex-row gap-2">
             {projectMembers?.map((assignee) => (
               <div
                 key={assignee.id}
                 onClick={() => {
                   const currentIds = filters.assignee_ids || [];
                   const newIds = currentIds.includes(assignee.id)
-                    ? currentIds.filter((id) => id !== assignee.id)
+                    ? currentIds.filter((id: string) => id !== assignee.id)
                     : [...currentIds, assignee.id];
                   setFilters({ ...filters, assignee_ids: newIds });
                 }}
@@ -287,42 +202,6 @@ export default function PageFilter({
       </div>
     </div>
   );
+};
 
-  return (
-    <div className="mb-4 space-y-4">
-     
-
-      <div className="flex items-center gap-4">
-        <Search
-          size="large"
-          className="max-w-md flex-1"
-          placeholder="Search issues..."
-          value={filters.keyword}
-          onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-          onSearch={handleKeywordSearch}
-          allowClear
-        />
-
-        <Popover
-          content={dropdownFilter()}
-          placement="bottomLeft"
-          trigger="click"
-          open={isPopoverOpen}
-          onOpenChange={setIsPopoverOpen}
-        >
-          <div>
-            <Button className="relative">
-              <span className="text-base font-semibold">Filter</span>
-              <FaChevronDown className="ml-1" />
-              {getActiveFilterCount() > 0 && (
-                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs text-white">
-                  {getActiveFilterCount()}
-                </span>
-              )}
-            </Button>
-          </div>
-        </Popover>
-      </div>
-    </div>
-  );
-}
+export default DropdownFilter;

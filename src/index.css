@@ -83,3 +83,14 @@
 .reactEasyCrop_CropArea {
   color: rgba(255, 255, 255, 0.8) !important;
 }
+
+.ant-skeleton-content{
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ant-skeleton-title{
+  width:100% !important;
+  height: 40px !important;
+}

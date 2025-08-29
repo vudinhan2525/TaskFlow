@@ -1,5 +1,5 @@
 import { Header } from "@libs/app/components/general-components/user/header";
-// import { useAuth } from "@libs/hooks/useAuth";
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 const DefaultLayout = () => {
@@ -10,8 +10,9 @@ const DefaultLayout = () => {
   return (
     <div className="flex h-screen flex-col">
       <Header />
-
+    <Suspense fallback={<div>Loading.ddd..</div>}>
       <Outlet />
+    </Suspense>
     </div>
   );
 };

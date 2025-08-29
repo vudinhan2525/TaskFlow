@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import TaskItem from "./task-item";
 import { IIssue } from "@libs/types/issue";
-import PageFilter from "../list/listFilter/pageFilter";
+import PageFilter from "../../general-components/pageFilter";
 import { GetIssuesParams } from "@libs/types/issue";
 import { useProjectIssues } from "@libs/hooks/useIssue";
 interface RoadmapProps {

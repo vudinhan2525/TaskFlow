@@ -14,13 +14,14 @@ import {
   DragEndEvent,
   DragOverlay,
 } from "@dnd-kit/core";
-
 import {
   SortableContext,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { FaCheck } from "react-icons/fa";
+
+import BacklogSkeleton from "@libs/app/components/skeleton/backlogSkeleton";
 
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
@@ -204,7 +205,9 @@ const BackLog = ({
   };
 
   if (isLoadingColumns || isLoadingSprints || isLoadingIssues) {
-    return <div>Loading...</div>;
+    return (
+      <BacklogSkeleton />
+    );
   }
   return (
     <DndContext
@@ -235,10 +238,6 @@ const BackLog = ({
 
       {activeIssue && (
         <DragOverlay
-          // dropAnimation={{
-          //   duration: 500,
-          //   easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
-          // }}
         >
           <IssueCardOverlay issue={activeIssue} />
         </DragOverlay>

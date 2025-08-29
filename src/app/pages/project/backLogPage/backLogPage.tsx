@@ -1,15 +1,20 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectIssues } from "@libs/hooks/useIssue";
 import BackLog from "@libs/app/components/projects/backlog/backlog";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
-import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import Button from "@libs/app/components/general-components/button";
-import IssueSideBar from "@libs/app/components/issues/IssueSideBar";
-import PageFilter from "@libs/app/components/projects/list/listFilter/pageFilter";
+import PageFilter from "@libs/app/components/general-components/pageFilter";
 import { GetIssuesParams } from "@libs/types/issue";
+import IssueSidebarSkeleton from "@libs/app/components/skeleton/issueSidebarSkeleton";
+const IssueSideBar = lazy(
+  () => import("@libs/app/components/issues/IssueSideBar"),
+);
+const CreateSprintModal = lazy(
+  () => import("@libs/app/components/projects/modals/createSprintModal"),
+);
 
 const BackLogPage: React.FC = () => {
   const { projectId = "" } = useParams();
@@ -27,8 +32,8 @@ const BackLogPage: React.FC = () => {
   return (
     <div ref={containerRef} className="flex h-full flex-col gap-4 p-4 pb-28">
       <div className="flex items-center justify-between">
-      <h1 className="p-2 text-2xl font-bold text-gray-700">Backlog Page</h1>
-        
+        <h1 className="p-2 text-2xl font-bold text-gray-700">Backlog Page</h1>
+
         <Button
           onClick={() => setIsCreateSprintModalOpen(true)}
           variant="primary"
@@ -57,14 +62,12 @@ const BackLogPage: React.FC = () => {
             maxSize={100}
           >
             <div className="h-full overflow-auto pr-4">
-              <div>
                 <BackLog
                   initialSprints={initialSprints}
                   initialIssues={initialIssues}
                   isLoadingSprints={isLoadingSprints}
                   isLoadingIssues={isLoadingIssues}
                 />
-              </div>
             </div>
           </Panel>
 
@@ -86,7 +89,9 @@ const BackLogPage: React.FC = () => {
               minSize={30}
             >
               <div className="h-full overflow-y-auto pr-4">
-                <IssueSideBar />
+                <Suspense fallback={<IssueSidebarSkeleton />}>
+                    <IssueSideBar />
+                </Suspense>
               </div>
             </Panel>
           )}
@@ -94,11 +99,13 @@ const BackLogPage: React.FC = () => {
       </div>
 
       {/* Create Sprint Modal */}
-      <CreateSprintModal
-        isOpen={isCreateSprintModalOpen}
-        onClose={() => setIsCreateSprintModalOpen(false)}
-        projectId={projectId}
-      />
+      {isCreateSprintModalOpen && (
+        <CreateSprintModal
+          isOpen={isCreateSprintModalOpen}
+          onClose={() => setIsCreateSprintModalOpen(false)}
+          projectId={projectId}
+        />
+      )}
     </div>
   );
 };
