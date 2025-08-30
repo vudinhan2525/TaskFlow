@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import ProjectTable from "@libs/app/components/admin/projects/ProjectTable";
 import CreateProjectModal from "@libs/app/components/projects/modals/createProjectModal";
 import SearchFilters from "@libs/app/components/admin/common/SearchFilters";

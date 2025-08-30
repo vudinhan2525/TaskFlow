@@ -3,15 +3,16 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { ISprint } from "@libs/types/sprint";
 import RenderTextCell from "../../projects/list/common/RenderTextCell";
+import { useMemo } from "react";
 
 const SprintDropdown = ({
   projectId,
   issueId,
-  currentSprint,
+  sprintId,
 }: {
   projectId: string;
   issueId: string;
-  currentSprint: ISprint;
+  sprintId: string;
 }) => {
   const { updateIssueAsync } = useUpdateIssue({ projectId });
   const { sprints } = useProjectSprints(projectId);
@@ -23,6 +24,9 @@ const SprintDropdown = ({
       },
     });
   };
+  const currentSprint = useMemo(() => {
+    return sprints.find((sprint) => sprint.id === sprintId);
+  }, [sprintId]);
   if (!currentSprint) return <></>;
   return (
     <ColumnDropdown

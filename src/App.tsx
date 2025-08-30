@@ -9,7 +9,7 @@ import { NotificationProvider } from "@libs/app/context/notification.context";
 
 function App() {
   return (
-    <Provider store={store}>
+    <Provider store={store}> 
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <NotificationProvider>
@@ -18,7 +18,7 @@ function App() {
         </BrowserRouter>
         <ToastContainer />
       </QueryClientProvider>
-    </Provider>
+  </Provider>
   );
 }
 

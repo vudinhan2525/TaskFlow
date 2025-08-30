@@ -13,7 +13,6 @@ const List = ({ projectId }: { projectId?: string }) => {
     limit: 8,
     page: 0,
   });
-
   const {
     issues,
     pagination,
@@ -28,7 +27,7 @@ const List = ({ projectId }: { projectId?: string }) => {
     onChange: onSelectChange,
   };
 
-  const { updateIssueAsync, isLoading } = useUpdateIssue({
+  const { updateIssueAsync } = useUpdateIssue({
     projectId: projectId || "",
   });
 
@@ -49,13 +48,12 @@ const List = ({ projectId }: { projectId?: string }) => {
       {/* Search and Filters */}
       <PageFilter
         onFiltersChange={(filter) => {
-          setFilter(filter);
+        setFilter(filter);
         }}
       />
 
       <ListTable
         issues={issues || []}
-        isLoading={isLoading}
         isFetching={isFetching}
         rowSelection={rowSelection}
         handleChangeCellValue={handleChangeCellValue}

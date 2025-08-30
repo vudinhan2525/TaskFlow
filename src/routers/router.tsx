@@ -1,10 +1,8 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
 import type { ReactNode } from "react";
-
-import ProjectLayout from "@libs/app/layouts/projectLayout";
-
 // Lazy load pages
+const ProjectLayout = lazy(() => import("@libs/app/layouts/projectLayout"));
 const BacklogPage = lazy(
   () => import("@libs/app/pages/project/backLogPage/backLogPage"),
 );
@@ -12,12 +10,7 @@ const ListPage = lazy(
   () => import("@libs/app/pages/project/listPage/listPage"),
 );
 const DefaultLayout = lazy(() => import("@libs/app/layouts/defaultLayout"));
-const LoginPage = lazy(
-  () => import("@libs/app/pages/auth/loginPage/loginPage"),
-);
-const RegisterPage = lazy(
-  () => import("@libs/app/pages/auth/registerPage/registerPage"),
-);
+
 const ProjectPage = lazy(
   () => import("@libs/app/pages/project/projectPage/projectPage"),
 );
@@ -36,11 +29,7 @@ const UsersPage = lazy(() => import("@libs/app/pages/admin/users/UsersPage"));
 const ProjectsPage = lazy(
   () => import("@libs/app/pages/admin/projects/ProjectsPage"),
 );
-const VerifyPage = lazy(
-  () => import("@libs/app/pages/auth/verifyPage/verifyPage"),
-);
 
-// Lazy load components
 const ProjectReport = lazy(
   () => import("@libs/app/pages/project/reportPage/reportPage"),
 );
@@ -57,13 +46,21 @@ const ActiveSprints = lazy(() =>
     ),
   }),
 );
-
 const ProjectSettings = lazy(() =>
   Promise.resolve({
     default: () => (
       <div className="p-8 text-center text-gray-600">Project Settings</div>
     ),
   }),
+);
+const VerifyPage = lazy(
+  () => import("@libs/app/pages/auth/verifyPage/verifyPage"),
+);
+const LoginPage = lazy(
+  () => import("@libs/app/pages/auth/loginPage/loginPage"),
+);
+const RegisterPage = lazy(
+  () => import("@libs/app/pages/auth/registerPage/registerPage"),
 );
 
 // Protected Route wrapper
