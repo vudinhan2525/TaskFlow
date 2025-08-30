@@ -10,16 +10,24 @@ export const auth = {
     api.post<ResponseApi<IUser>>("/users/register", data, {
       withCredentials: true,
     }),
-  verify: (data: { otp: string, email: string }) =>
+  verify: (data: { otp: string; email: string }) =>
     api.post<ResponseApi<IUser>>("/users/verify", data, {
+      withCredentials: true,
+    }),
+  resend: (data: { email: string }) =>
+    api.post<ResponseApi<IUser>>("/users/resend-otp", data, {
       withCredentials: true,
     }),
   getCurrentUser: () =>
     api.get<ResponseApi<IUser>>("/users/get-me", {
-      withCredentials: true
+      withCredentials: true,
     }),
   logout: () =>
-    api.post<ResponseApi<void>>("/users/logout", {}, {
-      withCredentials: true
-    }),
+    api.post<ResponseApi<void>>(
+      "/users/logout",
+      {},
+      {
+        withCredentials: true,
+      },
+    ),
 };
