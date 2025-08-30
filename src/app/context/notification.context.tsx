@@ -3,7 +3,7 @@ import { notificationApi } from "@libs/apis/notification";
 import { useAuth } from "@libs/hooks/useAuth";
 import { INotification } from "@libs/types/notification";
 import _ from "lodash";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 interface NotificationContextType {
   notifications: INotification[];
@@ -25,7 +25,6 @@ export const NotificationProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const [notifications, setNotifications] = useState<INotification[]>([]);
-  const [unreadCount, setUnReadCount] = useState(0);
   const { user } = useAuth();
   const markAsRead = async (notiId: string) => {
     setNotifications((notis) =>
@@ -56,10 +55,11 @@ export const NotificationProvider: React.FC<{
     }
   }, [user]);
 
-  useEffect(() => {
-    const unreadCount = notifications.filter((n) => !n?.is_read).length;
-    setUnReadCount(unreadCount);
-  }, [notifications]);
+
+  const unreadCount= useMemo(()=>{
+    return notifications.filter((n) => !n?.is_read).length;
+  },[notifications])
+
   return (
     <NotificationContext.Provider
       value={{

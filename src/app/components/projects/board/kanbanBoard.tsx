@@ -26,10 +26,13 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
 import IssueCard from "./issueCard";
 import PageFilter from "@libs/app/components/general-components/pageFilter";
+import KanbanBoardSkeleton from "../../skeleton/kanbanBoardSkeleton";
 
 export default function KanbanBoard() {
   const { projectId } = useParams();
-  const { columns: initialColumns } = useProjectColumns(projectId || "");
+  const { columns: initialColumns, isLoading } = useProjectColumns(
+    projectId || "",
+  );
   const [columns, setColumns] = useState<IColumn[]>(initialColumns);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
@@ -67,7 +70,7 @@ export default function KanbanBoard() {
         }
       }
     },
-    [columns,activeIssue],
+    [columns, activeIssue],
   );
 
   // Handler for when item is dragged over a droppable area
@@ -196,7 +199,7 @@ export default function KanbanBoard() {
         setColumns(newColumns);
       }
     },
-    [columns,activeIssue],
+    [columns, activeIssue],
   );
 
   // When drag ends
@@ -270,7 +273,7 @@ export default function KanbanBoard() {
         return prevColumns; // Cross-column movement was handled in dragOver
       });
     },
-    [columns,activeIssue],
+    [columns, activeIssue],
   );
 
   useEffect(() => {
@@ -282,61 +285,65 @@ export default function KanbanBoard() {
     <div className="flex flex-col gap-4 p-4">
       <h1 className="p-2 text-2xl font-bold text-gray-700">Kanban Board</h1>
       <PageFilter />
-      <div className="flex">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={columns.map((col) => col.id)}
-            strategy={horizontalListSortingStrategy}
+      {(isLoading || columns.length === 0) ? (
+        <KanbanBoardSkeleton />
+      ) : (
+        <div className="flex">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
           >
-            {columns.map((column) => (
-              <KanbanColumn
-                key={column.id}
-                column={column}
-                setColumns={setColumns}
-                columns={columns}
-                projectId={projectId}
-              />
-            ))}
-            <div className="relative h-[200px] w-80 rounded-lg bg-gray-100 p-4">
-              <input
-                id="email-address"
-                autoComplete="email"
-                onChange={(e) => {
-                  setNewColumnText(e.target.value);
-                }}
-                placeholder="New Stage"
-                className={`relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
-              />
-              <div className="absolute top-[60%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] items-center justify-center">
-                <LuCirclePlus
-                  className="cursor-pointer text-4xl text-gray-600"
-                  onClick={() => {
-                    if (!newColumnText || !projectId) {
-                      return;
-                    }
-                    createColumn({
-                      name: newColumnText,
-                      projectId: projectId,
-                    });
-                    setNewColumnText("");
-                  }}
+            <SortableContext
+              items={columns.map((col) => col.id)}
+              strategy={horizontalListSortingStrategy}
+            >
+              {columns.map((column) => (
+                <KanbanColumn
+                  key={column.id}
+                  column={column}
+                  setColumns={setColumns}
+                  columns={columns}
+                  projectId={projectId}
                 />
+              ))}
+              <div className="relative h-[200px] w-80 rounded-lg bg-gray-100 p-4">
+                <input
+                  id="email-address"
+                  autoComplete="email"
+                  onChange={(e) => {
+                    setNewColumnText(e.target.value);
+                  }}
+                  placeholder="New Stage"
+                  className={`relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
+                />
+                <div className="absolute top-[60%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] items-center justify-center">
+                  <LuCirclePlus
+                    className="cursor-pointer text-4xl text-gray-600"
+                    onClick={() => {
+                      if (!newColumnText || !projectId) {
+                        return;
+                      }
+                      createColumn({
+                        name: newColumnText,
+                        projectId: projectId,
+                      });
+                      setNewColumnText("");
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          </SortableContext>
-          <DragOverlay>
-            {activeIssue ? (
-              <IssueCard issue={activeIssue} isDragging={false} />
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      </div>
+            </SortableContext>
+            <DragOverlay>
+              {activeIssue ? (
+                <IssueCard issue={activeIssue} isDragging={false} />
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </div>
+      )}
     </div>
   );
 }

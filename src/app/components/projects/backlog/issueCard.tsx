@@ -127,13 +127,12 @@ const IssueCard = memo(
       );
 
       const duration = Date.now() - pointerDownTime.current;
-      if (!moved.current && duration < 250) {
+      if (!moved.current && duration < 1000) {
         handleIssueCardClick();
       }
     };
 
     const handleIssueCardClick = () => {
-      console.log("click issue card", issue.id);
       setSelectedIssue(issue);
       navigate(`/projects/${projectId}/backlog?selectedIssue=${issue.id}`);
     };

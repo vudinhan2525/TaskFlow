@@ -207,12 +207,11 @@ const IssueSideBar: React.FC = () => {
                 ? JSON.parse(selectedIssue?.description || "{}")?.plainText
                 : selectedIssue?.description
             }
-            readOnly
             onClick={() => {
               setIsShowingTextEditor(true);
             }}
             placeholder="Add a description"
-            className="w-full rounded border border-gray-300 p-2 text-sm outline-none hover:bg-gray-100 focus:border-emerald-500 cursor-pointer"
+            className="w-full rounded border border-gray-300 p-2 text-sm outline-none hover:bg-gray-100 focus:border-emerald-500"
           />
         )}
       </div>
