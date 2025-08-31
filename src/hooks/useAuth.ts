@@ -61,6 +61,13 @@ export function useAuth() {
     },
   });
 
+  const resendOtp = useMutation({
+    mutationFn: auth.resend,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      dispatch(setError(error.response.data.message));
+    },
+  });
 
   const logout = async () => {
     try {
@@ -92,6 +99,7 @@ export function useAuth() {
     register,
     logout,
     verifyOtp,
+    resendOtp,
     updateUser: updateUser.mutate,
   };
 }

@@ -49,6 +49,7 @@ const ProjectTable: React.FC = () => {
 
   return (
     <Table<IProject>
+
       columns={columns}
       dataSource={projects}
       loading={isLoading}
@@ -94,7 +95,7 @@ const ProjectActions = ({ record }: { record: IProject }) => {
       <Dropdown
         trigger={["click"]}
         placement="bottom"
-        dropdownRender={() => (
+        popupRender={() => (
           <div className="w-[140px]">
             <Menu
               items={menuItems}

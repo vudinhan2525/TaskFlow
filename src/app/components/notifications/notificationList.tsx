@@ -11,7 +11,7 @@ const NotificationList: React.FC = () => {
   const { notifications, unreadCount, markAsRead, markAsReadAll } =
     useNotificationContext();
 
-  const formatDate = (dateString: string) => {
+  const formatDate = React.useCallback((dateString: string) => {
     try {
       const date = new Date(dateString);
       const now = new Date();
@@ -33,7 +33,7 @@ const NotificationList: React.FC = () => {
       console.warn("Error parsing date:", dateString, error);
       return "Invalid date";
     }
-  };
+  }, []);
 
   return (
     <div className="m-[-8px] max-h-[600px] w-[450px] rounded-lg border border-gray-200 bg-white shadow-lg">

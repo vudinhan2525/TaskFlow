@@ -1,7 +1,15 @@
 import { IssueType } from "@libs/types/issue";
 import { LuBookmark, LuBug, LuClipboardCheck, LuStar } from "react-icons/lu";
+import React from "react";
 
-export const typeOptions = [
+export const typeOptions: {
+  id: IssueType;
+  name: string;
+  icon: React.ReactNode;
+  bgColor: string;
+  textColor: string;
+  hoverBg: string;
+}[] = [
   {
     id: "Bug",
     name: "Bug",

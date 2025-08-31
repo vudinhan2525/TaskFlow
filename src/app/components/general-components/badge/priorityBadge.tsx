@@ -6,8 +6,14 @@ import {
   ChevronsUp,
   ChevronsDown,
 } from "lucide-react";
+import React from "react";
 
-export const priorityOptions = [
+export const priorityOptions: {
+  name: IssuePriority;
+  icon: React.ReactNode;
+  textColor: string;
+  hoverBg: string;
+}[] = [
   {
     name: "Highest",
     icon: <ChevronsUp size={18} strokeWidth={3.5} className="text-red-600" />,
@@ -56,7 +62,9 @@ const PriorityBadge = ({
     (option) => option.name === priority,
   );
   return (
-    <div className={`flex cursor-pointer items-center gap-2 rounded  transition-colors duration-200 hover:bg-gray-100 ${className}`}>
+    <div
+      className={`flex cursor-pointer items-center gap-2 rounded transition-colors duration-200 hover:bg-gray-100 ${className}`}
+    >
       <div className="flex-shrink-0">{currentPriority?.icon}</div>
 
       {isShowLabel && (

@@ -1,8 +1,15 @@
 import { useActivities } from "@libs/hooks/useIssue";
 
-export default function HistorySection({ issueId }: { issueId?: string }) {
+export default function HistorySection({
+  issueId,
+  projectId,
+}: {
+  issueId?: string;
+  projectId: string;
+}) {
   const { activities } = useActivities({
     issue_id: issueId || "",
+    project_id: projectId,
     page: 1,
     limit: 10,
   });
@@ -191,7 +198,7 @@ export default function HistorySection({ issueId }: { issueId?: string }) {
                     <div className="mt-2 flex items-center space-x-2 text-sm">
                       {change.old_value && (
                         <>
-                          <div className="inline-flex max-w-[400px] overflow-auto items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-800 line-through">
+                          <div className="inline-flex max-w-[400px] items-center overflow-auto rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-800 line-through">
                             {change.old_value}
                           </div>
                           <svg
@@ -209,7 +216,7 @@ export default function HistorySection({ issueId }: { issueId?: string }) {
                           </svg>
                         </>
                       )}
-                      <div className="inline-flex max-w-[400px] overflow-auto items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
+                      <div className="inline-flex max-w-[400px] items-center overflow-auto rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-800">
                         {change.new_value}
                       </div>
                     </div>

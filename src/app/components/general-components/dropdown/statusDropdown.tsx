@@ -25,7 +25,6 @@ const StatusDropdown = ({
     });
   };
 
-  const currentColumn = columns.find((col) => col.id === column.id);
 
   return (
     <ColumnDropdown
@@ -48,7 +47,7 @@ const StatusDropdown = ({
       currentItem={undefined}
       children={
         <StatusBadge
-          column={currentColumn || column}
+          column={column}
           index={columns.findIndex((col) => col.id === column.id)}
         />
       }

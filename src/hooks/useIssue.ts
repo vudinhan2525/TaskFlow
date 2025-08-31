@@ -18,9 +18,12 @@ export function useProjectIssues(body: GetIssuesParams) {
       body.status,
       body.assignee_ids,
       body.column_ids,
+      body.types,
+      body.priorities,
       body.created_at_from,
       body.created_at_to,
       body.page,
+      body.limit,
     ],
     queryFn: async () => {
       const response = await issues.list(body);
@@ -115,7 +118,7 @@ export function useUpdateIssue({
   const {
     mutate: updateIssue,
     mutateAsync: updateIssueAsync,
-    isPending: isLoading, 
+    isPending: isLoading,
     isSuccess,
     error,
   } = useMutation({
@@ -197,6 +200,7 @@ export function useActivities(params: GetActivitiesParams) {
       const response = await issues.getActivities(params);
       return response.data;
     },
+    enabled: !!params.project_id,
     refetchOnMount: "always",
   });
 

@@ -3,10 +3,12 @@ import HistorySection from "@libs/app/components/issues/historySection";
 import { RootState } from "@libs/store";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 
 export default function ActivityIssue(props: { issueId: string }) {
   const [activeTab, setActiveTab] = useState<string>("All");
   const { user } = useSelector((state: RootState) => state.auth);
+  const { projectId } = useParams<{ projectId: string }>();
 
   return (
     <div className="bg-white">
@@ -64,9 +66,9 @@ export default function ActivityIssue(props: { issueId: string }) {
         </nav>
       </div>
 
-      {activeTab === "All" && (
+      {activeTab === "All" && projectId && (
         <>
-          <HistorySection issueId={props.issueId} />
+          <HistorySection issueId={props.issueId} projectId={projectId} />
         </>
       )}
       {activeTab === "Comments" && (
@@ -80,7 +82,9 @@ export default function ActivityIssue(props: { issueId: string }) {
           )}
         </div>
       )}
-      {activeTab === "History" && <HistorySection issueId={props.issueId} />}
+      {activeTab === "History" && projectId && (
+        <HistorySection issueId={props.issueId} projectId={projectId} />
+      )}
       {activeTab === "Work log" && (
         <div className="py-8 text-center text-gray-500">
           <svg

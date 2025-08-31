@@ -17,9 +17,9 @@ const VerifyPage: React.FC = () => {
   const location = useLocation();
   const { email } = location.state || {};
 
-  const { verifyOtp } = useAuth();
+  const { verifyOtp, resendOtp } = useAuth();
   const isLoading = verifyOtp.isPending;
-//   const isResending = resendOtp.isPending;
+  const isResending = resendOtp.isPending;
   const dispatch = useDispatch();
   const { error } = useSelector((state: RootState) => state.auth);
 
@@ -49,34 +49,34 @@ const VerifyPage: React.FC = () => {
   };
 
   const handleResendOtp = async () => {
-    // if (!canResend) return;
-    
-    // try {
-    //   await resendOtp.mutateAsync();
-    //   setCountdown(60);
-    //   setCanResend(false);
-    //   setOtpValue("");
-    //   message.success("OTP đã được gửi lại!");
-    // } catch (error) {
-    //   message.error("Không thể gửi lại OTP. Vui lòng thử lại!");
-    // }
+    if (!canResend) return;
+    try {
+      await resendOtp.mutateAsync({ email });
+      setCountdown(60);
+      setCanResend(false);
+      setOtpValue("");
+      message.success("OTP đã được gửi lại!");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      message.error("Không thể gửi lại OTP. Vui lòng thử lại!");
+    }
   };
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Left side - Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+      <div className="flex w-full items-center justify-center px-4 sm:px-6 md:w-1/2 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
           <div>
             <div className="flex justify-center">
               <Link to={"/"} className="cursor-pointer">
-                <Image src={logo} className="w-[200px] h-[40px]" />
+                <Image src={logo} className="h-[40px] w-[200px]" />
               </Link>
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -90,7 +90,7 @@ const VerifyPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4">
+            <div className="border-l-4 border-red-400 bg-red-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -130,9 +130,9 @@ const VerifyPage: React.FC = () => {
 
             {/* Verify Button */}
             <div>
-              <Button 
-                variant="primary" 
-                isLoading={isLoading} 
+              <Button
+                variant="primary"
+                isLoading={isLoading}
                 onClick={handleVerifyOtp}
                 className="w-full"
                 disabled={otpValue.length !== 6}
@@ -142,30 +142,31 @@ const VerifyPage: React.FC = () => {
             </div>
 
             {/* Resend OTP Section */}
-            {/* <div className="text-center space-y-2">
-              <p className="text-sm text-gray-600">
-                Không nhận được mã?
-              </p>
-              
+            <div className="space-y-2 text-center">
+              <p className="text-sm text-gray-600">Không nhận được mã?</p>
+
               {canResend ? (
                 <button
                   onClick={handleResendOtp}
                   disabled={isResending}
-                  className="text-sm font-medium text-green-600 hover:text-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="text-sm font-medium text-green-600 hover:text-green-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isResending ? "Đang gửi..." : "Gửi lại mã OTP"}
                 </button>
               ) : (
                 <p className="text-sm text-gray-500">
-                  Gửi lại sau: <span className="font-mono text-green-600">{formatTime(countdown)}</span>
+                  Gửi lại sau:{" "}
+                  <span className="font-mono text-green-600">
+                    {formatTime(countdown)}
+                  </span>
                 </p>
               )}
-            </div> */}
+            </div>
 
             {/* Back to Login */}
             <div className="text-center">
-              <Link 
-                to="/login" 
+              <Link
+                to="/login"
                 className="text-sm font-medium text-gray-600 hover:text-gray-500"
               >
                 ← Quay lại đăng nhập

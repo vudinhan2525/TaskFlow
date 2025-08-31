@@ -6,6 +6,7 @@ import { store } from "./store";
 import { queryClient } from "./apis/react-query";
 import { ToastContainer } from "react-toastify";
 import { NotificationProvider } from "@libs/app/context/notification.context";
+import { IssueDetailProvider } from "@libs/app/context/issue-detail.context";
 
 function App() {
   return (
@@ -13,7 +14,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <NotificationProvider>
-            <Router />
+            <IssueDetailProvider>
+              <Router />
+            </IssueDetailProvider>
           </NotificationProvider>
         </BrowserRouter>
         <ToastContainer />

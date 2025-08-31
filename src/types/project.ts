@@ -1,4 +1,4 @@
-import { IIssue } from "@libs/types/issue";
+import { IIssueWithoutCoulumn } from "@libs/types/issue";
 
 export interface IProject {
   id: string;
@@ -14,7 +14,7 @@ export interface IColumn {
   id: string;
   name: string;
   order: number;
-  issues: IIssue[];
+  issues: IIssueWithoutCoulumn[];
   project_id: string;
   created_at: string;
   updated_at: string;
@@ -36,7 +36,6 @@ export interface UpdateColumnOrderParams {
     order: number;
   }[];
 }
-
 
 export interface StatusCount {
   name: string;
