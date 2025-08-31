@@ -19,7 +19,6 @@ import { LuEllipsisVertical } from "react-icons/lu";
 import type { CSSProperties } from "react";
 import { CSS } from "@dnd-kit/utilities";
 
-
 const SortableIssue = ({ issue }: { issue: IIssue }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: issue.id });
@@ -186,7 +185,12 @@ export const KanbanColumn = ({
         <div className="max-h-[600px] min-h-40 overflow-auto">
           {column.issues.map((issue) => {
             if (issue.parent_id === "") {
-              return <SortableIssue key={issue.id} issue={issue} />;
+              const newColumn: IColumn = { ...column };
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              delete (newColumn as any).issues;
+              const newIssue: IIssue = { ...issue, column: newColumn };
+
+              return <SortableIssue key={issue.id} issue={newIssue} />;
             }
           })}
         </div>

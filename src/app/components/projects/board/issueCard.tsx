@@ -1,8 +1,10 @@
-  import { IIssue } from "@libs/types/issue";
+import { IIssue } from "@libs/types/issue";
 import { useState } from "react";
 import PriorityBadge from "../../general-components/badge/priorityBadge";
 import TypeBadge from "../../general-components/badge/typeBadge";
 import UserAvatar from "../../general-components/user/userAvatar";
+import { FaBars } from "react-icons/fa";
+import { useIssueDetailContext } from "@libs/app/context/issue-detail.context";
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -20,6 +22,7 @@ const IssueCard = ({
   isDragging?: boolean;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const { toggleSideBarDetailIssue } = useIssueDetailContext();
   const isChildIssue = !!issue.parent_id;
   if (isChildIssue) return <></>;
   if (isDragging) {
@@ -40,8 +43,13 @@ const IssueCard = ({
           <span className="">{issue.title}</span>
         </div>
         {isHovered && (
-          <div className="text-gray-400 hover:text-gray-600">
-            <span className="px-1">⋮</span>
+          <div
+            onClick={() => {
+              toggleSideBarDetailIssue(issue);
+            }}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <FaBars />
           </div>
         )}
       </div>

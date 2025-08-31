@@ -1,5 +1,4 @@
 import { IColumn } from "@libs/types/project";
-
 export interface IIssue {
   id: string;
   title: string;
@@ -23,6 +22,7 @@ export interface IIssue {
   // labels?: string[];
   // team_id?: string;
 }
+export type IIssueWithoutCoulumn = Omit<IIssue, "column">;
 
 export type IssueStatus = "TO DO" | "IN PROGRESS" | "DONE";
 export type IssuePriority = "Lowest" | "Low" | "Medium" | "High" | "Highest";
@@ -65,6 +65,7 @@ export interface CreateIssueParams {
 
 export interface GetActivitiesParams {
   issue_id?: string;
+  project_id: string;
   page: number;
   limit: number;
 }

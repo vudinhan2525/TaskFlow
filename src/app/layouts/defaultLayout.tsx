@@ -3,8 +3,6 @@ import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 const DefaultLayout = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
   // const { user } = useAuth();
 
   return (

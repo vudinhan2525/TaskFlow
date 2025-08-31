@@ -48,7 +48,11 @@ export default function KanbanBoard() {
     isNotToasting: true,
   });
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1, // chỉ khi kéo > 1px mới tính là drag
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
@@ -64,7 +68,12 @@ export default function KanbanBoard() {
       for (const column of columns) {
         const issue = column.issues.find((issue) => issue.id === issueId);
         if (issue) {
-          setActiveIssue(issue);
+          const newColumn: IColumn = { ...column };
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          delete (newColumn as any).issues;
+
+          const newIssue: IIssue = { ...issue, column: newColumn };
+          setActiveIssue(newIssue);
           setActiveColumn(column.id);
           break;
         }
@@ -285,7 +294,7 @@ export default function KanbanBoard() {
     <div className="flex flex-col gap-4 p-4">
       <h1 className="p-2 text-2xl font-bold text-gray-700">Kanban Board</h1>
       <PageFilter />
-      {(isLoading || columns.length === 0) ? (
+      {isLoading || columns.length === 0 ? (
         <KanbanBoardSkeleton />
       ) : (
         <div className="flex">

@@ -118,7 +118,7 @@ export function useUpdateIssue({
   const {
     mutate: updateIssue,
     mutateAsync: updateIssueAsync,
-    isPending: isLoading, 
+    isPending: isLoading,
     isSuccess,
     error,
   } = useMutation({
@@ -200,6 +200,7 @@ export function useActivities(params: GetActivitiesParams) {
       const response = await issues.getActivities(params);
       return response.data;
     },
+    enabled: !!params.project_id,
     refetchOnMount: "always",
   });
 
