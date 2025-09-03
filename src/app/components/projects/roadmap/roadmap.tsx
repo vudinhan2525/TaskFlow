@@ -1,74 +1,57 @@
-import React, { useState, useMemo } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import TaskItem from "./task-item";
 import { IIssue } from "@libs/types/issue";
-import PageFilter from "../../general-components/pageFilter";
-import { GetIssuesParams } from "@libs/types/issue";
-import { useProjectIssues } from "@libs/hooks/useIssue";
+import RoadmapSkeleton from "../../skeleton/roadmapSkeleton";
+import { CSS } from "@dnd-kit/utilities";
+import type { CSSProperties } from "react";
+import { SortableContext } from "@dnd-kit/sortable";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 interface RoadmapProps {
-  projectId?: string;
-  // issues?: IIssue[];
+  calendarDays: Record<string, IIssue[]>;
+  isLoadingProjectIssues: boolean;
+  activeDate: string;
 }
 
-const formatMonth = (date: Date): string => {
-  return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+const SortableIssue = ({ issue }: { issue: IIssue }) => {
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: issue.id,
+  });
+  const isDragging = attributes["aria-pressed"];
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    // transition,
+    cursor: isDragging ? "grabbing" : "default",
+    touchAction: "none",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="cursor-grab"
+    >
+      <TaskItem issue={issue} isDragging={isDragging} />
+    </div>
+  );
 };
 
-const Roadmap: React.FC<RoadmapProps> = ({ projectId }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  // const [issues, setIssues] = useState<IIssue[]>([]);
-  const [filters, setFilters] = useState<GetIssuesParams>({
-    project_id: projectId || "",
+const DropableDate = ({
+  dateStr,
+  issues,
+  isActive,
+}: {
+  dateStr: string;
+  issues: IIssue[];
+  isActive: boolean;
+}) => {
+  const { setNodeRef } = useDroppable({
+    id: dateStr,
+    data: {
+      type: "date",
+      date: dateStr,
+    },
   });
-  const { issues } = useProjectIssues(filters);
-
-  const calendarDays = useMemo<Date[]>(() => {
-    const date = new Date(currentDate);
-    const year = date.getFullYear();
-    const month = date.getMonth();
-
-    // First day of the month
-    const firstDay = new Date(year, month, 1);
-    // Last day of the month
-    const lastDay = new Date(year, month + 1, 0);
-
-    // Find first Sunday (may be in previous month)
-    const startDate = new Date(firstDay);
-    while (startDate.getDay() !== 0) {
-      // 0 represents Sunday
-      startDate.setDate(startDate.getDate() - 1);
-    }
-
-    // Find last Saturday (may be in next month)
-    const endDate = new Date(lastDay);
-    while (endDate.getDay() !== 6) {
-      // 6 represents Saturday
-      endDate.setDate(endDate.getDate() + 1);
-    }
-
-    // Generate all days between start and end
-    const days: Date[] = [];
-    const iterDate = new Date(startDate);
-
-    while (iterDate <= endDate) {
-      days.push(new Date(iterDate));
-      iterDate.setDate(iterDate.getDate() + 1);
-    }
-
-    return days;
-  }, [currentDate]);
-
-  // Group tasks by date
-  const getIssuesForDate = (date: Date): IIssue[] => {
-    return issues.filter((issue) => {
-      const issueDate = new Date(issue.due_date_to);
-      return (
-        issueDate.getDate() === date.getDate() &&
-        issueDate.getMonth() === date.getMonth() &&
-        issueDate.getFullYear() === date.getFullYear()
-      );
-    });
-  };
 
   const isToday = (date: Date): boolean => {
     const today = new Date();
@@ -80,106 +63,89 @@ const Roadmap: React.FC<RoadmapProps> = ({ projectId }) => {
   };
 
   const isDifferentMonth = (date: Date): boolean => {
+    const currentDate = new Date();
     return date.getMonth() !== currentDate.getMonth();
   };
 
   const isWeekend = (date: Date): boolean => {
     return date.getDay() === 0 || date.getDay() === 6;
   };
-
-  const goToToday = () => setCurrentDate(new Date());
-  const previousMonth = () =>
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
-    );
-  const nextMonth = () =>
-    setCurrentDate(
-      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
-    );
-
   return (
-    <div className="flex h-full w-full flex-col gap-6 bg-white">
-      <h1 className="text-2xl font-bold text-gray-700">Roadmap Page</h1>
-      {/* Navigation Bar */}
-      <div className="flex items-center justify-between">
-        {/* Left side - Filters */}
-        <PageFilter onFiltersChange={(filter) => setFilters(filter)} />
-        {/* <RoadmapFilter setIssues={setIssues} /> */}
-
-        {/* Right side - Calendar Navigation */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={goToToday}
-            className="rounded border border-blue-600 px-3 py-1 text-sm text-blue-600 hover:bg-blue-50"
+    <div ref={setNodeRef}>
+      <SortableContext
+        items={issues.map((issue) => issue.id)}
+        // strategy={horizontalListSortingStrategy}
+      >
+        <div
+          className={`h-48 overflow-auto border p-2 hover:cursor-pointer hover:bg-gray-100 ${isToday(new Date(dateStr)) ? "border-blue-500 bg-blue-50" : "border-gray-200"} ${isDifferentMonth(new Date(dateStr)) ? "bg-gray-50" : ""} ${isWeekend(new Date(dateStr)) ? "hidden bg-gray-100" : ""}  ${isActive ? "bg-green-100" : ""}`}
+        >
+          <div
+            className={`mb-2 text-sm font-medium ${isDifferentMonth(new Date(dateStr)) ? "text-gray-400" : "text-gray-600"}`}
           >
-            Today
-          </button>
-
-          <div className="flex items-center space-x-1 rounded border border-gray-300">
-            <button
-              onClick={previousMonth}
-              className="p-1 text-gray-600 hover:bg-gray-100"
-            >
-              <FaChevronLeft size={14} />
-            </button>
-
-            <span className="px-3 py-1 text-sm text-gray-800">
-              {formatMonth(currentDate)}
-            </span>
-
-            <button
-              onClick={nextMonth}
-              className="p-1 text-gray-600 hover:bg-gray-100"
-            >
-              <FaChevronRight size={14} />
-            </button>
+            {new Date(dateStr).getDate()}
+          </div>
+          <div className="space-y-1 ">
+            {issues.map((issue) => (
+              <SortableIssue key={issue.id} issue={issue} />
+            ))}
           </div>
         </div>
-      </div>
+      </SortableContext>
+    </div>
+  );
+};
 
-      {/* Calendar Grid */}
-      <div className="flex-1">
-        {/* Weekday Headers */}
-        <div className="mb-2 grid grid-cols-5 gap-1">
-          {[
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            // "Saturday",
-            // "Sunday",
-          ].map((day) => (
-            <div
-              key={day}
-              className="py-2 text-center text-sm font-medium text-gray-600"
-            >
-              {day}
+const Roadmap: React.FC<RoadmapProps> = ({
+  isLoadingProjectIssues,
+  calendarDays,
+  activeDate,
+}) => {
+  return (
+    <div className="flex h-full w-full flex-col space-y-6 bg-white pb-32">
+      {isLoadingProjectIssues ? (
+        <RoadmapSkeleton />
+      ) : (
+        <>
+          {/* Calendar Grid */}
+          <div className="flex flex-1 flex-col overflow-auto pr-4">
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-5">
+              {[
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                // "Saturday",
+                // "Sunday",
+              ].map((day) => (
+                <div
+                  key={day}
+                  className="rounded-t-xs border border-b-0 border-gray-300 bg-gray-50 py-2 text-center text-sm font-medium text-gray-600"
+                >
+                  {day}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {/* Calendar Days */}
-        <div className="grid grid-cols-5 gap-1">
-          {calendarDays.map((date: Date) => (
-            <div
-              key={date.toISOString()}
-              className={`min-h-[150px] rounded border p-2 hover:cursor-pointer hover:bg-gray-100 ${isToday(date) ? "border-blue-500 bg-blue-50" : "border-gray-200"} ${isDifferentMonth(date) ? "bg-gray-50" : ""} ${isWeekend(date) ? "hidden bg-gray-100" : ""} `}
-            >
-              <div
-                className={`mb-2 text-sm font-medium ${isDifferentMonth(date) ? "text-gray-400" : "text-gray-600"}`}
-              >
-                {date.getDate()}
-              </div>
-              <div className="max-h-[100px] space-y-1 overflow-y-auto">
-                {getIssuesForDate(date).map((issue) => (
-                  <TaskItem key={issue.id} issue={issue} />
+            {/* Calendar Days */}
+            <div className="grid grid-cols-5">
+              {/* Hello workd */}
+              {Object.keys(calendarDays)
+
+                .map((dateStr: string) => (
+                  <DropableDate
+                    key={dateStr}
+                    dateStr={dateStr}
+              
+                    issues={calendarDays[dateStr]}
+                    isActive={activeDate === dateStr}
+                  />
                 ))}
-              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

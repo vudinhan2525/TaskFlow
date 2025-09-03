@@ -2,6 +2,8 @@ import ColumnDropdown from "./columnDropdown";
 import { IssuePriority } from "@libs/types/issue";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import PriorityBadge, { priorityOptions } from "../badge/priorityBadge";
+import {memo} from "react"
+
 
 const PriorityDropdown = ({
   projectId,
@@ -53,4 +55,4 @@ const PriorityDropdown = ({
   );
 };
 
-export default PriorityDropdown;
+export default memo(PriorityDropdown);

@@ -51,7 +51,6 @@ const CustomDatePicker = ({
 }) => {
   const { updateIssue } = useUpdateIssue({ projectId });
 
-  // kiểm tra expired: chỉ apply cho due_date_to
   const isExpired = useMemo(() => {
     if (field !== "due_date_to" || !issue[field]) return false;
     return new Date(issue[field]) < new Date();
@@ -60,11 +59,10 @@ const CustomDatePicker = ({
   const handleChange = (date: Dayjs | null) => {
     // nếu là created_at thì không update
     if (field === "created_at") return;
-
     updateIssue({
       id: issue.id,
       data: {
-        [field]: date ? date.utc().toISOString() : null,
+        [field]: date ? date.utc().toISOString() :"null",
       },
     });
   };

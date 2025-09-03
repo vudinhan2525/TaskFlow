@@ -3,7 +3,7 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { ISprint } from "@libs/types/sprint";
 import RenderTextCell from "../../projects/list/common/RenderTextCell";
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 
 const SprintDropdown = ({
   projectId,
@@ -24,36 +24,59 @@ const SprintDropdown = ({
       },
     });
   };
+
   const currentSprint = useMemo(() => {
     return sprints.find((sprint) => sprint.id === sprintId);
-  }, [sprintId]);
-  if (!currentSprint) return <></>;
+  }, [sprintId, sprints]);
+
   return (
     <ColumnDropdown
-      items={sprints.map((sprint: ISprint) => ({
-        value: sprint.name,
-        key: sprint.id,
-        style: {
-          padding: 0,
-          background: "white",
-        },
-        label: (
-          <div
-            className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
-          >
-            <p className="text-sm font-medium">{sprint.name}</p>
-          </div>
-        ),
-        onClick: () => {
-          handleChangeSprint(sprint.id);
-        },
-      }))}
+      items={sprints
+        .map((sprint: ISprint) => ({
+          value: sprint.name,
+          key: sprint.id,
+          style: {
+            padding: 0,
+            background: "white",
+          },
+          label: (
+            <div
+              className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+            >
+              <p className="text-sm font-medium">{sprint.name}</p>
+            </div>
+          ),
+          onClick: () => {
+            handleChangeSprint(sprint.id);
+          },
+        }))
+        .concat({
+          value: "",
+          key: "unassigned",
+          style: {
+            padding: 0,
+            background: "white",
+          },
+          label: (
+            <div
+              className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+            >
+              <p className="text-sm font-medium">Unassigned</p>
+            </div>
+          ),
+          onClick: () => {
+            handleChangeSprint("");
+          },
+        })}
       currentItem={
-        sprints.find((sprint: ISprint) => sprint.id === currentSprint.id)?.name
+        currentSprint
+          ? sprints.find((sprint: ISprint) => sprint.id === currentSprint.id)
+              ?.name
+          : "Unassigned"
       }
-      children={<RenderTextCell text={currentSprint.name} />}
+      children={<RenderTextCell text={currentSprint?.name || "Unassigned"} />}
     />
   );
 };
 
-export default SprintDropdown;
+export default memo(SprintDropdown);

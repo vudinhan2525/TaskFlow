@@ -177,7 +177,7 @@ export function useProjectColumns(projectId: string | undefined) {
       return response.data;
     },
     enabled: !!projectId,
-    refetchOnMount: "always",
+    refetchOnMount: "always",  
   });
 
   return {

@@ -106,7 +106,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
   };
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className=" space-y-4">
       <div className="flex items-center gap-4">
         <Search
           size="large"

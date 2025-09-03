@@ -3,6 +3,7 @@ import { IProjectMember } from "@libs/types/projectMember";
 import UserAvatar from "../user/userAvatar";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
+import {memo} from "react"
 
 const UserDropdown = ({
   projectId,
@@ -54,4 +55,4 @@ const UserDropdown = ({
   );
 };
 
-export default UserDropdown;
+export default memo(UserDropdown);

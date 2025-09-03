@@ -13,7 +13,7 @@ const ProjectLayout = (): React.ReactElement => {
   }, [user, isLoading, navigate]);
 
   if (isLoading) {
-    return <div>Loading</div>
+    return <div>Loading</div>;
   }
 
   if (!user) {
@@ -22,11 +22,11 @@ const ProjectLayout = (): React.ReactElement => {
 
   return (
     <div className="flex h-screen w-full flex-1 flex-row overflow-hidden">
-      <div className="h-full w-[15%]">
-      <ProjectNavbar />
+      <div className="h-full w-[15%] border-r border-gray-200">
+        <ProjectNavbar /> 
       </div>
       <div className="h-screen w-[85%] overflow-auto">
-        <Suspense fallback={<div></div>}>
+        <Suspense fallback={<div>Loading...</div>}>
           <Outlet />
         </Suspense>
       </div>

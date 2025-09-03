@@ -68,7 +68,8 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative w-full ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
+      className={`relative w-full 
+        ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
       {...attributes}
       {...listeners}
     >

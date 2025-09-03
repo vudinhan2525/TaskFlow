@@ -58,7 +58,7 @@ const ListTable = ({
         />
       </div>
     </Suspense>
-  )),
+  ),120),
 
   // Title (không lazy)
   TableColumn("title", "Title", (_, { title }) => (
@@ -105,7 +105,7 @@ const ListTable = ({
         <SprintDropdown
           projectId={projectId}
           issueId={id}
-          sprintId={sprint_id!}
+          sprintId={sprint_id || ""}
         />
       </div>
     </Suspense>

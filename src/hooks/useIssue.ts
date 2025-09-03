@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { issues } from "../apis/issue";
-import { CreateIssueParams, GetActivitiesParams } from "@libs/types/issue";
+import { CreateIssueParams, GetActivitiesParams , GetIssuesParams} from "@libs/types/issue";
 import { toast } from "react-toastify";
-import { GetIssuesParams } from "@libs/types/issue";
 
 export function useProjectIssues(body: GetIssuesParams) {
   const {

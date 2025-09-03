@@ -61,6 +61,8 @@ export interface CreateIssueParams {
   parent_id?: string;
   story_point?: number;
   attachments?: string[];
+  due_date_to?: string;
+
 }
 
 export interface GetActivitiesParams {

@@ -3,6 +3,8 @@ import { useProjectColumns } from "@libs/hooks/useProject";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { IColumn } from "@libs/types/project";
 import StatusBadge from "../badge/statusBadge";
+import {memo} from "react"
+
 
 const StatusDropdown = ({
   projectId,
@@ -55,4 +57,4 @@ const StatusDropdown = ({
   );
 };
 
-export default StatusDropdown;
+export default memo(StatusDropdown);

@@ -27,7 +27,7 @@ const IssueCard = ({
   if (isChildIssue) return <></>;
   if (isDragging) {
     return (
-      <div className="z-50 h-[120px] w-full rounded-md border-2 border-dashed border-gray-300 bg-gray-200"></div>
+      <div className="z-50 min-h-32 w-full truncate rounded-md border-2 border-dashed border-gray-300 bg-gray-200"></div>
     );
   }
   return (
