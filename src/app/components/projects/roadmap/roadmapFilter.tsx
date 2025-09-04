@@ -23,7 +23,7 @@ const formatMonth = (date: Date): string => {
   return date.toLocaleString("en-US", { month: "long", year: "numeric" });
 };
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between py-1">
       {/* Left side - Filters */}
     <SearchRoadmap
       onFiltersChange={setSearchParams}

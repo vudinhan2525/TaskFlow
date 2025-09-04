@@ -9,6 +9,7 @@ import React, {
 import Roadmap from "@libs/app/components/projects/roadmap/roadmap";
 import { useParams } from "react-router-dom";
 import PageFilter from "@libs/app/components/general-components/pageFilter";
+import RoadmapFilter from "@libs/app/components/projects/roadmap/roadmapFilter";
 import { GetIssuesParams } from "@libs/types/issue";
 import { useProjectIssues } from "@libs/hooks/useIssue";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -24,14 +25,13 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
-  closestCorners,
   MouseSensor,
+  closestCenter,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
-import RoadmapFilter from "@libs/app/components/projects/roadmap/roadmapFilter";
 const UnscheduledWork = lazy(
   () => import("@libs/app/components/projects/roadmap/unscheduledWork"),
 );
@@ -39,7 +39,7 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 
 const RoadmapPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const [currentDate, setCurrentDate] = useState(new Date("2025-08-30"));
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [isOpenUnscheduledWork, setIsOpenUnscheduledWork] = useState(true);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [overDate, setIsoverDate] = useState("");
@@ -52,7 +52,7 @@ const RoadmapPage: React.FC = () => {
 
   const { issues, isLoading: isLoadingProjectIssues } =
     useProjectIssues(filters);
-
+  console.log("issues", issues,filters);
   // Group tasks by date
   const getIssuesForDate = useCallback(
     (date: Date): IIssue[] => {
@@ -89,7 +89,7 @@ const RoadmapPage: React.FC = () => {
 
     // Find last Saturday (may be in next month)
     const endDate = new Date(lastDay);
-    while (endDate.getDay() !== 6) {
+    while (endDate.getDay() !== 6 && endDate.getDay() !== 0) {
       // 6 represents Saturday
       endDate.setDate(endDate.getDate() + 1);
     }
@@ -127,7 +127,6 @@ const RoadmapPage: React.FC = () => {
     const activeId = active.id as string;
     if (overId === activeId) return;
     if (overId == "unscheduled-work") {
-      console.log(overId);
       setIsoverDate("unscheduled-work");
       return;
     }
@@ -150,9 +149,7 @@ const RoadmapPage: React.FC = () => {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    console.log("update", overId);
     if (overId === "unscheduled-work") {
-      console.log("Unscheduled work");
       updateIssue({
         id: activeId,
         data: {
@@ -185,7 +182,6 @@ const RoadmapPage: React.FC = () => {
       });
     }
 
-    console.log("Dragging over:", overId);
   };
 
   const goToToday = () => setCurrentDate(new Date());
@@ -217,7 +213,7 @@ const RoadmapPage: React.FC = () => {
       <div className="flex flex-1 overflow-auto">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
