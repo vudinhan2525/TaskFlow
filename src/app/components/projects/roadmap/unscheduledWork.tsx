@@ -1,37 +1,30 @@
 import React from "react";
-import { Input } from "antd";
-import { X } from "lucide-react";
+import { Input, ConfigProvider } from "antd";
+import { ChevronDown, ListFilter, X } from "lucide-react";
 import { IIssue } from "@libs/types/issue";
 import IssueCard from "../board/issueCard";
-import { CSS } from "@dnd-kit/utilities";
-import type { CSSProperties } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import {SortableContext} from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
 interface UnscheduledWorkProps {
   handleToggleUnscheduledWork: () => void;
   unscheduledIssues: IIssue[];
   isOver?: boolean;
 }
 const SortableIssue = ({ issue }: { issue: IIssue }) => {
-  const { attributes, listeners, setNodeRef, transform } =
-    useDraggable({ id: issue.id });
+  const { attributes, listeners, setNodeRef } = useDraggable({ id: issue.id });
+
   const isDragging = attributes["aria-pressed"];
-  const style: CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    // transition,
-    cursor: isDragging ? "grabbing" : "default",
-    touchAction: "none",
-  };
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...attributes}
       {...listeners}
       className="cursor-grab"
     >
-      <IssueCard issue={issue} />
+      <div className={`${isDragging && "opacity-40"}`}>
+        <IssueCard issue={issue} />
+      </div>
     </div>
   );
 };
@@ -44,15 +37,11 @@ const UnscheduledWork: React.FC<UnscheduledWorkProps> = ({
     id: "unscheduled-work",
     data: { type: "unscheduled-work" },
   });
-  
+  const [isSort, setIsSort] = React.useState(false);
   return (
     <div
       ref={setNodeRef}
-      className={`flex h-full w-full flex-col gap-8 rounded border p-6 shadow-xl transition-colors ${
-        isOver || isDroppableOver 
-          ? "border-green-500 bg-green-50" 
-          : "border-gray-100 bg-white"
-      }`}
+      className={`flex h-full w-full flex-col gap-6 rounded p-6 shadow-xl`}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -66,19 +55,86 @@ const UnscheduledWork: React.FC<UnscheduledWorkProps> = ({
           <X className="h-5 w-5 cursor-pointer text-gray-500 hover:text-gray-700" />
         </button>
       </div>
+      <span className="text-sm text-gray-500">
+        Drag each work item onto the calendar to set a due date for the work.
+      </span>
 
       {/* Search + Filter */}
       <div className="space-y-2">
-        <Input.Search placeholder="Search unscheduled items" allowClear />
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#22c55e", // xanh lá tailwind (green-500)
+              colorSuccess: "#16a34a",
+              colorError: "#dc2626",
+              colorWarning: "#f59e0b",
+              borderRadius: 8,
+            },
+            components: {
+              Input: {
+                colorPrimaryHover: "#16a34a",
+                colorPrimaryActive: "#15803d",
+                activeBorderColor: "#22c55e",
+                hoverBorderColor: "#22c55e",
+                borderRadius: 4,
+              },
+              Button: {
+                borderRadius: 4,
+              },
+            },
+          }}
+        >
+          <Input.Search
+            size="middle"
+            placeholder="Search unscheduled items"
+            className="border-green-500"
+            allowClear
+          />
+        </ConfigProvider>
       </div>
 
       {/* List */}
-      <div className="flex-1 space-y-3 overflow-y-auto">
-        <div className="flex flex-col gap-1">
-          <SortableContext items={unscheduledIssues.map(issue => issue.id)}>
-            {unscheduledIssues.map((issue) => (
-              <SortableIssue key={issue.id} issue={issue} />
-            ))}
+      <div
+        className={`flex h-full flex-1 flex-col overflow-y-auto rounded-sm bg-gray-100 p-4 transition-color border border-gray-100 ${
+          (isOver || isDroppableOver)
+            && "border border-green-500 bg-green-50 "
+            // : "border-gray-100 bg-white"
+        }`}
+      >
+        <div className="mb-1 flex items-center justify-between">
+          <button
+            onClick={() => setIsSort(!isSort)}
+            className="flex cursor-pointer items-center space-x-1 rounded-sm p-2 hover:bg-gray-200"
+          >
+            <p className="text-sm text-gray-500">Most Recent</p>
+            <ChevronDown
+              className={`h-4 w-4 text-gray-500 ${isSort ? "rotate-180" : ""} transition-transform duration-200`}
+            />
+          </button>
+          <button className="flex cursor-pointer items-center space-x-1 rounded-sm p-2 hover:bg-gray-200">
+            <ListFilter className="h-4 w-4 text-gray-500" />
+            <p className="text-sm text-gray-500">Filters</p>
+          </button>
+        </div>
+        <div className="space-y-1 overflow-y-auto pr-2">
+          <SortableContext items={unscheduledIssues.map((issue) => issue.id)}>
+            {unscheduledIssues
+              .sort((a, b) => {
+                if (isSort) {
+                  return (
+                    new Date(b.created_at).getTime() -
+                    new Date(a.created_at).getTime()
+                  );
+                } else {
+                  return (
+                    new Date(a.created_at).getTime() -
+                    new Date(b.created_at).getTime()
+                  );
+                }
+              })
+              .map((issue) => (
+                <SortableIssue key={issue.id} issue={issue} />
+              ))}
           </SortableContext>
         </div>
       </div>

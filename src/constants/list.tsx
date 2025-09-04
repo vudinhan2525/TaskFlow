@@ -7,14 +7,14 @@ import { LuBookmark, LuBug, LuClipboardCheck, LuStar } from "react-icons/lu";
 import { CiAt } from "react-icons/ci";
 import {
   MdOutlineBedroomParent,
-  MdLabelImportantOutline,
+  // MdLabelImportantOutline,
   MdOutlineSubtitles,
   MdOutlineSummarize,
   MdOutlineDescription,
 } from "react-icons/md";
 import { FaCalendarAlt, FaPlus } from "react-icons/fa";
 import { IIssue } from "@libs/types/issue";
-import { RiTeamFill } from "react-icons/ri";
+// import { RiTeamFill } from "react-icons/ri";
 import { IoIosPrint } from "react-icons/io";
 import { LuCircleArrowRight } from "react-icons/lu";
 import { CiCircleChevUp } from "react-icons/ci";
@@ -28,16 +28,20 @@ export const columnsIcon: Record<keyof IIssue, React.ReactNode> = {
   column: <LuCircleArrowRight color="#626f86" />,
   priority: <CiCircleChevUp color="#626f86" />,
   type: <div />,
-  team_id: <RiTeamFill color="#626f86" />,
   sprint_id: <IoIosPrint color="#626f86" />,
   assignee_id: <CiAt color="#626f86" />,
   reporter_id: <CiAt color="#626f86" />,
   parent_id: <MdOutlineBedroomParent color="#626f86" />,
   story_point: <FcHighPriority color="#626f86" />,
-  labels: <MdLabelImportantOutline color="#626f86" />,
   attachments: <FaPlus color="#626f86" />,
   created_at: <FaCalendarAlt color="#626f86" />,
   updated_at: <FaCalendarAlt color="#626f86" />,
+  due_date_from: <FaCalendarAlt color="#626f86" />,
+  due_date_to: <FaCalendarAlt color="#626f86" />,
+  completed_at: <FaCalendarAlt color="#626f86" />,
+  // status: <FaCalendarAlt color="#626f86" />,
+  // labels: <MdLabelImportantOutline color="#626f86" />,
+  // team_id: <RiTeamFill color="#626f86" />,
 };
 
 export const typeOptions = [

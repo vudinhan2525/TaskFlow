@@ -1,8 +1,8 @@
-import { memo, lazy, useTransition } from "react";
+import { memo, lazy, useTransition, useEffect } from "react";
 import Button from "@libs/app/components/general-components/button";
 import { Popover } from "antd";
 import Search from "antd/es/input/Search";
-import { useState} from "react";
+import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { useParams, useSearchParams } from "react-router-dom";
 import { GetIssuesParams } from "@libs/types/issue";
@@ -35,6 +35,9 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
     project_id: projectId,
   });
 
+  useEffect(() => {
+    onFiltersChange?.(filters);
+  }, []);
   const updateURL = (newFilters: GetIssuesParams) => {
     const params = new URLSearchParams();
 
@@ -64,6 +67,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.pushState({}, "", newUrl);
   };
+
   const handleSaveFilters = () => {
     updateURL(filters);
     setIsPopoverOpen(false);
@@ -106,7 +110,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
   };
 
   return (
-    <div className=" space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Search
           size="large"
@@ -120,13 +124,13 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
 
         <Popover
           content={
-              <DropdownFilter
-                handleClearFilters={handleClearFilters}
-                handleSaveFilters={handleSaveFilters}
-                setIsPopoverOpen={setIsPopoverOpen}
-                filters={filters}
-                setFilters={setFilters}
-              />
+            <DropdownFilter
+              handleClearFilters={handleClearFilters}
+              handleSaveFilters={handleSaveFilters}
+              setIsPopoverOpen={setIsPopoverOpen}
+              filters={filters}
+              setFilters={setFilters}
+            />
           }
           placement="bottomLeft"
           trigger="click"

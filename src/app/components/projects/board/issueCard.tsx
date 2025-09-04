@@ -32,7 +32,7 @@ const IssueCard = ({
   }
   return (
     <div
-      className={`mb-2 cursor-pointer rounded-md border border-gray-200 bg-white p-3 shadow-sm transition-all hover:shadow-md ${isDragging ? "opacity-40" : ""}`}
+      className={`     cursor-pointer rounded-md border border-gray-200 bg-white p-3 shadow-sm transition-all hover:shadow-md ${isDragging ? "opacity-40" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
