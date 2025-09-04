@@ -1,6 +1,3 @@
-// skeleton-table.tsx
-
-import * as React from 'react';
 import { Skeleton, SkeletonProps, Table } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 
@@ -20,7 +17,7 @@ export default function SkeletonTable({
   columns,
   children,
   className,
-}: SkeletonTableProps): JSX.Element {
+}: SkeletonTableProps) {
   return loading ? (
     <Table
       rowKey="key"

@@ -1,4 +1,4 @@
-import React, { useCallback, useState,useTransition } from "react";
+import React, { useCallback, useState} from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,7 @@ import { useProjectSprints } from "@libs/hooks/useSprint";
 import { RootState } from "@libs/store";
 import { IssuePriority, CreateIssueParams } from "@libs/types/issue";
 
-interface UnifiedIssueModalProps {
+interface CreateIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId?: string;
@@ -64,7 +64,7 @@ const issueSchema = z.object({
   attachments: z.array(z.instanceof(File)).min(0),
 });
 
-const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
+const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   isOpen,
   onClose,
   projectId,
@@ -563,4 +563,4 @@ const UnifiedIssueModal: React.FC<UnifiedIssueModalProps> = ({
   );
 };
 
-export default UnifiedIssueModal;
+export default CreateIssueModal;

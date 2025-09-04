@@ -17,9 +17,8 @@ export interface AddProjectMemberParams {
 
 export const projectMembers = {
   add: (
-    projectId: string,
     data: AddProjectMemberParams,
-  ) => api.post<IProjectMember>(`/projects/${projectId}/members`, data, config),
+  ) => api.post<IProjectMember>(`/projects/${data.project_id}/members`, data, config),
 
   getUserByEmail: (email: string) =>
     api.get<ResponseApi<IUser>>(`/users/by-email/${email}`, config),

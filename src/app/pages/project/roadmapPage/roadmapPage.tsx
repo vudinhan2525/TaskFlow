@@ -4,6 +4,7 @@ import React, {
   useTransition,
   useCallback,
   useEffect,
+  lazy,
 } from "react";
 import Roadmap from "@libs/app/components/projects/roadmap/roadmap";
 import { useParams } from "react-router-dom";
@@ -31,10 +32,9 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import RoadmapFilter from "@libs/app/components/projects/roadmap/roadmapFilter";
-// const UnscheduledWork = lazy(
-//   () => import("@libs/app/components/projects/roadmap/unscheduledWork"),
-// );
-import UnscheduledWork from "@libs/app/components/projects/roadmap/unscheduledWork";
+const UnscheduledWork = lazy(
+  () => import("@libs/app/components/projects/roadmap/unscheduledWork"),
+);
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 
 const RoadmapPage: React.FC = () => {
@@ -241,12 +241,13 @@ const RoadmapPage: React.FC = () => {
               >
                 <div className="flex h-full flex-col gap-6 pr-4">
                   <RoadmapFilter
-                    handleToggleUnscheduledWork={handleToggleUnscheduledWork}
                     SearchRoadmap={PageFilter}
+                    setSearchParams={setFilters}
                     goToToday={goToToday}
                     previousMonth={previousMonth}
                     currentDate={currentDate}
                     nextMonth={nextMonth}
+                    handleToggleUnscheduledWork={handleToggleUnscheduledWork}
                   />
 
                   <Roadmap

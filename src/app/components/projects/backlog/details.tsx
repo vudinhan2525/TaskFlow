@@ -140,11 +140,7 @@ const Details = ({
             <SprintDropdown
               projectId={projectId}
               issueId={selectedIssue.id}
-              currentSprint={
-                sprints.find(
-                  (sprint) => sprint.id === selectedIssue.sprint_id,
-                ) || sprints[0]
-              }
+              sprintId={selectedIssue.sprint_id || ""}
             />
           </div>
 

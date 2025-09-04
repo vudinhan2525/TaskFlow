@@ -59,8 +59,7 @@ export function useAddProjectMember(projectId: string) {
     error,
   } = useMutation({
     mutationFn: (data: AddProjectMemberParams) => {
-      console.log(data);
-      return projectMembers.add(projectId, data);
+      return projectMembers.add(data);
     },
     onSuccess: () => {
       toast.success("Project member added successfully!");

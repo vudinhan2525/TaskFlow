@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import { UserStats } from "@libs/types/project";
 import HistorySection from "@libs/app/components/issues/historySection";
-
+import { useParams } from "react-router-dom";
 interface StatusData {
   label: string;
   value: number;
@@ -34,6 +34,7 @@ const COLOR_PALETTE = [
 const StatusOverview = (props: { data: UserStats }) => {
   const { by_status } = props.data;
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
+  const { projectId } = useParams<{ projectId: string }>();
 
   const statusData: StatusData[] = by_status.map((status, idx) => ({
     label: status.name,
@@ -260,7 +261,9 @@ const StatusOverview = (props: { data: UserStats }) => {
 
       {/* Activity Feed */}
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <HistorySection />
+        <HistorySection
+        projectId={projectId!}
+        />
       </div>
     </div>
   );
