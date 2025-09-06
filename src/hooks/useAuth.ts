@@ -6,6 +6,8 @@ import { auth } from "@libs/apis/auth";
 import { users } from "@libs/apis/user";
 import { useNavigate } from "react-router-dom";
 
+
+
 export function useAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -18,7 +20,8 @@ export function useAuth() {
     queryFn: async () => {
       const { data } = await auth.getCurrentUser();
       dispatch(setUser(data.data));
-      return data;
+
+      return data.data;
     },
     retry: false,
     enabled: true,

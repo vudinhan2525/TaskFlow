@@ -42,6 +42,7 @@ export interface GetIssuesParams {
   due_date_to?: string;
   created_at_from?: string;
   created_at_to?: string;
+  is_fetch?: boolean;
 }
 
 export interface CreateIssueParams {
@@ -61,6 +62,8 @@ export interface CreateIssueParams {
   parent_id?: string;
   story_point?: number;
   attachments?: string[];
+  due_date_to?: string;
+
 }
 
 export interface GetActivitiesParams {

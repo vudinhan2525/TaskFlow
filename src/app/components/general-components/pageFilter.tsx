@@ -1,9 +1,10 @@
-import { memo, lazy, useTransition } from "react";
+import { memo, lazy, useTransition, useEffect } from "react";
 import Button from "@libs/app/components/general-components/button";
-import { Popover } from "antd";
+import Popover from "antd/lib/popover";
 import Search from "antd/es/input/Search";
-import { useState} from "react";
-import { FaChevronDown } from "react-icons/fa";
+import { useState } from "react";
+import { ChevronDown } from 'lucide-react';
+
 import { useParams, useSearchParams } from "react-router-dom";
 import { GetIssuesParams } from "@libs/types/issue";
 
@@ -12,7 +13,7 @@ const DropdownFilter = lazy(() => import("./dropdownFilter"));
 interface PageFilterProps {
   onFiltersChange?: (filters: GetIssuesParams) => void;
 }
-const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
+const PageFilter = memo(({onFiltersChange }: PageFilterProps) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { projectId } = useParams<{ projectId: string }>();
   const [params] = useSearchParams();
@@ -31,10 +32,17 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
     priorities:
       (params.get("priorities")?.split(",").filter(Boolean) as any) || [],
     page: params.get("page") ? parseInt(params.get("page")!) : 1,
-    limit: params.get("limit") ? parseInt(params.get("limit")!) : 12,
+    limit: params.get("limit") ? parseInt(params.get("limit")!) : 100,
     project_id: projectId,
+    is_fetch: true,
   });
 
+  useEffect(() => {
+    onFiltersChange?.({
+      due_date_to: "unassigned",
+      ...filters,
+    });
+  }, []);
   const updateURL = (newFilters: GetIssuesParams) => {
     const params = new URLSearchParams();
 
@@ -64,6 +72,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     window.history.pushState({}, "", newUrl);
   };
+
   const handleSaveFilters = () => {
     updateURL(filters);
     setIsPopoverOpen(false);
@@ -106,7 +115,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
   };
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Search
           size="large"
@@ -120,13 +129,13 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
 
         <Popover
           content={
-              <DropdownFilter
-                handleClearFilters={handleClearFilters}
-                handleSaveFilters={handleSaveFilters}
-                setIsPopoverOpen={setIsPopoverOpen}
-                filters={filters}
-                setFilters={setFilters}
-              />
+            <DropdownFilter
+              handleClearFilters={handleClearFilters}
+              handleSaveFilters={handleSaveFilters}
+              setIsPopoverOpen={setIsPopoverOpen}
+              filters={filters}
+              setFilters={setFilters}
+            />
           }
           placement="bottomLeft"
           trigger="click"
@@ -140,7 +149,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
           <div>
             <Button className="relative">
               <span className="text-base font-semibold">Filter</span>
-              <FaChevronDown className="ml-1" />
+              <ChevronDown className="ml-1" />
               {getActiveFilterCount() > 0 && (
                 <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-xs text-white">
                   {getActiveFilterCount()}

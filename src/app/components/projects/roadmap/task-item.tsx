@@ -1,29 +1,43 @@
-import React from "react";
-import StatusBadge from "../../general-components/badge/statusBadge";
+import React, { useMemo } from "react";
 import PriorityBadge from "../../general-components/badge/priorityBadge";
-import TypeBadge from "../../general-components/badge/typeBadge";
-import UserAvatar from "../../general-components/user/userAvatar";
 import { IIssue } from "@libs/types/issue";
+import { Clock } from "lucide-react";
+import { FaCheck } from "react-icons/fa";
 interface TaskItemProps {
   issue: IIssue;
+  isDragging?: boolean;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ issue }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ issue, isDragging }) => {
+  if (isDragging) {
+    // return null;
+  }
+  const isOverdue = useMemo(
+    () =>
+      new Date(issue.due_date_to) < new Date() && issue.column.name !== "DONE",
+    [issue],
+  );
   return (
-    <div className="mb-1 rounded border border-gray-100 bg-white px-2 py-1 text-sm shadow-sm transition-shadow hover:shadow-md">
-      <div className="mb-1 flex items-center justify-between">
-        <StatusBadge column={issue.column} />
-
-        <PriorityBadge priority={issue.priority} isShowLabel={false} />
+    <div
+      className={`z-50 flex flex-row items-center gap-2 rounded border border-gray-100 px-2 py-1 text-sm shadow-sm transition-shadow hover:shadow-md ${isOverdue ? "bg-red-50" : "bg-white"} ${isDragging&&"opacity-40"} `}
+    >
+      <div className="rounded-sm border-1 border-emerald-500 p-0.5">
+        <FaCheck className="font-normal text-emerald-500" size={12} />
       </div>
+      <span className={`truncate text-sm font-light text-gray-400
+        ${issue.column.name === "DONE" ? "line-through" : ""}
+        `}>
+        {issue.title}
+      </span>
+      <span className={`truncate text-xs font-medium`}>{issue.summary}</span>
+      <PriorityBadge priority={issue.priority} isShowLabel={false} />
 
-      {/* Middle row: Type and Title */}
-      <div className="mb-2 flex items-center space-x-2">
-        <TypeBadge type={issue.type} isShowLabel={false} />
-        <span className="truncate font-medium">{issue.title}</span>
-      </div>
 
-      <UserAvatar userId={issue.assignee_id} />
+      {isOverdue && (
+        <div>
+          <Clock className="h-4 w-4 text-red-500" />
+        </div>
+      )}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AddProjectMemberParams } from "@libs/apis/projectMember";
 import { toast } from "react-toastify";
 
-export function useProjectMembers(projectId: string) {
+export function useProjectMembers(projectId: string,) {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
@@ -59,8 +59,7 @@ export function useAddProjectMember(projectId: string) {
     error,
   } = useMutation({
     mutationFn: (data: AddProjectMemberParams) => {
-      console.log(data);
-      return projectMembers.add(projectId, data);
+      return projectMembers.add(data);
     },
     onSuccess: () => {
       toast.success("Project member added successfully!");

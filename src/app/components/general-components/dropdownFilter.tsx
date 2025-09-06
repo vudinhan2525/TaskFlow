@@ -70,7 +70,7 @@ const DropdownFilter = ({
         <div className="flex flex-col gap-1">
           <p className="font-semibold text-gray-700">Status</p>
           <div className="flex flex-wrap gap-2">
-            {columns.map((column, i) => (
+            {columns.map((column) => (
               <div
                 onClick={() => {
                   const currentIds = filters.column_ids;
@@ -89,14 +89,14 @@ const DropdownFilter = ({
                 key={column.id}
                 className={`flex items-center rounded-2xl border-[2px] ${filters?.column_ids?.includes(column.id) ? "border-blue-500" : "border-transparent"}`}
               >
-                <StatusBadge column={column} index={i} size="medium" />
+                <StatusBadge column={column}  size="medium" />
               </div>
             ))}
           </div>
         </div>
         {/* Priority */}
         <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray-700">Work type</p>
+          <p className="font-semibold text-gray-700">Priority</p>
           <div className="flex flex-row items-center gap-4">
             {priorityOptions.map((priority) => (
               <div
@@ -139,7 +139,7 @@ const DropdownFilter = ({
         {/* Work Type */}
         <div className="flex flex-col gap-1">
           <p className="font-semibold text-gray-700">Work type</p>
-          <div className="flex flex-row flex-wrap gap-2">
+          <div className="flex flex-row flex-wrap gap-3">
             {typeOptions.map((workType) => (
               <div key={workType.id} className="flex items-center gap-1">
                 <Checkbox

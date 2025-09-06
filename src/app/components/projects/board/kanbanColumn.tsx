@@ -1,7 +1,6 @@
 import {
   SortableContext,
   useSortable,
-  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import IssueCard from "@libs/app/components/projects/board/issueCard";
 import DeleteColumnModal from "@libs/app/components/projects/modals/deleteColumnModal";
@@ -21,7 +20,13 @@ import { CSS } from "@dnd-kit/utilities";
 
 const SortableIssue = ({ issue }: { issue: IIssue }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: issue.id });
+    useSortable({
+      id: issue.id,
+      // transition: {
+      //   duration:50, // milliseconds
+      //   easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+      // },
+    });
   const isDragging = attributes["aria-pressed"];
   const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -180,7 +185,7 @@ export const KanbanColumn = ({
       </div>
       <SortableContext
         items={column.issues.map((issue) => issue.id)}
-        strategy={verticalListSortingStrategy}
+        // strategy={verticalListSortingStrategy}
       >
         <div className="max-h-[600px] min-h-40 overflow-auto">
           {column.issues.map((issue) => {

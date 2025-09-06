@@ -1,6 +1,4 @@
 import { IColumn } from "@libs/types/project";
-import { useProjectColumns } from "@libs/hooks/useProject";
-import { useParams } from "react-router-dom";
 export const statusColors = [
   {
     order: 1,
@@ -77,38 +75,23 @@ const sizeClasses = {
 
 const StatusBadge = ({
   column,
-  index,
   size = "small",
   className,
 }: {
   column: IColumn;
-  index?: number;
   size?: "small" | "medium" | "large";
   className?: string;
 }) => {
   if (!column) return <></>;
-  const { projectId } = useParams<{ projectId: string }>();
-  const { columns } = useProjectColumns(projectId || "");
 
-  const selectedStatus =
-    typeof index === "number"
-      ? statusColors[
-          ((index % statusColors.length) + statusColors.length) %
-            statusColors.length
-        ]
-      : statusColors[
-          columns.findIndex((col) => col.id === column.id) % statusColors.length
-        ];
-  const currentSize = sizeClasses[size];
-  if (!selectedStatus) return <></>;
   return (
     <div
-      className={`flex cursor-pointer items-center gap-2 rounded transition-colors duration-200 ${selectedStatus.hoverBg} ${className}`}
+      className={`flex cursor-pointer items-center gap-2 rounded transition-colors duration-200 ${statusColors[column.order].hoverBg} ${className}`}
     >
       <div
-        className={`rounded-2xl ${selectedStatus.bgColor} flex items-center gap-1 ${currentSize.button}`}
+        className={`rounded-2xl ${statusColors[column.order].bgColor} flex items-center gap-1 ${sizeClasses[size].button}`}
       >
-        <p className={`font-semibold ${selectedStatus.textColor}`}>
+        <p className={`font-semibold ${statusColors[column.order].textColor}`}>
           {column.name ? column.name.toUpperCase() : ""}
         </p>
       </div>

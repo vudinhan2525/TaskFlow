@@ -1,60 +1,80 @@
-import { useState, useEffect } from "react";
-import SearchBar from "../../general-components/searchBar";
-import { Select, Dropdown, Checkbox, Input, Button } from "antd";
-import { Filter, CalendarPlus, Settings2 } from "lucide-react";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import { useParams, useSearchParams } from "react-router-dom";
 
-import CustomFilter from "./customFilter";
-import { GetIssuesParams, IIssue } from "@libs/types/issue";
-import { useProjectIssues } from "@libs/hooks/useIssue";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { Settings2, CalendarPlus } from "lucide-react";
 const RoadmapFilter = ({
-  setIssues,
+  SearchRoadmap,
+  setSearchParams,
+  handleToggleUnscheduledWork,
+  currentDate,
+  goToToday,
+  previousMonth,
+  nextMonth
 }: {
-  setIssues: React.Dispatch<React.SetStateAction<IIssue[]>>;
+  SearchRoadmap: React.ElementType;
+  setSearchParams: (params: any) => void;
+  handleToggleUnscheduledWork: () => void;
+  currentDate: Date;
+  goToToday: () => void;
+  previousMonth: () => void;
+  nextMonth: () => void;
 }) => {
-  const [params] = useSearchParams();
 
-  const { projectId } = useParams<{ projectId: string }>();
-  const { projectMembers } = useProjectMembers(projectId || "");
-
-  const [filters, setFilters] = useState<GetIssuesParams>({
-    keyword: params.get("text") || "",
-    // due_date_from: params.get("due_date_from") || undefined,
-    // due_date_to: params.get("due_date_to") || undefined,
-    // column_ids: params.get("column_ids")?.split(",").filter(Boolean) || [],
-    // created_at_from: params.get("created_at_from") || undefined,
-    // created_at_to: params.get("created_at_to") || undefined,
-    // assignee_ids: params.get("assignee_ids")?.split(",").filter(Boolean) || [],
-    // page: params.get("page") ? parseInt(params.get("page")!) : 1,
-    // limit: params.get("limit") ? parseInt(params.get("limit")!) : 12,
-    project_id: projectId,
-  });
-  const { issues } = useProjectIssues(filters);
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      keyword: params.get("text") || "",
-    });
-  }, [params.get("text")]);
-  useEffect(() => {
-    setIssues(issues);
-  }, [issues]);
-
+const formatMonth = (date: Date): string => {
+  return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+};
   return (
-    <div className="flex items-center justify-between px-4 py-2">
-      <div className="flex items-center gap-2">
-        <SearchBar />
+    <div className="flex items-center justify-between py-1">
+      {/* Left side - Filters */}
+    <SearchRoadmap
+      onFiltersChange={setSearchParams}
+    />
+      {/* <RoadmapFilter setIssues={setIssues} /> */}
 
-        <div className="flex items-center gap-3 p-2">
-          <CustomFilter title="Assignee" />
-          <CustomFilter title="Status" />
-          <CustomFilter title="Labels" />
-          <CustomFilter title="More Filters" />
+      {/* Right side - Calendar Navigation */}
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={goToToday}
+          className="text-md cursor-pointer rounded border border-gray-300 px-3 py-2 font-semibold text-gray-700 hover:bg-gray-50"
+        >
+          Today
+        </button>
+
+        <div className="flex h-full items-center space-x-1 rounded border border-gray-300">
+          <button
+            onClick={previousMonth}
+            className="cursor-pointer p-3 text-gray-600 hover:bg-gray-100"
+          >
+            <FaChevronLeft size={14} color="#6a7282 " />
+          </button>
+
+          <span className="text-md px-3 py-2 font-semibold text-gray-500">
+            {formatMonth(currentDate)}
+          </span>
+
+          <button
+            onClick={nextMonth}
+            className="cursor-pointer p-3 text-gray-600 hover:bg-gray-100"
+          >
+            <FaChevronRight size={14} color="#6a7282 " />
+          </button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleToggleUnscheduledWork}
+            className="cursor-pointer rounded border border-gray-300 p-3 text-gray-600 hover:bg-gray-100"
+          >
+            <CalendarPlus size={20} color="#6a7282 " />
+          </button>
+          <button
+            // onClick={previousMonth}
+            className="cursor-pointer rounded border border-gray-300 p-3 text-gray-600 hover:bg-gray-100"
+          >
+            <Settings2 size={20} color="#6a7282 " />
+          </button>
         </div>
       </div>
     </div>
   );
-};                                        
+};
 
 export default RoadmapFilter;

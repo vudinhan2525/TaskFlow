@@ -7,10 +7,11 @@ import { PaginationRes } from "@libs/apis/api";
 import { useNavigate } from "react-router-dom";
 
 const ColumnInputFiled = lazy(() => import("./listTable/ColumnInputFiled"));
-const TypeDropdown = lazy(() => import("../../general-components/dropdown/index").then(m => ({ default: m.TypeDropdown })));
-const StatusDropdown = lazy(() => import("../../general-components/dropdown/index").then(m => ({ default: m.StatusDropdown })));
-const PriorityDropdown = lazy(() => import("../../general-components/dropdown/index").then(m => ({ default: m.PriorityDropdown })));
-const SprintDropdown = lazy(() => import("../../general-components/dropdown/index").then(m => ({ default: m.SprintDropdown })));
+const TypeDropdown = lazy(() => import("../../general-components/dropdown/typeDropdown").then(m => (m)));
+const StatusDropdown = lazy(() => import("../../general-components/dropdown/statusDropdown").then(m => (m)));
+const PriorityDropdown = lazy(() => import("../../general-components/dropdown/priorityDropdown").then(m => (m)));
+const SprintDropdown = lazy(() => import("../../general-components/dropdown/sprintDropdown").then(m => (m)));
+
 const UserDropdown = lazy(() => import("../../general-components/dropdown/userDropdown"));
 const CustomDatePicker = lazy(() => import("../../general-components/customDatePicker"));
 
@@ -58,7 +59,7 @@ const ListTable = ({
         />
       </div>
     </Suspense>
-  )),
+  ),120),
 
   // Title (không lazy)
   TableColumn("title", "Title", (_, { title }) => (
@@ -105,7 +106,7 @@ const ListTable = ({
         <SprintDropdown
           projectId={projectId}
           issueId={id}
-          sprintId={sprint_id!}
+          sprintId={sprint_id || ""}
         />
       </div>
     </Suspense>
@@ -214,7 +215,7 @@ const ListTable = ({
 
   return (
     <div className="relative">
-      {isFetching ? (
+      {isFetching || issues.length === 0 ? (
         <Table
           rowKey="key"
           pagination={false}

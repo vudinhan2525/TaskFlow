@@ -31,7 +31,7 @@ const issueSchema = z.object({
   description: z.string().optional(),
   column_id: z.string().min(1, "Column is required"),
   assignee_id: z.string().optional(),
-  priority: z.enum(["Low", "Medium", "High"] as const),
+  priority: z.enum(["Lowest", "Low", "Medium", "High", "Highest"] as const),
   attachments: z.array(FileSchema),
 });
 
@@ -96,7 +96,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
     type,
     column_id,
     priority,
-    columns
+    columns,
   });
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -111,7 +111,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
       const droppedFiles = Array.from(e.dataTransfer.files);
       setValue("attachments", droppedFiles);
     },
-    [setValue]
+    [setValue],
   );
 
   const handleFileChange = useCallback(
@@ -119,7 +119,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
       const selectedFiles = Array.from(e.target.files || []);
       setValue("attachments", selectedFiles);
     },
-    [setValue]
+    [setValue],
   );
 
   const handleFormSubmit: SubmitHandler<IssueFormData> = async (formData) => {
@@ -129,9 +129,9 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
     }
 
     console.log("Submitting form data:", formData);
-    
+
     // Find the selected column and ensure it has project_id
-    const selectedColumn = columns.find(col => col.id === formData.column_id);
+    const selectedColumn = columns.find((col) => col.id === formData.column_id);
     if (!selectedColumn) {
       console.error("Selected column not found");
       return;
@@ -151,24 +151,27 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
       sprint_id: sprintId,
       reporter_id: user.id,
     };
-    
+
     // Log the request data
     console.log("Sending to API:", issueData);
-    
+
     setIsLoading(true);
     try {
       await onSubmit(issueData);
     } catch (error) {
       console.error("Failed to create issue:", error);
       // Check for specific error response
-      if (error && typeof error === 'object' && 'response' in error) {
+      if (error && typeof error === "object" && "response" in error) {
         const response = (error as ErrorResponse).response;
-        console.error('Server error details:', {
+        console.error("Server error details:", {
           status: response?.status,
           data: response?.data,
-          message: response?.data?.message
+          message: response?.data?.message,
         });
-        toast.error(response?.data?.message || "Failed to create issue. Please try again.");
+        toast.error(
+          response?.data?.message ||
+            "Failed to create issue. Please try again.",
+        );
       } else {
         toast.error("An unexpected error occurred. Please try again.");
       }
@@ -189,9 +192,12 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
     >
       <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-4">
         <form className="space-y-4">
-          <div className="gap-4 mb-6">
+          <div className="mb-6 gap-4">
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="type"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Type <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
@@ -205,92 +211,142 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
                 rowClassName="w-full text-[15px]"
                 menuClassName="w-[380px]"
                 parent={<div className="w-full">{type}</div>}
-                onClickItem={(option) => setValue("type", option.value as "Bug" | "Task" | "Story" | "Epic")}
+                onClickItem={(option) =>
+                  setValue(
+                    "type",
+                    option.value as "Bug" | "Task" | "Story" | "Epic",
+                  )
+                }
               />
-              {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type.message}</p>}
+              {errors.type && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.type.message}
+                </p>
+              )}
             </div>
           </div>
 
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="title"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Title <span className="text-red-500">*</span>
             </label>
             <input
               id="title"
               {...register("title")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
-            {errors.title && <p className="text-sm text-red-500 mt-1">{errors.title.message}</p>}
+            {errors.title && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.title.message}
+              </p>
+            )}
           </div>
           <div>
-            <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="summary"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Summary <span className="text-red-500">*</span>
             </label>
             <input
               id="summary"
               {...register("summary")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
-            {errors.summary && <p className="text-sm text-red-500 mt-1">{errors.summary.message}</p>}
+            {errors.summary && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.summary.message}
+              </p>
+            )}
           </div>
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="description"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Description
             </label>
             <textarea
               id="description"
               {...register("description")}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
             />
-            {errors.description && <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>}
+            {errors.description && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="column" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="column"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Status <span className="text-red-500">*</span>
             </label>
             <DropdownAntd
-              options={columns.map(column => ({
+              options={columns.map((column) => ({
                 value: column.id,
-                label: column.name
+                label: column.name,
               }))}
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[180px]"
               parent={
                 <div className="w-full font-medium">
-                  {columns.find(c => c.id === column_id)?.name || 'Select Status'}
+                  {columns.find((c) => c.id === column_id)?.name ||
+                    "Select Status"}
                 </div>
               }
               onClickItem={(option) => setValue("column_id", option.value)}
             />
             {errors.column_id && (
-              <p className="text-sm text-red-500 mt-1">{errors.column_id.message}</p>
+              <p className="mt-1 text-sm text-red-500">
+                {errors.column_id.message}
+              </p>
             )}
           </div>
 
           <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="priority"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Priority
             </label>
             <DropdownAntd
               options={[
+                { value: "Lowest", label: "Lowest" },
                 { value: "Low", label: "Low" },
                 { value: "Medium", label: "Medium" },
                 { value: "High", label: "High" },
+                { value: "Highest", label: "Highest" },
               ]}
               placement="bottom"
               rowClassName="w-full text-[15px]"
               menuClassName="w-[380px]"
               parent={<div className="w-full">{priority}</div>}
-              onClickItem={(option) => setValue("priority", option.value as IssuePriority)}
+              onClickItem={(option) =>
+                setValue("priority", option.value as IssuePriority)
+              }
             />
-            {errors.priority && <p className="text-sm text-red-500 mt-1">{errors.priority.message}</p>}
+            {errors.priority && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.priority.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="assignee"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Assignee (Optional)
             </label>
             <DropdownAntd
@@ -304,14 +360,19 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
               parent={<div className="w-full">Select Assignee (Optional)</div>}
               onClickItem={(option) => setValue("assignee_id", option.value)}
             />
-            {errors.assignee_id && <p className="text-sm text-red-500 mt-1">{errors.assignee_id.message}</p>}
+            {errors.assignee_id && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.assignee_id.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
+            <label className="mb-1 block text-sm font-medium text-gray-700">
+              Attachments
+            </label>
             <div
-              className={`border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors 
-                ${files?.length ? "border-green-500 bg-green-50" : "hover:border-green-500 hover:bg-green-50"}`}
+              className={`cursor-pointer rounded-md border-2 border-dashed p-4 text-center transition-colors ${files?.length ? "border-green-500 bg-green-50" : "hover:border-green-500 hover:bg-green-50"}`}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={() => document.getElementById("file-input")?.click()}

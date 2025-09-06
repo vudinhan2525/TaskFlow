@@ -94,3 +94,11 @@
   width:100% !important;
   height: 40px !important;
 }
+
+.btn {
+  
+}
+.btn > span, 
+.btn > svg {
+  transform: scale(0.8); /* thu nhỏ content */
+}

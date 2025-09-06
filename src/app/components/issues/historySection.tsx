@@ -96,7 +96,7 @@ export default function HistorySection({
 
   const formatFieldLabel = (field: string) => {
     switch (field) {
-      case "Description":
+    case "Description":
         return "updated the description";
       case "Status":
         return "changed status";

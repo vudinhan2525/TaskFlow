@@ -1,32 +1,21 @@
-import React, { useEffect, Suspense } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "@libs/hooks/useAuth";
+import React, { Suspense } from "react";
+import { Outlet } from "react-router-dom";
 import ProjectNavbar from "@libs/app/components/projects/projectNavBar";
+import { ClockLoader } from "react-spinners";
 const ProjectLayout = (): React.ReactElement => {
-  const { user, isLoading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      navigate("/login");
-    }
-  }, [user, isLoading, navigate]);
-
-  if (isLoading) {
-    return <div>Loading</div>
-  }
-
-  if (!user) {
-    return <div></div>;
-  }
-
   return (
     <div className="flex h-screen w-full flex-1 flex-row overflow-hidden">
-      <div className="h-full w-[15%]">
-      <ProjectNavbar />
+      <div className="h-full w-[15%] border-r border-gray-200">
+        <ProjectNavbar />
       </div>
       <div className="h-screen w-[85%] overflow-auto">
-        <Suspense fallback={<div></div>}>
+        <Suspense
+          fallback={
+            <div className="flex h-full w-full items-center justify-center">
+              <ClockLoader />
+            </div>
+          }
+        >
           <Outlet />
         </Suspense>
       </div>
