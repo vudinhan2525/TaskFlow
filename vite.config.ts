@@ -1,8 +1,25 @@
 import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-
+import vitePluginImp from "vite-plugin-imp";
+import viteCompression from "vite-plugin-compression";
 export default defineConfig({
-  plugins: [tailwindcss()],
+  plugins: [
+    viteCompression({
+      algorithm: "brotliCompress", 
+    }),
+    tailwindcss(),
+    vitePluginImp({
+      libList: [
+        {
+          libName: "antd",
+          style: (name) => `antd/es/${name}/style/index.js`,
+        },
+      ],
+    }),
+  ],
+  build: {
+    sourcemap: true, 
+  },
   resolve: {
     alias: [{ find: "@libs", replacement: "/src" }],
   },

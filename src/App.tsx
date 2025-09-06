@@ -6,6 +6,7 @@ import { store } from "./store";
 import { queryClient } from "./apis/react-query";
 import { ToastContainer } from "react-toastify";
 import { NotificationProvider } from "@libs/app/context/notification.context";
+import { HelmetProvider } from "react-helmet-async";
 import { IssueDetailProvider } from "@libs/app/context/issue-detail.context";
 
 function App() {
@@ -15,7 +16,9 @@ function App() {
         <BrowserRouter>
           <NotificationProvider>
             <IssueDetailProvider>
-              <Router />
+              <HelmetProvider>
+                <Router />
+              </HelmetProvider>
             </IssueDetailProvider>
           </NotificationProvider>
         </BrowserRouter>

@@ -1,15 +1,15 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
-import type { ReactNode } from "react";
+import ProtectedRoute from "./ProtectedRoute";
 // Lazy load pages
 const ProjectLayout = lazy(() => import("@libs/app/layouts/projectLayout"));
+import DefaultLayout from "@libs/app/layouts/defaultLayout";
 const BacklogPage = lazy(
   () => import("@libs/app/pages/project/backLogPage/backLogPage"),
 );
 const ListPage = lazy(
   () => import("@libs/app/pages/project/listPage/listPage"),
 );
-const DefaultLayout = lazy(() => import("@libs/app/layouts/defaultLayout"));
 
 const ProjectPage = lazy(
   () => import("@libs/app/pages/project/projectPage/projectPage"),
@@ -63,10 +63,7 @@ const RegisterPage = lazy(
   () => import("@libs/app/pages/auth/registerPage/registerPage"),
 );
 
-// Protected Route wrapper
-function ProtectedRoute({ children }: { children: ReactNode }) {
-  return <>{children}</>;
-}
+
 
 const Router = (): React.ReactElement => {
   return (

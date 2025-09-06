@@ -3,8 +3,7 @@ import { useProjectColumns } from "@libs/hooks/useProject";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { IColumn } from "@libs/types/project";
 import StatusBadge from "../badge/statusBadge";
-import {memo} from "react"
-
+import { memo, useState} from "react";
 
 const StatusDropdown = ({
   projectId,
@@ -15,7 +14,8 @@ const StatusDropdown = ({
   issueId: string;
   column: IColumn;
 }) => {
-  const { columns } = useProjectColumns(projectId);
+  const [isOpenDropdown, setIsOpenDropdown] = useState(false);
+  const { columns } = useProjectColumns(projectId, isOpenDropdown);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
   const handleChangeStatus = (updatedStatus: string) => {
@@ -27,10 +27,9 @@ const StatusDropdown = ({
     });
   };
 
-
   return (
     <ColumnDropdown
-      items={columns.map((column, index) => {
+      items={columns.map((column) => {
         return {
           value: column.name,
           key: column.id,
@@ -40,19 +39,15 @@ const StatusDropdown = ({
             border: "none",
             boxShadow: "none",
           },
-          label: <StatusBadge column={column} index={index} className="p-2" />,
+          label: <StatusBadge column={column} className="p-2" />,
           onClick: () => {
             handleChangeStatus(column.id);
           },
         };
       })}
       currentItem={undefined}
-      children={
-        <StatusBadge
-          column={column}
-          index={columns.findIndex((col) => col.id === column.id)}
-        />
-      }
+      children={<StatusBadge column={column} />}
+      setIsOpenDropdown={setIsOpenDropdown}
     />
   );
 };

@@ -2,7 +2,7 @@ import { connectSocket } from "@libs/apis/notiApi";
 import { notificationApi } from "@libs/apis/notification";
 import { useAuth } from "@libs/hooks/useAuth";
 import { INotification } from "@libs/types/notification";
-import _ from "lodash";
+import {get} from "lodash";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 interface NotificationContextType {
@@ -34,13 +34,13 @@ export const NotificationProvider: React.FC<{
     await notificationApi.update(notiId, { isRead: true });
   };
   const markAsReadAll = async () => {
-    if (!user?.data.id) return;
+    if (!user?.id) return;
     setNotifications((notis) => notis.map((el) => ({ ...el, is_read: true })));
-    await notificationApi.updateAll({ userId: user?.data.id, isRead: true });
+    await notificationApi.updateAll({ userId: user?.id, isRead: true });
   };
 
   useEffect(() => {
-    const userId = _.get(user,'data.id');
+    const userId = get(user,'id');
     if (userId) {
       const socket = connectSocket(userId);
 

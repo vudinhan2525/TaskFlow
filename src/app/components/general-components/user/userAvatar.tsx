@@ -52,7 +52,7 @@ const UserAvatar = memo(({
                 ${buildCloudinaryUrl(user?.avatar || "", size)} 1x,
                 ${buildCloudinaryUrl(user?.avatar || "", size * 2)} 2x
               `}
-              alt={`${user?.first_name} ${user?.last_name}`}
+              alt={`user avatar`}
               loading="lazy"
             />
           ) : undefined

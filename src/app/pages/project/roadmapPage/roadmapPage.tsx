@@ -15,6 +15,7 @@ import { useProjectIssues } from "@libs/hooks/useIssue";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { IIssue } from "@libs/types/issue";
 import TaskItem from "@libs/app/components/projects/roadmap/task-item";
+import {Helmet} from "react-helmet-async";
 import {
   DndContext,
   DragEndEvent,
@@ -39,7 +40,9 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 
 const RoadmapPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const memoizedProjectId = useMemo(() => projectId || "", [projectId]);
+
+  const [currentDate, setCurrentDate] = useState(new Date("2025-09-5"));
   const [isOpenUnscheduledWork, setIsOpenUnscheduledWork] = useState(true);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [overDate, setIsoverDate] = useState("");
@@ -52,7 +55,6 @@ const RoadmapPage: React.FC = () => {
 
   const { issues, isLoading: isLoadingProjectIssues } =
     useProjectIssues(filters);
-  console.log("issues", issues,filters);
   // Group tasks by date
   const getIssuesForDate = useCallback(
     (date: Date): IIssue[] => {
@@ -181,7 +183,6 @@ const RoadmapPage: React.FC = () => {
         },
       });
     }
-
   };
 
   const goToToday = () => setCurrentDate(new Date());
@@ -193,21 +194,17 @@ const RoadmapPage: React.FC = () => {
     setCurrentDate(
       new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
     );
-  const handleToggleUnscheduledWork = () => {
+  const handleToggleUnscheduledWork = useCallback(() => {
     startTransition(() => {
       setIsOpenUnscheduledWork(!isOpenUnscheduledWork);
     });
-  };
-
-  // const scheduledIssues: IIssue[] = useMemo(() => {
-  //   return issues.filter((issue) => issue.due_date_to);
-  // }, [issues]);
-  const unscheduledIssues: IIssue[] = useMemo(() => {
-    return issues.filter((issue) => !issue.due_date_to);
-  }, [issues]);
+  }, [isOpenUnscheduledWork]);
 
   return (
     <div className="flex h-full w-full flex-col gap-6 bg-white p-6 pb-32">
+      <Helmet>
+        <title>Roadmap - Task Flow</title>
+      </Helmet>
       <h1 className="text-2xl font-bold text-gray-700">Roadmap Page</h1>
 
       <div className="flex flex-1 overflow-auto">
@@ -274,7 +271,8 @@ const RoadmapPage: React.FC = () => {
                   <div className="h-full overflow-y-auto p-1">
                     <UnscheduledWork
                       handleToggleUnscheduledWork={handleToggleUnscheduledWork}
-                      unscheduledIssues={unscheduledIssues}
+                      // unscheduledIssues={unscheduledIssues}
+                      projectId={memoizedProjectId}
                       isOver={overDate === "unscheduled-work"}
                     />
                   </div>

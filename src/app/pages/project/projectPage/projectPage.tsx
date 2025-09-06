@@ -6,6 +6,7 @@ import ProjectStat from "@libs/app/components/projects/dashboard/projectStat";
 import ProjectTable from "@libs/app/components/projects/dashboard/projectTable";
 import ProjectDeadlines from "@libs/app/components/projects/dashboard/projectDeadlines";
 import CreateProjectModal from "@libs/app/components/projects/modals/createProjectModal";
+import { Helmet} from "react-helmet-async";
 
 const filterOptions = [
   { value: "newest", label: "Newest" },
@@ -19,6 +20,9 @@ export default function ProjectPage() {
 
   return (
     <div className="mt-8 flex gap-8 px-8">
+      <Helmet>
+        <title>Projects - Task Flow</title>
+      </Helmet>
       {/* Main content area (70%) */}
       <div className="basis-[70%]">
         <div className="flex items-center justify-between">

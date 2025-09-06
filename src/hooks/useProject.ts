@@ -164,7 +164,10 @@ export function useProject(projectId: string) {
   };
 }
 
-export function useProjectColumns(projectId: string | undefined) {
+export function useProjectColumns(
+  projectId: string | undefined,
+  isFetch?: boolean,
+) {
   const {
     data: columnsData,
     isLoading,
@@ -176,8 +179,8 @@ export function useProjectColumns(projectId: string | undefined) {
       const response = await projects.getColumns(projectId);
       return response.data;
     },
-    enabled: !!projectId,
-    refetchOnMount: "always",  
+    enabled: !!projectId && (isFetch === undefined ? true : isFetch),
+    // refetchOnMount: "always",
   });
 
   return {
