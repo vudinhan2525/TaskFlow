@@ -3,7 +3,7 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { ISprint } from "@libs/types/sprint";
 import RenderTextCell from "../../projects/list/common/RenderTextCell";
-import { useMemo, memo } from "react";
+import { useMemo } from "react";
 
 const SprintDropdown = ({
   projectId,
@@ -14,6 +14,7 @@ const SprintDropdown = ({
   issueId: string;
   sprintId: string;
 }) => {
+
   const { updateIssueAsync } = useUpdateIssue({ projectId });
   const { sprints } = useProjectSprints(projectId);
   const handleChangeSprint = (updatedSprintId: string) => {
@@ -79,4 +80,4 @@ const SprintDropdown = ({
   );
 };
 
-export default memo(SprintDropdown);
+export default SprintDropdown;

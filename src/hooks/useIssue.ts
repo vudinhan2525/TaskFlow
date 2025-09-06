@@ -28,7 +28,7 @@ export function useProjectIssues(body: GetIssuesParams) {
       const response = await issues.list(body);
       return response.data;
     },
-    enabled: !!body?.project_id,
+    enabled: !!body?.project_id && (body?.is_fetch ? body.is_fetch : false),
   });
 
   return {

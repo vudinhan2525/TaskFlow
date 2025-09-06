@@ -1,19 +1,16 @@
 import { IIssue } from "@libs/types/issue";
-import { FaCheck } from "react-icons/fa";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { useState, useRef, useEffect, memo } from "react";
-import { FaEdit } from "react-icons/fa";
+import { Edit,Check } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
 import CustomInput from "./customInput";
-import {
-  StatusDropdown,
-  TypeDropdown,
-  UserDropdown,
-} from "../../general-components/dropdown/index";
+import StatusDropdown from "../../general-components/dropdown/statusDropdown";
+import TypeDropdown from "../../general-components/dropdown/typeDropdown";
+import UserDropdown from "../../general-components/dropdown/userDropdown";
 import CustomDatePicker from "../../general-components/customDatePicker";
 
 const IssueCard = memo(
@@ -147,9 +144,9 @@ const IssueCard = memo(
       >
         <div className="flex items-center">
           {/* IssueCardLeft */}
-          <div className="grid grid-cols-12 w-full cursor-pointer items-center justify-start gap-4">
+          <div className="grid w-full cursor-pointer grid-cols-12 items-center justify-start gap-4">
             {/* ISSUE TITLE AND CHECKBOX */}
-            <div className="flex flex-row items-center gap-2 col-span-3">
+            <div className="col-span-3 flex flex-row items-center gap-2">
               <input
                 type="checkbox"
                 style={{
@@ -196,7 +193,7 @@ const IssueCard = memo(
               />
 
               <div className="rounded-sm border-1 border-emerald-500 p-0.5">
-                <FaCheck className="font-normal text-emerald-500" size={12} />
+                <Check className="font-normal text-emerald-500" size={12} />
               </div>
 
               <div
@@ -210,7 +207,7 @@ const IssueCard = memo(
               onClick={(e) => {
                 e.stopPropagation();
               }}
-              className="group relative flex items-center gap-2 text-clip max-w-40 col-span-9"
+              className="group relative col-span-9 flex max-w-40 items-center gap-2 text-clip"
             >
               {isEditingSummary ? (
                 <input
@@ -236,14 +233,14 @@ const IssueCard = memo(
                   onClick={handleClickEditDescription}
                   className="absolute right-[-20px] hidden group-hover:block"
                 >
-                  <FaEdit size={16} className="text-gray-700" />
+                  <Edit size={16} className="text-gray-700" />
                 </div>
               )}
             </div>
           </div>
           {/* IssueCardRight */}
           <div
-            className="grid w-[35%] min-w-[400px] max-w-[45%] grid-cols-12 gap-1"
+            className="grid w-[35%] max-w-[45%] min-w-[400px] grid-cols-12 gap-1"
             onPointerDown={stopPropagation}
             onClick={(e) => e.stopPropagation()}
           >

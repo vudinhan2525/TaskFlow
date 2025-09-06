@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AddProjectMemberParams } from "@libs/apis/projectMember";
 import { toast } from "react-toastify";
 
-export function useProjectMembers(projectId: string) {
+export function useProjectMembers(projectId: string,) {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({

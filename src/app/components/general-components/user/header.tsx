@@ -1,32 +1,38 @@
-import { useState,lazy } from "react";
+import { useState, lazy, useTransition } from "react";
 import { FaGear } from "react-icons/fa6";
 import { useAuth } from "@libs/hooks/useAuth";
-import DropdownAntd from "../dropdown";
 import Image from "../image";
 import logo from "@libs/assets/taskflow.png";
 import Button from "../button";
-import { useSelector } from "react-redux";
-import { RootState } from "@libs/store";
 import { useNavigate } from "react-router-dom";
-import { useUserProjects } from "@libs/hooks/useProject";
 import SearchHeader from "@libs/app/components/general-components/user/search";
+import { useUserProjects } from "@libs/hooks/useProject";
+import DropdownAntd from "../dropdown";
 
 // Lazy load Component
-const NotificationsPopover= lazy(() => import("../../notifications/notificationsPopover"));
-const ProjectInvitationsPopover= lazy(() => import("../../projects/projectInvitationsPopover"));
-const CreateIssueModal= lazy(() => import("../../projects/modals/createIssueModal"));
+const NotificationsPopover = lazy(
+  () => import("../../notifications/notificationsPopover"),
+);
+const ProjectInvitationsPopover = lazy(
+  () => import("../../projects/projectInvitationsPopover"),
+);
+const CreateIssueModal = lazy(
+  () => import("../../projects/modals/createIssueModal"),
+);
 
 export const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const [_, startTransition] = useTransition();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const { projects } = useUserProjects();
 
   const handleOpenCreateIssue = () => {
-    setIsCreateIssueModalOpen(true);
+    startTransition(() => {
+      setIsCreateIssueModalOpen(true);
+    });
   };
 
   const handleCloseIssueModal = () => {
@@ -46,7 +52,7 @@ export const Header = () => {
           </div>
 
           {/* Project Dropdown - Only show when authenticated */}
-          {isAuthenticated && projects.length > 0 && (
+          {user && projects.length > 0 && (
             <div className="relative">
               <DropdownAntd
                 options={projects.map((project) => ({
@@ -73,7 +79,7 @@ export const Header = () => {
           <div className="relative w-[60%]">
             <SearchHeader />
           </div>
-          {isAuthenticated && (
+          {user && (
             <Button className="" onClick={handleOpenCreateIssue}>
               <span className="text-base font-semibold">Create Issue</span>
             </Button>
@@ -81,12 +87,12 @@ export const Header = () => {
         </div>
 
         {/* Right section - Search, notifications, settings, and user */}
-        {isAuthenticated && (
+        {user && (
           <div className="flex w-1/4 items-center justify-end space-x-2">
             {/* Notifications */}
             <NotificationsPopover />
             {/* Project Invitations */}
-            <ProjectInvitationsPopover userId={user?.data?.id || ""} />
+            <ProjectInvitationsPopover userId={user?.id || ""} />
             {/* Settings Icon */}
             <div
               className="cursor-pointer rounded-full p-2 text-gray-600 hover:bg-gray-100"
@@ -103,15 +109,15 @@ export const Header = () => {
               >
                 <p className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
                   <span className="text-sm font-medium text-gray-600">
-                    {user?.data?.first_name?.[0]}
+                    {user?.first_name?.[0]}
                   </span>
                 </p>
               </div>
               {isUserDropdownOpen && (
                 <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-lg">
                   <div className="border-b px-4 py-3">
-                    <p className="text-sm font-medium">{`${user?.data?.first_name} ${user?.data?.last_name}`}</p>
-                    <p className="text-sm text-gray-600">{user?.data?.email}</p>
+                    <p className="text-sm font-medium">{`${user?.first_name} ${user?.last_name}`}</p>
+                    <p className="text-sm text-gray-600">{user?.email}</p>
                   </div>
                   <div className="py-1">
                     <button className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-100">
@@ -140,7 +146,7 @@ export const Header = () => {
             </div>
           </div>
         )}
-        {!isAuthenticated && (
+        {!user && (
           <div className="flex min-w-1/4 items-center justify-center">
             <Button
               className="w-[100px]"

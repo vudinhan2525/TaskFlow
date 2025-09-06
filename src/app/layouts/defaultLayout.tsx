@@ -3,8 +3,6 @@ import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 const DefaultLayout = () => {
-  // const { user } = useAuth();
-
   return (
     <div className="flex h-screen flex-col">
       <Header />
