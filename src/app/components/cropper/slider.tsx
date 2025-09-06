@@ -1,10 +1,12 @@
 import { useImageCropContext } from "./imageCropProvider";
 import {
-  ArrowUturnLeftIcon,
-  ArrowUturnRightIcon,
-  MinusIcon,
-  PlusIcon,
-} from "@heroicons/react/24/solid";
+  Plus,
+  Minus,
+  ChevronRight,
+  ChevronLeft,
+
+} from 'lucide-react'
+
 
 export const ZoomSlider = ({ className }: { className: string }) => {
   const {
@@ -20,7 +22,7 @@ export const ZoomSlider = ({ className }: { className: string }) => {
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
       <button className="p-1" onClick={handleZoomOut}>
-        <MinusIcon className="w-4 text-gray-400" />
+        <Minus className="w-4 text-gray-400" />
       </button>
       <input
         type="range"
@@ -34,7 +36,7 @@ export const ZoomSlider = ({ className }: { className: string }) => {
         }}
       />
       <button className="p-1" onClick={handleZoomIn}>
-        <PlusIcon className="w-4 text-gray-400" />
+        <Plus className="w-4 text-gray-400" />
       </button>
     </div>
   );
@@ -54,7 +56,7 @@ export const RotationSlider = ({ className }: { className: string }) => {
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
       <button className="p-1" onClick={handleRotateAntiCw}>
-        <ArrowUturnLeftIcon className="w-4 text-gray-400" />
+        <ChevronLeft className="w-4 text-gray-400" />
       </button>
       <input
         type="range"
@@ -68,7 +70,7 @@ export const RotationSlider = ({ className }: { className: string }) => {
         }}
       />
       <button className="p-1" onClick={handleRotateCw}>
-        <ArrowUturnRightIcon className="w-4 text-gray-400" />
+        <ChevronRight className="w-4 text-gray-400" />
       </button>
     </div>
   );

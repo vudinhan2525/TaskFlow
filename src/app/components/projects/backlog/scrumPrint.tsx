@@ -57,7 +57,7 @@ const ScrumSprint = memo(
     });
     const { selectedIssues, setSelectIssues } = useIssueSelection();
     const [isOpenButtonMenu, setIsOpenButtonMenu] = useState(false);
-   
+
     const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] =
       useState(false);
     const [isDeleteSprintModalOpen, setIsDeleteSprintModalOpen] =
@@ -135,6 +135,7 @@ const ScrumSprint = memo(
                   className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <button
+                  title="Expand/Collapse Sprint"
                   className="scale-110 text-gray-500 transition-colors hover:cursor-pointer hover:text-gray-900"
                   onClick={() => setIsExpanded(!isExpanded)}
                 >
@@ -145,9 +146,9 @@ const ScrumSprint = memo(
                   )}
                 </button>
                 <div className="flex flex-row items-center space-x-4">
-                  <h3 className="text-md font-semibold text-gray-700">
+                  <h2 className="text-md font-semibold text-gray-700">
                     {sprint?.name}
-                  </h3>
+                  </h2>
                   <div className="flex items-center space-x-3 text-sm">
                     <span className="text-sm text-gray-600">
                       {formatSprintDate(sprint?.date_started)} -{" "}
@@ -187,19 +188,21 @@ const ScrumSprint = memo(
                   >
                     {new Date(sprint.date_started).getTime() <
                     new Date().getTime() ? (
-                      <span 
-                      onClick={()=>{
-                        // setIsUpdateSprintModalOpen(true)
-                      }}
-                      className="text-xs text-gray-500">
+                      <span
+                        onClick={() => {
+                          // setIsUpdateSprintModalOpen(true)
+                        }}
+                        className="text-sm text-gray-900 font-semibold"
+                      >
                         Complete Sprint
                       </span>
                     ) : (
-                      <span 
-                         onClick={()=>{
-                        // setIsUpdateSprintModalOpen(true)
-                      }}
-                      className="text-xs text-gray-500">
+                      <span
+                        onClick={() => {
+                          // setIsUpdateSprintModalOpen(true)
+                        }}
+                        className="text-sm text-gray-900 font-semibold"
+                      >
                         Start Sprint
                       </span>
                     )}
@@ -278,8 +281,6 @@ const ScrumSprint = memo(
             </div>
           )}
 
-         
-
           <ConfirmDeleteModal
             title={`Delete Sprint ${sprint?.name}`}
             description={`Are you sure you want to delete "${sprint?.name}"?`}
@@ -310,13 +311,13 @@ const ScrumSprint = memo(
         <div className="flex h-full flex-row items-center">
           <div className="flex flex-1 flex-row items-center justify-end gap-1">
             <div className="flex h-full gap-2">
-              <span className="text-sm text-gray-400">
+              <span className="text-sm text-gray-600 font-medium">
                 {sprint.issues.length} work items
               </span>
-              <span className="text-sm font-semibold text-gray-400">|</span>
-              <span className="text-sm text-gray-400">
+              <span className="text-sm font-semibold text-gray-600 ">|</span>
+              <span className="text-sm text-gray-600 font-medium">
                 Estimate:{" "}
-                <span className="text-sm font-semibold text-gray-600">
+                <span className="text-sm font-bold text-gray-800">
                   {estimate}
                 </span>
               </span>

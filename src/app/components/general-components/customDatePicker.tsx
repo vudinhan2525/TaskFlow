@@ -1,4 +1,4 @@
-import  { useMemo } from "react";
+import { useMemo } from "react";
 import DatePicker from "antd/lib/date-picker";
 import { IIssue } from "@libs/types/issue";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
@@ -62,7 +62,7 @@ const CustomDatePicker = ({
     updateIssue({
       id: issue.id,
       data: {
-        [field]: date ? date.utc().toISOString() :"null",
+        [field]: date ? date.utc().toISOString() : "null",
       },
     });
   };
@@ -70,16 +70,26 @@ const CustomDatePicker = ({
   const parsedDate = parseIssueDate(issue[field]);
 
   return (
-    <div className={`${className}`}>
+    <button className={`${className} btn`}>
       <DatePicker
         placeholder="None"
         value={parsedDate}
         onChange={handleChange}
         disabled={field === "created_at" || !isEditable}
-        suffixIcon= {isExpired ? <TriangleAlert className="text-red-800" size={16} /> : <Calendar className="text-gray-400" size={16} />}
-        style={{ fontWeight:isExpired ? "bold" : "medium", borderColor: isExpired ? "#9f0712" : undefined , color: isExpired ? "#9f0712" : undefined }}
+        suffixIcon={
+          isExpired ? (
+            <TriangleAlert className="text-red-800" size={16} />
+          ) : (
+            <Calendar className="text-gray-400" size={16} />
+          )
+        }
+        style={{
+          fontWeight: isExpired ? "bold" : "medium",
+          borderColor: isExpired ? "#9f0712" : undefined,
+          color: isExpired ? "#9f0712" : undefined,
+        }}
       />
-    </div>
+    </button>
   );
 };
 

@@ -2,6 +2,7 @@ import React, { useState, useRef, lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { useProjectIssues } from "@libs/hooks/useIssue";
+import { Helmet } from "react-helmet-async";
 import BackLog from "@libs/app/components/projects/backlog/backlog";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useIssueSelection } from "@libs/hooks/useIssueSelection";
@@ -31,6 +32,9 @@ const BackLogPage: React.FC = () => {
 
   return (
     <div ref={containerRef} className="flex h-full flex-col gap-4 p-4 pb-28">
+      <Helmet>
+        <title>Backlog - Task Flow</title>
+      </Helmet>
       <div className="flex items-center justify-between">
         <h1 className="p-2 text-2xl font-bold text-gray-700">Backlog Page</h1>
 
@@ -62,12 +66,12 @@ const BackLogPage: React.FC = () => {
             maxSize={100}
           >
             <div className="h-full overflow-auto pr-4">
-                <BackLog
-                  initialSprints={initialSprints}
-                  initialIssues={initialIssues}
-                  isLoadingSprints={isLoadingSprints}
-                  isLoadingIssues={isLoadingIssues}
-                />
+              <BackLog
+                initialSprints={initialSprints}
+                initialIssues={initialIssues}
+                isLoadingSprints={isLoadingSprints}
+                isLoadingIssues={isLoadingIssues}
+              />
             </div>
           </Panel>
 
@@ -90,7 +94,7 @@ const BackLogPage: React.FC = () => {
             >
               <div className="h-full overflow-y-auto pr-4">
                 <Suspense fallback={<IssueSidebarSkeleton />}>
-                    <IssueSideBar />
+                  <IssueSideBar />
                 </Suspense>
               </div>
             </Panel>

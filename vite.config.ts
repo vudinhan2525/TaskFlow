@@ -5,18 +5,21 @@ import viteCompression from "vite-plugin-compression";
 export default defineConfig({
   plugins: [
     viteCompression({
-      algorithm: "brotliCompress", // hoặc 'gzip'
+      algorithm: "brotliCompress", 
     }),
     tailwindcss(),
     vitePluginImp({
       libList: [
         {
           libName: "antd",
-          style: (name) => `antd/es/${name}/style/index.js`, // import CSS theo component
+          style: (name) => `antd/es/${name}/style/index.js`,
         },
       ],
     }),
   ],
+  build: {
+    sourcemap: true, 
+  },
   resolve: {
     alias: [{ find: "@libs", replacement: "/src" }],
   },

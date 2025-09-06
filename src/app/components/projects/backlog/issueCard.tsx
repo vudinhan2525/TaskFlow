@@ -148,6 +148,7 @@ const IssueCard = memo(
             {/* ISSUE TITLE AND CHECKBOX */}
             <div className="col-span-3 flex flex-row items-center gap-2">
               <input
+                aria-label="Select Issue"
                 type="checkbox"
                 style={{
                   opacity:
@@ -211,6 +212,7 @@ const IssueCard = memo(
             >
               {isEditingSummary ? (
                 <input
+                  aria-label="Issue Summary"
                   type="text"
                   ref={summaryInputRef}
                   value={issueSummary}

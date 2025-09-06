@@ -13,12 +13,66 @@ interface RoadmapProps {
   activeDate: string;
 }
 
+const Roadmap: React.FC<RoadmapProps> = ({
+  isLoadingProjectIssues,
+  calendarDays,
+  activeDate,
+}) => {
+  return (
+    <div className="flex h-full w-full flex-col space-y-6 bg-white pb-32">
+      {isLoadingProjectIssues ? (
+        <RoadmapSkeleton />
+      ) : (
+        <>
+          {/* Calendar Grid */}
+          <div className="flex flex-1 flex-col overflow-auto pr-4">
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-5">
+              {[
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                // "Saturday",
+                // "Sunday",
+              ].map((day) => (
+                <div
+                  key={day}
+                  className={`rounded-t-xs border border-b-0 border-gray-300 bg-gray-50 py-2 text-center text-sm font-semibold text-gray-600`}
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar Days */}
+            <div className="grid grid-cols-5">
+              {/* Hello workd */}
+              {Object.keys(calendarDays)
+
+                .map((dateStr: string) => (
+                  <DropableDate
+                    key={dateStr}
+                    dateStr={dateStr}
+                    issues={calendarDays[dateStr]}
+                    isActive={activeDate === dateStr}
+                  />
+                ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default Roadmap;
 const SortableIssue = ({ issue }: { issue: IIssue }) => {
-  const { attributes, listeners, setNodeRef} = useDraggable({
+  const { attributes, listeners, setNodeRef } = useDraggable({
     id: issue.id,
   });
   const isDragging = attributes["aria-pressed"];
-
 
   return (
     <div
@@ -88,7 +142,7 @@ const DropableDate = ({
               placement="top"
               trigger="click"
               content={
-                <div className="flex w-full flex-col shadow-lg max-w-56 gap-2 overflow-auto p-2">
+                <div className="flex w-full max-w-56 flex-col gap-2 overflow-auto p-2 shadow-lg">
                   <div className="flex flex-row items-center justify-between">
                     <h5 className="text-md text-gray-00 font-semibold">
                       {dayjs()
@@ -122,59 +176,3 @@ const DropableDate = ({
     </div>
   );
 };
-
-const Roadmap: React.FC<RoadmapProps> = ({
-  isLoadingProjectIssues,
-  calendarDays,
-  activeDate,
-}) => {
-  return (
-    <div className="flex h-full w-full flex-col space-y-6 bg-white pb-32">
-      {isLoadingProjectIssues ? (
-        <RoadmapSkeleton />
-      ) : (
-        <>
-          {/* Calendar Grid */}
-          <div className="flex flex-1 flex-col overflow-auto pr-4">
-            {/* Weekday Headers */}
-            <div className="grid grid-cols-5">
-              {[
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                // "Saturday",
-                // "Sunday",
-              ].map((day) => (
-                <div
-                  key={day}
-                  className={`rounded-t-xs border border-b-0 border-gray-300 bg-gray-50 py-2 text-center text-sm font-semibold text-gray-600`}
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Calendar Days */}
-            <div className="grid grid-cols-5">
-              {/* Hello workd */}
-              {Object.keys(calendarDays)
-
-                .map((dateStr: string) => (
-                  <DropableDate
-                    key={dateStr}
-                    dateStr={dateStr}
-                    issues={calendarDays[dateStr]}
-                    isActive={activeDate === dateStr}
-                  />
-                ))}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-export default Roadmap;

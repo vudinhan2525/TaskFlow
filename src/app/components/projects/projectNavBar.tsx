@@ -31,7 +31,7 @@ import { useProject } from "../../../hooks/useProject";
 import AddProjectMemberModal from "./modals/addProjectMemberModal";
 
 interface NavItem {
-  id: string; 
+  id: string;
   label: string;
   icon: React.ReactElement;
   route: string;
@@ -68,8 +68,7 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative w-full 
-        ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
+      className={`relative w-full ${isDragging ? "pointer-events-none" : "pointer-events-auto"}`}
       {...attributes}
       {...listeners}
     >
@@ -77,12 +76,12 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
         to={item.route}
         className={`group relative flex w-full items-center px-6 py-3 text-sm font-medium no-underline transition-all duration-150 ${
           isActive
-            ? "border-green-600 bg-green-50 text-green-600"
-            : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:text-green-600"
+            ? "border-green-600 bg-green-100 text-green-700 font-semibold"
+            : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:text-green-700 hover:font-semibold"
         }`}
       >
         <span
-          className={`mr-2 text-base transition-colors ${isActive ? "text-green-600" : "text-gray-500 group-hover:text-green-600"}`}
+          className={`mr-2 text-base transition-colors ${isActive ? "text-green-700" : "text-gray-500 group-hover:text-green-700 font-semibold"}`}
         >
           {item.icon}
         </span>
@@ -96,7 +95,6 @@ const ProjectNavbar = (): React.ReactElement => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  // const [isStarred, setIsStarred] = useState(false);
   const { project } = useProject(projectId || ""); // Assuming this returns project data
 
   const getNavItems = (currentProjectId: string): NavItem[] => [
@@ -209,49 +207,31 @@ const ProjectNavbar = (): React.ReactElement => {
     <div className="flex h-full flex-col justify-between border-gray-200 bg-white shadow-sm">
       <div className="flex flex-col space-y-6">
         {/* Project Header */}
-        <div className="border-b border-gray-100 px-6 py-2">
+        <div className=" p-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {/* Project Avatar */}
-              <div className="flex h-10 w-10 items-center justify-center rounded bg-green-600 text-sm font-semibold text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded bg-green-600 text-sm font-semibold text-gray-50">
                 {project?.name?.substring(0, 2)?.toUpperCase() || "PR"}
               </div>
 
               {/* Project Info */}
               <div className="flex items-center space-x-3">
                 <div>
-                  <h1 className="text-md font-semibold text-gray-900">
+                  <h1 className="text-md font-bold text-gray-800">
                     {project?.name || "Project Name"}
                   </h1>
                   <p className="text-sm text-gray-500">
                     {project?.key || "PROJ"} • Software project
                   </p>
                 </div>
-
-                {/* Star Button */}
-                {/* <button
-                onClick={toggleStar}
-                className="rounded p-1 transition-colors hover:bg-gray-100"
-                title={isStarred ? "Remove from starred" : "Add to starred"}
-              >
-                {isStarred ? (
-                  <FaStar className="h-4 w-4 text-yellow-500" />
-                ) : (
-                  <FaStar className="h-4 w-4 text-gray-400 hover:text-yellow-500" />
-                )}
-              </button> */}
               </div>
             </div>
             <button
+              title="Invite Members to Project"
               onClick={() => setIsAddMemberModalOpen(true)}
               className="flex cursor-pointer items-center space-x-2 text-gray-500 duration-300 hover:scale-110"
             >
-              {/* <button
-              className="inline-flex cursor-pointer items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-              title="Add people"
-            >
-              Add people
-            </button> */}
               <FaUserPlus className="mr-2 h-4 w-4" />
             </button>
           </div>

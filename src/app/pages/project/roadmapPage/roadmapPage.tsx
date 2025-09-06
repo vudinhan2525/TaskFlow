@@ -15,6 +15,7 @@ import { useProjectIssues } from "@libs/hooks/useIssue";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { IIssue } from "@libs/types/issue";
 import TaskItem from "@libs/app/components/projects/roadmap/task-item";
+import {Helmet} from "react-helmet-async";
 import {
   DndContext,
   DragEndEvent,
@@ -40,14 +41,13 @@ import { useUpdateIssue } from "@libs/hooks/useIssue";
 const RoadmapPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const memoizedProjectId = useMemo(() => projectId || "", [projectId]);
-  
-  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const [currentDate, setCurrentDate] = useState(new Date("2025-09-5"));
   const [isOpenUnscheduledWork, setIsOpenUnscheduledWork] = useState(true);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [overDate, setIsoverDate] = useState("");
   const [filters, setFilters] = useState<GetIssuesParams>({
     project_id: projectId || "",
-    // due_date_  to: "unassigned",
   });
   const { updateIssue } = useUpdateIssue({ projectId: projectId || "" });
 
@@ -183,7 +183,6 @@ const RoadmapPage: React.FC = () => {
         },
       });
     }
-
   };
 
   const goToToday = () => setCurrentDate(new Date());
@@ -201,20 +200,13 @@ const RoadmapPage: React.FC = () => {
     });
   }, [isOpenUnscheduledWork]);
 
-  // const scheduledIssues: IIssue[] = useMemo(() => {
-  //   return issues.filter((issue) => issue.due_date_to);
-  // }, [issues]);
-  // const unscheduledIssues: IIssue[] = useMemo(() => {
-  //   return issues.filter((issue) => !issue.due_date_to);
-  // }, [issues]);
-  const [count,setCount] = useState(0);
   return (
     <div className="flex h-full w-full flex-col gap-6 bg-white p-6 pb-32">
+      <Helmet>
+        <title>Roadmap - Task Flow</title>
+      </Helmet>
       <h1 className="text-2xl font-bold text-gray-700">Roadmap Page</h1>
-    <div>
-      {count}
-      <button onClick={()=>setCount(count+1)}>+</button>
-    </div>
+
       <div className="flex flex-1 overflow-auto">
         <DndContext
           sensors={sensors}
