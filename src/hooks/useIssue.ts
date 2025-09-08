@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { issues } from "../apis/issue";
-import { CreateIssueParams, GetActivitiesParams , GetIssuesParams} from "@libs/types/issue";
+import {
+  CreateIssueParams,
+  GetActivitiesParams,
+  GetIssuesParams,
+} from "@libs/types/issue";
 import { toast } from "react-toastify";
 
 export function useProjectIssues(body: GetIssuesParams) {
@@ -132,6 +136,9 @@ export function useUpdateIssue({
     },
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+      queryClient.invalidateQueries({
+        queryKey: ["issue", projectId, response.data.id],
+      });
       if (response.data.sprint_id) {
         queryClient.invalidateQueries({
           queryKey: ["issues", projectId, response.data.sprint_id],

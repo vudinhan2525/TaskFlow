@@ -1,6 +1,6 @@
 // Sidebar for listing chat rooms and switching between them
 import React, { useEffect, useState } from "react";
-import { RoomInfo, useChat } from "../../../hooks/useChat";
+import {  useChat } from "../../../hooks/useChat";
 import { useDebounce } from "./useDebounce";
 
 interface ChatRoomListProps {

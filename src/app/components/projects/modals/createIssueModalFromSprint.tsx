@@ -2,13 +2,13 @@ import React, { useCallback, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { CreateIssueParams, IssuePriority } from "@libs/types/issue";
-import { RootState } from "@libs/store";
+
+import { useAuthStore } from "@libs/store/useAuthStore";
 
 interface CreateIssueModalFromSprintProps {
   isOpen: boolean;
@@ -54,7 +54,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
   sprintId,
 }) => {
   const { columns = [] } = useProjectColumns(projectId);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 
   // Get initial column_id

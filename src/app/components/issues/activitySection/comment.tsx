@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useComments, useCreateComment } from "@libs/hooks/useComment";
 import { IComment } from "@libs/types/comment";
 
-interface CommentSectionProps {
+interface CommentProps {
   issueId: string;
   currentUserId: string;
   currentUserName?: string;
@@ -129,7 +129,7 @@ const CommentItem: React.FC<CommentItemProps> = ({
   );
 };
 
-const CommentSection: React.FC<CommentSectionProps> = ({
+const Comment: React.FC<CommentProps> = ({
   issueId,
   currentUserId,
   currentUserName = "Current User",
@@ -342,4 +342,4 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   );
 };
 
-export default CommentSection;
+export default Comment;

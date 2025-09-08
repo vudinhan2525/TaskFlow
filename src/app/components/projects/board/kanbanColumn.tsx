@@ -13,7 +13,7 @@ import {
 import { IIssue } from "@libs/types/issue";
 import { IColumn } from "@libs/types/project";
 import { Popover } from "antd";
-import { ReactNode, useState } from "react";
+import { ReactNode, useCallback, useState } from "react";
 import { LuEllipsisVertical } from "react-icons/lu";
 import type { CSSProperties } from "react";
 import { CSS } from "@dnd-kit/utilities";
@@ -22,10 +22,6 @@ const SortableIssue = ({ issue }: { issue: IIssue }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({
       id: issue.id,
-      // transition: {
-      //   duration:50, // milliseconds
-      //   easing: "cubic-bezier(0.25, 1, 0.5, 1)",
-      // },
     });
   const isDragging = attributes["aria-pressed"];
   const style: CSSProperties = {
@@ -82,7 +78,7 @@ export const KanbanColumn = ({
 
     setColumns(newColumns);
   });
-  const handleMove = (direction: "left" | "right") => {
+  const handleMove = useCallback((direction: "left" | "right") => {
     const currentIndex = columns.findIndex((c) => c.id === column.id);
     const targetIndex =
       direction === "left" ? currentIndex - 1 : currentIndex + 1;
@@ -107,8 +103,8 @@ export const KanbanColumn = ({
       columns: reordered.map((col) => ({ id: col.id, order: col.order + 1 })),
     });
     setPopoverOpen(false);
-  };
-  const handleRenameColumn = (newName: string) => {
+  },[])
+  const handleRenameColumn = useCallback((newName: string) => {
     const newColumns = columns.map((col) => {
       if (col.id === column.id) {
         return { ...col, name: newName };
@@ -124,7 +120,7 @@ export const KanbanColumn = ({
         projectId: projectId,
       });
     }
-  };
+  },[])
   const handleDeleteColumn = () => {
     // Kiểm tra nếu còn issue thì không xó
     setShowDeleteColumnModal(false);
@@ -185,7 +181,6 @@ export const KanbanColumn = ({
       </div>
       <SortableContext
         items={column.issues.map((issue) => issue.id)}
-        // strategy={verticalListSortingStrategy}
       >
         <div className="max-h-[600px] min-h-40 overflow-auto">
           {column.issues.map((issue) => {

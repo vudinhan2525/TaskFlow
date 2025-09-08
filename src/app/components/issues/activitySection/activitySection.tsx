@@ -1,13 +1,16 @@
-import CommentSection from "@libs/app/components/issues/commentSection";
-import HistorySection from "@libs/app/components/issues/historySection";
-import { RootState } from "@libs/store";
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useState, lazy } from "react";
+const Comment = lazy(
+  () => import("@libs/app/components/issues/activitySection/comment"),
+);
+const History = lazy(
+  () => import("@libs/app/components/issues/activitySection/history"),
+);
 import { useParams } from "react-router-dom";
+import { useAuthStore } from "@libs/store/useAuthStore";
 
 export default function ActivityIssue(props: { issueId: string }) {
   const [activeTab, setActiveTab] = useState<string>("All");
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user } = useAuthStore();
   const { projectId } = useParams<{ projectId: string }>();
 
   return (
@@ -68,13 +71,13 @@ export default function ActivityIssue(props: { issueId: string }) {
 
       {activeTab === "All" && projectId && (
         <>
-          <HistorySection issueId={props.issueId} projectId={projectId} />
+          <History issueId={props.issueId} projectId={projectId} />
         </>
       )}
       {activeTab === "Comments" && (
         <div className="">
           {user && (
-            <CommentSection
+            <Comment
               issueId={props.issueId}
               currentUserId={user.id}
               currentUserName={user.first_name + " " + user.last_name}
@@ -83,7 +86,7 @@ export default function ActivityIssue(props: { issueId: string }) {
         </div>
       )}
       {activeTab === "History" && projectId && (
-        <HistorySection issueId={props.issueId} projectId={projectId} />
+        <History issueId={props.issueId} projectId={projectId} />
       )}
       {activeTab === "Work log" && (
         <div className="py-8 text-center text-gray-500">

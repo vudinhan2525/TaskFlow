@@ -18,7 +18,7 @@ interface BaseModalProps {
   }
 }
 
-export default function Modal({
+export default function Modal({ 
   title,
   buttonContent = "Accept",
   onClose,

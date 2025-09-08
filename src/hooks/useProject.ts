@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSelector } from "react-redux";
 import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
 import { useUserMemberships } from "@libs/hooks/useProjectMember";
-import { RootState } from "@libs/store";
 import { toast } from "react-toastify";
+import { useAuth } from "./useAuth";
 import {
   CreateColumnProjectParams,
   IColumn,
@@ -15,9 +14,7 @@ import { Dispatch, SetStateAction } from "react";
 import { AxiosError } from "axios";
 
 export function useUserProjects() {
-  const { isAuthenticated, user } = useSelector(
-    (state: RootState) => state.auth,
-  );
+  const {user}= useAuth()
   const userId = user?.id;
 
   const { memberships, isLoading, error } = useUserMemberships(userId || "");
@@ -29,7 +26,7 @@ export function useUserProjects() {
   const projects = validMemberships.map((membership) => membership.project);
 
   return {
-    projects: isAuthenticated ? projects : [],
+    projects: user ? projects : [],
     isLoading,
     error,
   };

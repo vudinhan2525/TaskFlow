@@ -1,6 +1,6 @@
 import { connectSocket } from "@libs/apis/notiApi";
 import { notificationApi } from "@libs/apis/notification";
-import { useAuth } from "@libs/hooks/useAuth";
+import { useAuthStore } from "@libs/store/useAuthStore";
 import { INotification } from "@libs/types/notification";
 import {get} from "lodash";
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
@@ -25,7 +25,7 @@ export const NotificationProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const [notifications, setNotifications] = useState<INotification[]>([]);
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const markAsRead = async (notiId: string) => {
     setNotifications((notis) =>
       notis.map((el) => (el.id === notiId ? { ...el, is_read: true } : el)),

@@ -50,7 +50,7 @@ export default function KanbanBoard() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 1, // chỉ khi kéo > 1px mới tính là drag
+        distance: 1,
       },
     }),
     useSensor(KeyboardSensor, {

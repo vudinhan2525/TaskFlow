@@ -1,6 +1,6 @@
 import { useActivities } from "@libs/hooks/useIssue";
 
-export default function HistorySection({
+export default function History({
   issueId,
   projectId,
 }: {

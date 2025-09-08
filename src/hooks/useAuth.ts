@@ -1,16 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
-import { setUser, setError } from "../store/slices/authSlice";
 import { queryClient } from "../apis/react-query";
 import { auth } from "@libs/apis/auth";
 import { users } from "@libs/apis/user";
 import { useNavigate } from "react-router-dom";
-
-
+import { useAuthStore } from "@libs/store/useAuthStore";
 
 export function useAuth() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { setUser, setError } = useAuthStore();
   const {
     data: currentUser,
     isLoading,
@@ -19,8 +16,7 @@ export function useAuth() {
     queryKey: ["currentUser"],
     queryFn: async () => {
       const { data } = await auth.getCurrentUser();
-      dispatch(setUser(data.data));
-
+      setUser(data.data);
       return data.data;
     },
     retry: false,
@@ -30,13 +26,13 @@ export function useAuth() {
   const login = useMutation({
     mutationFn: auth.login,
     onSuccess: ({ data }) => {
-      dispatch(setUser(data.data));
+      setUser(data.data);
       queryClient.setQueryData(["currentUser"], data.data);
       navigate("/");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
-      dispatch(setError(error.response.data.message));
+      setError(error.response.data.message);
     },
   });
 
@@ -47,20 +43,20 @@ export function useAuth() {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
-      dispatch(setError(error.response.data.message));
+      setError(error.response.data.message);
     },
   });
 
   const verifyOtp = useMutation({
     mutationFn: auth.verify,
     onSuccess: ({ data }) => {
-      dispatch(setUser(data.data));
+      // dispatch(setUser(data.data));
       queryClient.setQueryData(["currentUser"], data.data);
       navigate("/");
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
-      dispatch(setError(error.response.data.message));
+      setError(error.response.data.message);
     },
   });
 
@@ -68,7 +64,7 @@ export function useAuth() {
     mutationFn: auth.resend,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
-      dispatch(setError(error.response.data.message));
+      setError(error.response.data.message);
     },
   });
 
@@ -76,7 +72,7 @@ export function useAuth() {
     try {
       await auth.logout(); // Call the server to clear cookies
       localStorage.removeItem("token");
-      dispatch(setUser(null));
+      setUser(null);
       queryClient.clear();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -85,7 +81,7 @@ export function useAuth() {
   const updateUser = useMutation({
     mutationFn: users.update,
     onSuccess: ({ data }) => {
-      dispatch(setUser(data.data));
+      setUser(data.data);
       queryClient.setQueryData(["currentUser"], { data: data.data });
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

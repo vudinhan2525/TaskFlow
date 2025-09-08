@@ -1,14 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useSelector } from "react-redux";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import { toast } from "react-toastify";
-import { RootState } from "@libs/store";
 import { useCreateProject, useUpdateProject } from "@libs/hooks/useProject";
 import { useEffect } from "react";
 import { IProject } from "@libs/types/project";
+import { useAuth } from "@libs/hooks/useAuth";
 
 interface CreateProjectForm {
   name: string;
@@ -36,7 +35,7 @@ interface CreateProjectModalProps {
 }
 
 const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreateProjectModalProps) => {
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user } =useAuth()
   const { updateProject, isLoading: isUpdating } = useUpdateProject({
     onClose: () => {
       onClose();

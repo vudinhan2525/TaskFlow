@@ -1,18 +1,17 @@
 import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { useState, useRef, useEffect, memo } from "react";
-import { Edit,Check } from "lucide-react";
+import { Edit, Check } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { useIssueSelection } from "@libs/hooks/useIssueSelection";
+import { useNavigate } from "react-router-dom";
 import CustomInput from "./customInput";
 import StatusDropdown from "../../general-components/dropdown/statusDropdown";
 import TypeDropdown from "../../general-components/dropdown/typeDropdown";
 import UserDropdown from "../../general-components/dropdown/userDropdown";
 import CustomDatePicker from "../../general-components/customDatePicker";
-
+import { useIssueStore } from "@libs/store/useIssueStore";
 const IssueCard = memo(
   ({
     issue,
@@ -24,10 +23,9 @@ const IssueCard = memo(
     setIsSprintIssuesChecked: (isSprintIssuesChecked: boolean) => void;
   }) => {
     const navigate = useNavigate();
-    const { selectedIssues, setSelectedIssue, setSelectIssues } =
-      useIssueSelection();
-    const [searchParams] = useSearchParams();
-    const selectedIssueParams = searchParams.get("selectedIssue");
+    const { selectedIssues, setSelectedIssues, openIssueDetail } =
+      useIssueStore();
+
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({
         id: issue.id,
@@ -48,14 +46,6 @@ const IssueCard = memo(
     const [isEditingSummary, setIsEditingSummary] = useState(false);
 
     const summaryInputRef = useRef<HTMLInputElement>(null);
-
-    useEffect(() => {
-      if (selectedIssueParams && selectedIssueParams === issue.id) {
-        setSelectedIssue(issue);
-      } else if (!selectedIssueParams) {
-        setSelectedIssue(null);
-      }
-    }, [selectedIssueParams, setSelectedIssue, issue]);
 
     useEffect(() => {
       if (summaryInputRef.current) {
@@ -80,57 +70,9 @@ const IssueCard = memo(
       });
     };
 
-    const pointerDownTime = useRef(0);
-    const startX = useRef(0);
-    const startY = useRef(0);
-    const moved = useRef(false);
-
-    const handlePointerDown = (e: React.PointerEvent) => {
-      pointerDownTime.current = Date.now();
-      startX.current = e.clientX;
-      startY.current = e.clientY;
-      moved.current = false;
-
-      window.addEventListener(
-        "pointermove",
-        handlePointerMove as unknown as EventListener,
-      );
-      window.addEventListener(
-        "pointerup",
-        handlePointerUp as unknown as EventListener,
-      );
-
-      // Call DnD listeners
-      if (listeners?.onPointerDown) {
-        listeners.onPointerDown(e);
-      }
-    };
-
-    const handlePointerMove = (e: React.PointerEvent) => {
-      const dx = Math.abs(e.clientX - startX.current);
-      const dy = Math.abs(e.clientY - startY.current);
-      if (dx > 5 || dy > 5) {
-        moved.current = true;
-      }
-    };
-    const handlePointerUp = () => {
-      window.removeEventListener(
-        "pointermove",
-        handlePointerMove as unknown as EventListener,
-      );
-      window.removeEventListener(
-        "pointerup",
-        handlePointerUp as unknown as EventListener,
-      );
-
-      const duration = Date.now() - pointerDownTime.current;
-      if (!moved.current && duration < 1000) {
-        handleIssueCardClick();
-      }
-    };
-
     const handleIssueCardClick = () => {
-      setSelectedIssue(issue);
+      openIssueDetail(issue.id);
+      // showSideBarDetailIssue(issue);
       navigate(`/projects/${projectId}/backlog?selectedIssue=${issue.id}`);
     };
 
@@ -139,10 +81,15 @@ const IssueCard = memo(
         ref={setNodeRef}
         style={style}
         {...attributes}
-        onPointerDown={handlePointerDown}
+        {...listeners}
         className={`group bg-white px-2 py-1 shadow-sm transition-all duration-200 hover:bg-gray-100`}
       >
-        <div className="flex items-center">
+        <div
+          onClick={() => {
+            handleIssueCardClick();
+          }}
+          className="flex items-center"
+        >
           {/* IssueCardLeft */}
           <div className="grid w-full cursor-pointer grid-cols-12 items-center justify-start gap-4">
             {/* ISSUE TITLE AND CHECKBOX */}
@@ -150,6 +97,9 @@ const IssueCard = memo(
               <input
                 aria-label="Select Issue"
                 type="checkbox"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
                 style={{
                   opacity:
                     selectedIssues &&
@@ -178,7 +128,7 @@ const IssueCard = memo(
                   ) {
                     let temp: IIssue[] = selectedIssues[issue.sprint_id || ""];
                     temp = temp.filter((i: IIssue) => i.id !== issue.id);
-                    setSelectIssues({ [issue.sprint_id || ""]: temp });
+                    setSelectedIssues({ [issue.sprint_id || ""]: temp });
                     if (temp.length === 0) {
                       setIsSprintIssuesChecked(false);
                     }
@@ -186,7 +136,7 @@ const IssueCard = memo(
                     const existingIssues =
                       selectedIssues[issue.sprint_id || ""] || [];
                     const newIssues = [...existingIssues, issue];
-                    setSelectIssues({ [issue.sprint_id || ""]: newIssues });
+                    setSelectedIssues({ [issue.sprint_id || ""]: newIssues });
                     setIsSprintIssuesChecked(true);
                   }
                 }}

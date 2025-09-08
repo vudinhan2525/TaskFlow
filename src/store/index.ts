@@ -8,16 +8,14 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     project: projectReducer,
-    // sprint: sprintReducer,
-    // ui: uiReducer,
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ["auth/setUser"],
-        ignoredPaths: ["auth.user"],
-      },
-    }),
+  // middleware: (getDefaultMiddleware) =>
+  //   getDefaultMiddleware({
+  //     serializableCheck: {
+  //       ignoredActions: ["auth/setUser"],
+  //       ignoredPaths: ["auth.user"],
+  //     },
+  //   }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

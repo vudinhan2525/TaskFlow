@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useChat, RoomInfo, MessageType } from "../../../hooks/useChat";
+import { useChat,  MessageType } from "../../../hooks/useChat";
 import ChatRoomList from "../../components/chat/ChatRoomList";
 import ChatHeader from "../../components/chat/ChatHeader";
 import ChatBox from "../../components/chat/ChatBox";
-import { Modal, Input, Select, Button } from "antd";
+import { Modal, Input, Select } from "antd";
 import axios from "axios";
 
 const { Option } = Select;

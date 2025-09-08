@@ -20,8 +20,7 @@ import {
 import { useSortable } from "@dnd-kit/sortable";
 import { useDeleteSprint } from "@libs/hooks/useSprint";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
-import { useIssueSelection } from "@libs/hooks/useIssueSelection";
-// import { IoIosResize } from "react-icons/io";
+import { useIssueStore } from "@libs/store/useIssueStore";
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
 }
@@ -55,7 +54,8 @@ const ScrumSprint = memo(
         // setIsUpdateSprintModalOpen(false);
       },
     });
-    const { selectedIssues, setSelectIssues } = useIssueSelection();
+    const { selectedIssues, setSelectedIssues } = useIssueStore();
+
     const [isOpenButtonMenu, setIsOpenButtonMenu] = useState(false);
 
     const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] =
@@ -66,6 +66,7 @@ const ScrumSprint = memo(
     const [isSprintIssuesChecked, setIsSprintIssuesChecked] = useState(
       selectedIssues[sprint.id || ""]?.length ? true : false,
     );
+
     const [isExpanded, setIsExpanded] = useState(true);
     const { columns } = useProjectColumns(projectId);
     const estimate = useMemo(() => {
@@ -106,14 +107,14 @@ const ScrumSprint = memo(
 
     const handleToggleSprintIssuesChecked = () => {
       if (isSprintIssuesChecked) {
-        setSelectIssues({ [sprint.id]: [] });
+        setSelectedIssues({ [sprint.id]: [] });
         setIsSprintIssuesChecked(false);
       } else {
         const issues: IIssue[] = [];
         for (const issue of sprint.issues) {
           issues.push(issue);
         }
-        setSelectIssues({ [sprint.id]: issues });
+        setSelectedIssues({ [sprint.id]: issues });
         setIsSprintIssuesChecked(true);
       }
     };
@@ -192,7 +193,7 @@ const ScrumSprint = memo(
                         onClick={() => {
                           // setIsUpdateSprintModalOpen(true)
                         }}
-                        className="text-sm text-gray-900 font-semibold"
+                        className="text-sm font-semibold text-gray-900"
                       >
                         Complete Sprint
                       </span>
@@ -201,7 +202,7 @@ const ScrumSprint = memo(
                         onClick={() => {
                           // setIsUpdateSprintModalOpen(true)
                         }}
-                        className="text-sm text-gray-900 font-semibold"
+                        className="text-sm font-semibold text-gray-900"
                       >
                         Start Sprint
                       </span>
@@ -311,11 +312,11 @@ const ScrumSprint = memo(
         <div className="flex h-full flex-row items-center">
           <div className="flex flex-1 flex-row items-center justify-end gap-1">
             <div className="flex h-full gap-2">
-              <span className="text-sm text-gray-600 font-medium">
+              <span className="text-sm font-medium text-gray-600">
                 {sprint.issues.length} work items
               </span>
-              <span className="text-sm font-semibold text-gray-600 ">|</span>
-              <span className="text-sm text-gray-600 font-medium">
+              <span className="text-sm font-semibold text-gray-600">|</span>
+              <span className="text-sm font-medium text-gray-600">
                 Estimate:{" "}
                 <span className="text-sm font-bold text-gray-800">
                   {estimate}

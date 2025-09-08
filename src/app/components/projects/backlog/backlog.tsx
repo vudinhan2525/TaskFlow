@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { ISprint } from "@libs/types/index";
 import { IIssue } from "@libs/types/issue";
-import ScrumSprint from "@libs/app/components/projects/backlog/scrumPrint";
+import ScrumSprint from "@libs/app/components/projects/backlog/scrumSprint";
 import {
   DndContext,
   useSensor,
@@ -13,7 +13,10 @@ import {
   DragOverEvent,
   DragEndEvent,
   DragOverlay,
+  useSensors,
+  KeyboardSensor,
 } from "@dnd-kit/core";
+import {  sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import {
   SortableContext,
   horizontalListSortingStrategy,
@@ -60,10 +63,21 @@ const BackLog = ({
   const { isLoading: isLoadingColumns } = useProjectColumns(projectId);
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-  const sensors = useSensor(PointerSensor);
+    const sensors = useSensors(
+      useSensor(PointerSensor, 
+        {
+        activationConstraint: {
+          distance:1,
+        },
+      }
+    ),
+      useSensor(KeyboardSensor, {
+        coordinateGetter: sortableKeyboardCoordinates,
+      }),
+    );
 
   useEffect(() => {
-    setSprints(
+    setSprints( 
       [...initialSprints, backLogSprint].map((sprint: ISprint) => {
         return {
           ...sprint,
@@ -211,7 +225,7 @@ const BackLog = ({
   }
   return (
     <DndContext
-      sensors={[sensors]}
+      sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
@@ -223,7 +237,7 @@ const BackLog = ({
       >
         {/* Sprint List */}
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 min-w-[650px] overflow-x-auto">
           {sprints?.map((sprint: ISprintIssues) => (
             <ScrumSprint
               key={sprint.id}

@@ -29,7 +29,7 @@ interface UseChatOptions {
 
 export function useChat({
   userId,
-  userName,
+  // userName,
   wsUrl = "ws://localhost:5003",
   authToken,
 }: UseChatOptions) {

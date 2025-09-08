@@ -12,7 +12,7 @@ import {
   Tooltip,
 } from "recharts";
 import { UserStats } from "@libs/types/project";
-import HistorySection from "@libs/app/components/issues/historySection";
+import HistorySection from "@libs/app/components/issues/activitySection/history";
 import { useParams } from "react-router-dom";
 interface StatusData {
   label: string;

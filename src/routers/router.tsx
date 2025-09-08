@@ -1,7 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
 import ProtectedRoute from "./ProtectedRoute";
-import type { ReactNode } from "react";
 import ChatPage from "@libs/app/pages/chat/ChatPage";
 // Lazy load pages
 const ProjectLayout = lazy(() => import("@libs/app/layouts/projectLayout"));

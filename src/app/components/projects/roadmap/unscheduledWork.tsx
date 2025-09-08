@@ -36,7 +36,7 @@ const UnscheduledWork: React.FC<UnscheduledWorkProps> = memo(
     const { setNodeRef, isOver: isDroppableOver } = useDroppable({
       id: "unscheduled-work",
       data: { type: "unscheduled-work" },
-    });
+    }); 
     const [isSort, setIsSort] = React.useState(false);
     const { issues, isLoading } = useProjectIssues({
       project_id: projectId,

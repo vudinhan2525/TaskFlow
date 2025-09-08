@@ -2,7 +2,6 @@ import React, { useCallback, useState} from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
@@ -15,8 +14,8 @@ import {
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
-import { RootState } from "@libs/store";
 import { IssuePriority, CreateIssueParams } from "@libs/types/issue";
+import { useAuthStore } from "@libs/store/useAuthStore";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
@@ -75,7 +74,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
     projectId || "",
   );
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user } = useAuthStore()
   const { projects } = useUserProjects();
   const { project } = useProject(projectId || "");
   const { columns } = useProjectColumns(selectedProjectId);
