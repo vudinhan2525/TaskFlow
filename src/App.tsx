@@ -5,7 +5,7 @@ import Router from "./routers/router";
 import { store } from "./store";
 import { queryClient } from "./apis/react-query";
 import { ToastContainer } from "react-toastify";
-import { NotificationProvider } from "@libs/app/context/notification.context";
+// import { NotificationProvider } from "@libs/app/context/notification.context";
 import { HelmetProvider } from "react-helmet-async";
 
 function App() {
@@ -13,11 +13,11 @@ function App() {
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
-          <NotificationProvider>
+          {/* <NotificationProvider> */}
               <HelmetProvider>
                 <Router />
               </HelmetProvider>
-          </NotificationProvider>
+          {/* </NotificationProvider> */}
         </BrowserRouter>
         <ToastContainer />
       </QueryClientProvider>

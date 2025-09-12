@@ -10,18 +10,23 @@ import { IoIosClose } from "react-icons/io";
 import { useIssue } from "@libs/hooks/useIssue";
 import { useParams } from "react-router-dom";
 import { useIssueStore } from "@libs/store/useIssueStore";
-import IssueSidebarSkeleton from "../skeleton/issueSidebarSkeleton";
+import IssueDetailSkeleton from "../skeleton/issueDetailSkeleton";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { useElementSize } from "@libs/hooks/useElementSize";
-import MetadataSection from "./metadataSection/metadataSection";
 
 //lazy load
 
 const Details = lazy(() => import("./detailsSection/detailsSection"));
 const ActivityIssue = lazy(() => import("./activitySection/activitySection"));
+const MetadataSection = lazy(() => import("./metadataSection/metadataSection"));
+// import Details from "./detailsSection/detailsSection";
+// import ActivityIssue from "./activitySection/activitySection";
 
 const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
-  const ref = useRef<HTMLDivElement>(null);
+  if (!selectedIssueId) return null;
+  const ref = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const { projectId } = useParams<{ projectId: string }>();
   const { closeIssueDetail } = useIssueStore();
   const { issue: selectedIssue, isLoading: isLoadingIssue } = useIssue(
@@ -30,7 +35,6 @@ const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
   );
 
   const [_, setSearchParams] = useSearchParams();
-
   const IssueDetailHeader = [
     {
       key: "lock",
@@ -84,8 +88,7 @@ const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
     },
   ];
 
-  const layout = useElementSize(ref);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const layout = useElementSize(ref, selectedIssue);
   const { updateIssueAsync } = useUpdateIssue({
     projectId: selectedIssue?.project_id || "",
   });
@@ -105,10 +108,12 @@ const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
   const hideSideBarDetailIssue = () => {
     closeIssueDetail();
   };
+
   if (isLoadingIssue || !selectedIssue) {
-    return <IssueSidebarSkeleton />;
+    return <IssueDetailSkeleton />;
   }
   return (
+    // <Suspense fallback={<IssueDetailSkeleton />}>
     <div
       ref={ref}
       className="z-30 flex h-full w-full flex-1 flex-col gap-4 overflow-y-auto border-l border-gray-200 bg-white p-4 transition-all duration-300"
@@ -184,6 +189,7 @@ const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
         </div>
       )}
     </div>
+    // </Suspense>
   );
 };
 

@@ -1,6 +1,6 @@
 import { Skeleton } from "antd";
 
-const IssueSidebarSkeleton: React.FC = () => {
+const IssueDetailSkeleton: React.FC = () => {
   return (
     <div className="h-full w-full flex-1 overflow-y-auto bg-white p-4">
       {/* Tiêu đề sprint */}
@@ -47,4 +47,4 @@ const IssueSidebarSkeleton: React.FC = () => {
   );
 };
 
-export default IssueSidebarSkeleton;
+export default IssueDetailSkeleton;

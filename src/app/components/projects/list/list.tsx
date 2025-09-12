@@ -26,7 +26,7 @@ const List = ({ projectId }: { projectId?: string }) => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-
+  
   const { updateIssueAsync } = useUpdateIssue({
     projectId: projectId || "",
   });

@@ -27,7 +27,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ issue, isDragging }) => {
       <span className={`truncate text-sm font-light text-gray-400
         ${issue.column.name === "DONE" ? "line-through" : ""}
         `}>
-        {issue.title}
+        {issue.key}
       </span>
       <span className={`truncate text-xs font-medium`}>{issue.summary}</span>
       <PriorityBadge priority={issue.priority} isShowLabel={false} />

@@ -1,7 +1,4 @@
-import {
-  SortableContext,
-  useSortable,
-} from "@dnd-kit/sortable";
+import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import IssueCard from "@libs/app/components/projects/board/issueCard";
 import DeleteColumnModal from "@libs/app/components/projects/modals/deleteColumnModal";
 import RenameColumnModal from "@libs/app/components/projects/modals/renameColumnModal";
@@ -103,7 +100,7 @@ export const KanbanColumn = ({
       columns: reordered.map((col) => ({ id: col.id, order: col.order + 1 })),
     });
     setPopoverOpen(false);
-  },[])
+  }, []);
   const handleRenameColumn = useCallback((newName: string) => {
     const newColumns = columns.map((col) => {
       if (col.id === column.id) {
@@ -120,7 +117,7 @@ export const KanbanColumn = ({
         projectId: projectId,
       });
     }
-  },[])
+  }, []);
   const handleDeleteColumn = () => {
     // Kiểm tra nếu còn issue thì không xó
     setShowDeleteColumnModal(false);
@@ -179,19 +176,15 @@ export const KanbanColumn = ({
           </div>
         </Popover>
       </div>
-      <SortableContext
-        items={column.issues.map((issue) => issue.id)}
-      >
-        <div className="max-h-[600px] min-h-40 overflow-auto">
+      <SortableContext items={column.issues.map((issue) => issue.id)}>
+        <div className="flex max-h-[600px] min-h-40 flex-col overflow-auto">
           {column.issues.map((issue) => {
-            if (issue.parent_id === "") {
-              const newColumn: IColumn = { ...column };
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              delete (newColumn as any).issues;
-              const newIssue: IIssue = { ...issue, column: newColumn };
+            const newColumn: IColumn = { ...column };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            delete (newColumn as any).issues;
+            const newIssue: IIssue = { ...issue, column: newColumn };
 
-              return <SortableIssue key={issue.id} issue={newIssue} />;
-            }
+            return <SortableIssue key={issue.id} issue={newIssue} />;
           })}
         </div>
       </SortableContext>

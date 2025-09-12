@@ -32,7 +32,7 @@ const PageFilter = memo(({onFiltersChange }: PageFilterProps) => {
     priorities:
       (params.get("priorities")?.split(",").filter(Boolean) as any) || [],
     page: params.get("page") ? parseInt(params.get("page")!) : 1,
-    limit: params.get("limit") ? parseInt(params.get("limit")!) : 100,
+    limit: params.get("limit") ? parseInt(params.get("limit")!) : 12,
     project_id: projectId,
     is_fetch: true,
   });

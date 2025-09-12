@@ -1,7 +1,7 @@
 import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { useState, useRef, useEffect, memo } from "react";
-import { Edit, Check } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import CustomInput from "./customInput";
 import StatusDropdown from "../../general-components/dropdown/statusDropdown";
 import TypeDropdown from "../../general-components/dropdown/typeDropdown";
+import TypeBadge from "../../general-components/badge/typeBadge";
 import UserDropdown from "../../general-components/dropdown/userDropdown";
 import CustomDatePicker from "../../general-components/customDatePicker";
 import { useIssueStore } from "@libs/store/useIssueStore";
@@ -91,9 +92,9 @@ const IssueCard = memo(
           className="flex items-center"
         >
           {/* IssueCardLeft */}
-          <div className="grid w-full cursor-pointer grid-cols-12 items-center justify-start gap-4">
+          <div className="flex w-full cursor-pointer flex-row items-center justify-start gap-4">
             {/* ISSUE TITLE AND CHECKBOX */}
-            <div className="col-span-3 flex flex-row items-center gap-2">
+            <div className="flex flex-row items-center gap-2">
               <input
                 aria-label="Select Issue"
                 type="checkbox"
@@ -143,14 +144,12 @@ const IssueCard = memo(
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 focus:ring-blue-500"
               />
 
-              <div className="rounded-sm border-1 border-emerald-500 p-0.5">
-                <Check className="font-normal text-emerald-500" size={12} />
-              </div>
+              <TypeBadge type={issue.type} isShowLabel={false} />
 
               <div
-                className={`block truncate text-sm font-light text-gray-500 ${issue?.column?.name === "DONE" ? "line-through" : "underline"}`}
+                className={`block text-sm font-light text-gray-500 ${issue?.column?.name === "DONE" ? "line-through" : "underline"}`}
               >
-                {issue?.title}
+                {issue?.key}
               </div>
             </div>
             {/* ISSUE SUMMARY */}
@@ -158,7 +157,7 @@ const IssueCard = memo(
               onClick={(e) => {
                 e.stopPropagation();
               }}
-              className="group relative col-span-9 flex max-w-40 items-center gap-2 text-clip"
+              className="group relative flex max-w-40 items-center gap-2 text-clip"
             >
               {isEditingSummary ? (
                 <input

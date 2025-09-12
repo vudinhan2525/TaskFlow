@@ -36,9 +36,8 @@ export default function KanbanBoard() {
   const [columns, setColumns] = useState<IColumn[]>(initialColumns);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
-
   const [newColumnText, setNewColumnText] = useState("");
-
+  
   const { createColumn } = useAddProjectColumn({
     setColumns: setColumns,
   });

@@ -10,9 +10,9 @@ import { useUserProjects } from "@libs/hooks/useProject";
 import DropdownAntd from "../dropdown";
 
 // Lazy load Component
-const NotificationsPopover = lazy(
-  () => import("../../notifications/notificationsPopover"),
-);
+// const NotificationsPopover = lazy(
+//   () => import("../../notifications/notificationsPopover"),
+// );
 const ProjectInvitationsPopover = lazy(
   () => import("../../projects/projectInvitationsPopover"),
 );
@@ -90,7 +90,7 @@ export const Header = () => {
         {user && (
           <div className="flex w-1/4 items-center justify-end space-x-2">
             {/* Notifications */}
-            <NotificationsPopover />
+            {/* <NotificationsPopover /> */}
             {/* Project Invitations */}
             <ProjectInvitationsPopover userId={user?.id || ""} />
             {/* Settings Icon */}

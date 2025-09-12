@@ -29,7 +29,7 @@ import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";
 import { useProject } from "../../../hooks/useProject";
 import AddProjectMemberModal from "./modals/addProjectMemberModal";
-
+import { useIssueStore } from "@libs/store/useIssueStore";
 interface NavItem {
   id: string;
   label: string;
@@ -63,6 +63,7 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     cursor: isDragging ? "grabbing" : "default",
     touchAction: "none",
   };
+  const {closeIssueDetail} = useIssueStore();
 
   return (
     <div
@@ -74,6 +75,9 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     >
       <Link
         to={item.route}
+        onClick={()=>{
+          closeIssueDetail();
+        }}
         className={`group relative flex w-full items-center px-6 py-3 text-sm font-medium no-underline transition-all duration-150 ${
           isActive
             ? "border-green-600 bg-green-100 text-green-700 font-semibold"

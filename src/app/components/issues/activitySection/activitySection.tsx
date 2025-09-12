@@ -1,4 +1,4 @@
-import { useState, lazy } from "react";
+import { useState, lazy, useTransition } from "react";
 const Comment = lazy(
   () => import("@libs/app/components/issues/activitySection/comment"),
 );
@@ -12,6 +12,7 @@ export default function ActivityIssue(props: { issueId: string }) {
   const [activeTab, setActiveTab] = useState<string>("All");
   const { user } = useAuthStore();
   const { projectId } = useParams<{ projectId: string }>();
+  const [, startTransition] = useTransition();
 
   return (
     <div className="bg-white">
@@ -56,7 +57,11 @@ export default function ActivityIssue(props: { issueId: string }) {
           {["All", "Comments", "History", "Work log"].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                startTransition(() => {
+                  setActiveTab(tab);
+                });
+              }}
               className={`cursor-pointer border-b-2 px-1 py-2 text-sm font-medium whitespace-nowrap ${
                 activeTab === tab
                   ? "border-blue-500 text-blue-600"

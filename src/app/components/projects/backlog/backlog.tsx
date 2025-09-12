@@ -260,7 +260,7 @@ const BackLog = ({
   );
 };
 
-export default BackLog;
+export default memo(BackLog);
 
 const IssueCardOverlay = memo(({ issue }: { issue: IIssue }) => {
   return (
@@ -270,7 +270,7 @@ const IssueCardOverlay = memo(({ issue }: { issue: IIssue }) => {
           <div className="rounded-sm border-1 border-emerald-500 p-0.5">
             <FaCheck className="font-normal text-emerald-500" size={12} />
           </div>
-          <span className="text-xs">{issue.title}</span>
+          <span className="text-xs">{issue.key}</span>
         </div>
         <span className="text-xs">{issue.summary}</span>
       </div>

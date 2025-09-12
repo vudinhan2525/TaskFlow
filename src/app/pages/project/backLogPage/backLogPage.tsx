@@ -8,11 +8,13 @@ import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Button from "@libs/app/components/general-components/button";
 import PageFilter from "@libs/app/components/general-components/pageFilter";
 import { GetIssuesParams } from "@libs/types/issue";
-import IssueSidebarSkeleton from "@libs/app/components/skeleton/issueSidebarSkeleton";
-const IssueSideBar = lazy(
+import { useIssueStore } from "@libs/store/useIssueStore";
+import IssueDetailSkeleton from "@libs/app/components/skeleton/issueDetailSkeleton";
+
+
+const IssueDetail = lazy(
   () => import("@libs/app/components/issues/IssueDetail"),
 );
-import { useSearchParams } from "react-router-dom";
 const CreateSprintModal = lazy(
   () => import("@libs/app/components/projects/modals/createSprintModal"),
 );
@@ -20,8 +22,7 @@ const CreateSprintModal = lazy(
 const BackLogPage: React.FC = () => {
   const { projectId = "" } = useParams();
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
-  const selectedIssueId = searchParams.get("selectedIssue") || "";
+  const { selectedIssueId } = useIssueStore();
   const [filters, setFilters] = useState<GetIssuesParams>({
     project_id: projectId,
   });
@@ -29,7 +30,6 @@ const BackLogPage: React.FC = () => {
     useProjectSprints(projectId || "");
   const { issues: initialIssues, isLoading: isLoadingIssues } =
     useProjectIssues(filters);
-
   return (
     <div className="flex h-full flex-col gap-4 p-4 pb-28">
       <Helmet>
@@ -83,22 +83,19 @@ const BackLogPage: React.FC = () => {
               className="backlog--panel-resize-handle relative w-[2px] cursor-col-resize bg-gray-300 pl-[2px] text-emerald-500 opacity-0 hover:opacity-100"
             />
           )}
-
-          {selectedIssueId && (
-            <Panel
-              id="issue-side-bar-panel"
-              order={2}
-              defaultSize={40}
-              maxSize={50}
-              minSize={30}
-            >
-              <div className="h-full overflow-y-auto pr-4">
-                <Suspense fallback={<IssueSidebarSkeleton />}>
-                  <IssueSideBar selectedIssueId={selectedIssueId} />
-                </Suspense>
-              </div>
-            </Panel>
-          )}
+          <Panel
+            id="issue-side-bar-panel"
+            order={2}
+            defaultSize={selectedIssueId ? 40 : 0}
+            maxSize={selectedIssueId ? 50 : 0}
+            minSize={selectedIssueId ? 30 : 0}
+          >
+            <div className="h-full overflow-y-auto pr-4">
+              <Suspense fallback={<IssueDetailSkeleton />}>
+                <IssueDetail selectedIssueId={selectedIssueId || ""} />
+              </Suspense>
+            </div>
+          </Panel>
         </PanelGroup>
       </div>
 
@@ -115,3 +112,6 @@ const BackLogPage: React.FC = () => {
 };
 
 export default BackLogPage;
+
+
+

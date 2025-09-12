@@ -42,11 +42,11 @@ export const connectSocket = (userId: string): Socket => {
   });
 
   socket.on("connect", () => {
-    console.log("✅ Connected to server:", socket.id);
+    // console.log("✅ Connected to server:", socket.id);
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ Disconnected from server");
+    // console.log("❌ Disconnected from server");
   });
 
   return socket;

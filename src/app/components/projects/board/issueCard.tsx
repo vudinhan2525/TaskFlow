@@ -22,26 +22,27 @@ const IssueCard = ({
   isDragging?: boolean;
 }) => {
   const [isHovered, setIsHovered] = useState(false);
-  // const { toggleSideBarDetailIssue } = useIssueDetailContext();
   const { openIssueDetail } = useIssueStore();
-  const isChildIssue = !!issue.parent_id;
-  if (isChildIssue) return <></>;
+
   if (isDragging) {
     return (
-      <div className="z-50 min-h-32 w-full truncate rounded-md border-2 border-dashed border-gray-300 bg-gray-200"></div>
+      <div className="z-50 min-h-40 w-full truncate rounded-md border-2 border-dashed border-gray-300 bg-gray-200"></div>
     );
   }
   return (
     <div
-      className={`     cursor-pointer rounded-md border border-gray-200 bg-white p-3 shadow-sm transition-all hover:shadow-md ${isDragging ? "opacity-40" : ""}`}
+      className={`cursor-pointer rounded-md border border-gray-200 bg-white p-3 shadow-sm transition-all hover:bg-gray-200 hover:shadow-md ${isDragging ? "opacity-90" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => {
+        openIssueDetail(issue.id);
+      }}
     >
       {/* Header with issue key and menu */}
       <div className="mb-2 flex items-center justify-between text-xs text-gray-500">
         <div className="flex items-center gap-2">
           <TypeBadge type={issue.type} isShowLabel={false} />
-          <span className="">{issue.title}</span>
+          <span className="">{issue.key}</span>
         </div>
         {isHovered && (
           <div

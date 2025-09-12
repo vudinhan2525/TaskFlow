@@ -1,6 +1,7 @@
 import { IColumn } from "@libs/types/project";
 export interface IIssue {
   id: string;
+  key:string;
   title: string;
   project_id: string;
   sprint_id?: string;
