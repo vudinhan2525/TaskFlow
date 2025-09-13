@@ -86,7 +86,7 @@ const StatusBadge = ({
 
   return (
     <div
-      className={`flex cursor-pointer items-center gap-2 rounded transition-colors duration-200 ${statusColors[column.order].hoverBg} ${className}`}
+      className={`flex cursor-pointer items-center gap-2 rounded-2xl transition-colors duration-200 ${statusColors[column.order].hoverBg} ${className}`}
     >
       <div
         className={`rounded-2xl ${statusColors[column.order].bgColor} flex items-center gap-1 ${sizeClasses[size].button}`}

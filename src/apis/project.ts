@@ -3,6 +3,7 @@ import { Project } from "@libs/types";
 import {
   CreateColumnProjectParams,
   IColumn,
+  ListProjectColumnsParams,
   UpdateColumnOrderParams,
   UpdateColumnProjectParams,
 } from "@libs/types/project";
@@ -10,18 +11,6 @@ import {
 interface ListProjectsParams {
   page?: number;
   limit?: number;
-}
-export interface ListProjectColumnsParams {
-  project_id: string;
-  assignee_ids?: string[];
-  sprint_ids?: string[];
-  types?: string[];
-  priorities?: string[];
-  title?: string;
-  due_date_from?: string;
-  due_date_to?: string;
-  created_at_from?: string;
-  created_at_to?: string;
 }
 
 const config = {

@@ -26,7 +26,7 @@ const List = ({ projectId }: { projectId?: string }) => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  
+
   const { updateIssueAsync } = useUpdateIssue({
     projectId: projectId || "",
   });
@@ -48,7 +48,7 @@ const List = ({ projectId }: { projectId?: string }) => {
       {/* Search and Filters */}
       <PageFilter
         onFiltersChange={(filter) => {
-        setFilter(filter);
+          setFilter(filter as GetIssuesParams);
         }}
       />
 

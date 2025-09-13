@@ -15,7 +15,7 @@ import { useProjectIssues } from "@libs/hooks/useIssue";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { IIssue } from "@libs/types/issue";
 import TaskItem from "@libs/app/components/projects/roadmap/task-item";
-import {Helmet} from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 import {
   DndContext,
   DragEndEvent,
@@ -51,7 +51,7 @@ const RoadmapPage: React.FC = () => {
   });
   const { updateIssue } = useUpdateIssue({ projectId: projectId || "" });
 
-  const [_, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const { issues, isLoading: isLoadingProjectIssues } =
     useProjectIssues(filters);

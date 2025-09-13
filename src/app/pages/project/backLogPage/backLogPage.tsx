@@ -11,7 +11,6 @@ import { GetIssuesParams } from "@libs/types/issue";
 import { useIssueStore } from "@libs/store/useIssueStore";
 import IssueDetailSkeleton from "@libs/app/components/skeleton/issueDetailSkeleton";
 
-
 const IssueDetail = lazy(
   () => import("@libs/app/components/issues/IssueDetail"),
 );
@@ -48,7 +47,7 @@ const BackLogPage: React.FC = () => {
       </div>
       <PageFilter
         onFiltersChange={(filter) => {
-          setFilters(filter);
+          setFilters(filter as GetIssuesParams);
         }}
       />
 
@@ -112,6 +111,3 @@ const BackLogPage: React.FC = () => {
 };
 
 export default BackLogPage;
-
-
-

@@ -37,6 +37,20 @@ export interface UpdateColumnOrderParams {
   }[];
 }
 
+export interface ListProjectColumnsParams {
+  project_id: string;
+  assignee_ids?: string[];
+  column_ids?: string[];
+  sprint_ids?: string[];
+  types?: string[];
+  priorities?: string[];
+  keyword?: string;
+  due_date_from?: string;
+  due_date_to?: string;
+  created_at_from?: string;
+  created_at_to?: string;
+}
+
 export interface StatusCount {
   name: string;
   count: number;

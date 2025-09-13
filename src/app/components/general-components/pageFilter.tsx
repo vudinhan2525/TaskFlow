@@ -3,24 +3,29 @@ import Button from "@libs/app/components/general-components/button";
 import Popover from "antd/lib/popover";
 import Search from "antd/es/input/Search";
 import { useState } from "react";
-import { ChevronDown } from 'lucide-react';
-
+import { ChevronDown } from "lucide-react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { GetIssuesParams } from "@libs/types/issue";
+import { GetIssuesParams, IssuePriority, IssueType } from "@libs/types/issue";
+import { ListProjectColumnsParams } from "@libs/types/project";
+import _ from "lodash";
 
 const DropdownFilter = lazy(() => import("./dropdownFilter"));
 
 interface PageFilterProps {
-  onFiltersChange?: (filters: GetIssuesParams) => void;
+  onFiltersChange?: (
+    filters: GetIssuesParams | ListProjectColumnsParams,
+  ) => void;
 }
-const PageFilter = memo(({onFiltersChange }: PageFilterProps) => {
+const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { projectId } = useParams<{ projectId: string }>();
   const [params] = useSearchParams();
   const getSearchParams = () => new URLSearchParams(window.location.search);
   const [, startTransition] = useTransition();
 
-  const [filters, setFilters] = useState<GetIssuesParams>({
+  const [filters, setFilters] = useState<
+    GetIssuesParams | ListProjectColumnsParams
+  >({
     keyword: params.get("keyword") || "",
     due_date_from: params.get("due_date_from") || undefined,
     due_date_to: params.get("due_date_to") || undefined,
@@ -28,9 +33,13 @@ const PageFilter = memo(({onFiltersChange }: PageFilterProps) => {
     created_at_from: params.get("created_at_from") || undefined,
     created_at_to: params.get("created_at_to") || undefined,
     assignee_ids: params.get("assignee_ids")?.split(",").filter(Boolean) || [],
-    types: (params.get("types")?.split(",").filter(Boolean) as any) || [],
+    types:
+      (params.get("types")?.split(",").filter(Boolean) as IssueType[]) || [],
     priorities:
-      (params.get("priorities")?.split(",").filter(Boolean) as any) || [],
+      (params
+        .get("priorities")
+        ?.split(",")
+        .filter(Boolean) as IssuePriority[]) || [],
     page: params.get("page") ? parseInt(params.get("page")!) : 1,
     limit: params.get("limit") ? parseInt(params.get("limit")!) : 12,
     project_id: projectId,
@@ -43,7 +52,9 @@ const PageFilter = memo(({onFiltersChange }: PageFilterProps) => {
       ...filters,
     });
   }, []);
-  const updateURL = (newFilters: GetIssuesParams) => {
+  const updateURL = (
+    newFilters: GetIssuesParams | ListProjectColumnsParams,
+  ) => {
     const params = new URLSearchParams();
 
     Object.entries(newFilters).forEach(([key, value]) => {
@@ -106,7 +117,7 @@ const PageFilter = memo(({onFiltersChange }: PageFilterProps) => {
     let count = 0;
     if (filters.keyword) count++;
     if (filters.due_date_from && filters.due_date_to) count++;
-    if (filters.column_ids && filters.column_ids.length > 0) count++;
+    if ((_.get(filters, "column_ids.length", 0) as number) > 0) count++;
     if (filters.created_at_from && filters.created_at_to) count++;
     if (filters.assignee_ids && filters.assignee_ids.length > 0) count++;
     if (filters.priorities && filters.priorities.length > 0) count++;

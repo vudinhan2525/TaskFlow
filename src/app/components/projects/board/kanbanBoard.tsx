@@ -17,7 +17,7 @@ import {
   sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { IColumn } from "@libs/types/project";
+import { IColumn, ListProjectColumnsParams } from "@libs/types/project";
 import { IIssue } from "@libs/types/issue";
 import { useParams } from "react-router-dom";
 import { useAddProjectColumn, useProjectColumns } from "@libs/hooks/useProject";
@@ -27,12 +27,14 @@ import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
 import IssueCard from "./issueCard";
 import PageFilter from "@libs/app/components/general-components/pageFilter";
 import KanbanBoardSkeleton from "../../skeleton/kanbanBoardSkeleton";
-
+const DEFAULT_FILTER: ListProjectColumnsParams = {
+  project_id: "",
+};
 export default function KanbanBoard() {
   const { projectId } = useParams();
-  const { columns: initialColumns, isLoading } = useProjectColumns({
-    project_id: projectId || "",
-  });
+  const [filter, setFilter] =
+    useState<ListProjectColumnsParams>(DEFAULT_FILTER);
+  const { columns: initialColumns, isLoading } = useProjectColumns(filter);
   const [columns, setColumns] = useState<IColumn[]>(initialColumns);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
@@ -291,7 +293,14 @@ export default function KanbanBoard() {
   return (
     <div className="flex flex-col gap-4 p-4">
       <h1 className="p-2 text-2xl font-bold text-gray-700">Kanban Board</h1>
-      <PageFilter />
+      <PageFilter
+        onFiltersChange={(filters) => {
+          setFilter({
+            ...filters,
+            project_id: projectId,
+          } as ListProjectColumnsParams);
+        }}
+      />
       {isLoading || columns.length === 0 ? (
         <KanbanBoardSkeleton />
       ) : (

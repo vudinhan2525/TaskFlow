@@ -63,7 +63,7 @@ const PriorityBadge = ({
   );
   return (
     <div
-      className={`flex cursor-pointer items-center gap-2 rounded transition-colors duration-200 hover:bg-gray-100 ${className}`}
+      className={`flex cursor-pointer items-center gap-2 rounded-full transition-colors duration-200 hover:bg-gray-100 ${className}`}
     >
       <div className="flex-shrink-0">{currentPriority?.icon}</div>
 

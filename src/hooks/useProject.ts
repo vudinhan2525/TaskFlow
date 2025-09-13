@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Project } from "../types";
-import { ListProjectColumnsParams, projects } from "@libs/apis/project";
+import { projects } from "@libs/apis/project";
 import { useUserMemberships } from "@libs/hooks/useProjectMember";
 import { toast } from "react-toastify";
 import { useAuth } from "./useAuth";
 import {
   CreateColumnProjectParams,
   IColumn,
+  ListProjectColumnsParams,
   UpdateColumnOrderParams,
   UpdateColumnProjectParams,
 } from "@libs/types/project";
@@ -170,7 +171,20 @@ export function useProjectColumns(
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["projectColumns", data.project_id],
+    queryKey: [
+      "projectColumns",
+      data.project_id,
+      data.sprint_ids,
+      data.keyword,
+      data.assignee_ids,
+      data.types,
+      data.priorities,
+      data.created_at_from,
+      data.created_at_to,
+      data.due_date_from,
+      data.due_date_to,
+      data.column_ids,
+    ],
     queryFn: async () => {
       if (!data.project_id) throw new Error("Project ID is required");
       const response = await projects.getColumns(data);
