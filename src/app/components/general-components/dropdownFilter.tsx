@@ -32,7 +32,7 @@ const DropdownFilter = ({
 }) => {
   const { projectId } = useParams<{ projectId: string }>();
   const { projectMembers } = useProjectMembers(projectId || "");
-  const { columns } = useProjectColumns(projectId);
+  const { columns } = useProjectColumns({ project_id: projectId as string });
   return (
     <div className="w-[500px] rounded-lg bg-white shadow-lg">
       <div className="flex items-center justify-between border-b-[1px] border-gray-200 px-4 py-2">
@@ -77,7 +77,9 @@ const DropdownFilter = ({
                   if (currentIds?.includes(column.id)) {
                     setFilters({
                       ...filters,
-                      column_ids: currentIds.filter((id: string) => id !== column.id),
+                      column_ids: currentIds.filter(
+                        (id: string) => id !== column.id,
+                      ),
                     });
                   } else {
                     setFilters({
@@ -89,7 +91,7 @@ const DropdownFilter = ({
                 key={column.id}
                 className={`flex items-center rounded-2xl border-[2px] ${filters?.column_ids?.includes(column.id) ? "border-blue-500" : "border-transparent"}`}
               >
-                <StatusBadge column={column}  size="medium" />
+                <StatusBadge column={column} size="medium" />
               </div>
             ))}
           </div>

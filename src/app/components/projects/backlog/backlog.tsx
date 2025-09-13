@@ -16,7 +16,7 @@ import {
   useSensors,
   KeyboardSensor,
 } from "@dnd-kit/core";
-import {  sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import {
   SortableContext,
   horizontalListSortingStrategy,
@@ -60,24 +60,24 @@ const BackLog = ({
   const [isDragging, setIsDragging] = useState(false);
   // item = sprint or issue
   const [overItemId, setOverItemId] = useState<string | null>(null);
-  const { isLoading: isLoadingColumns } = useProjectColumns(projectId);
+  const { isLoading: isLoadingColumns } = useProjectColumns({
+    project_id: projectId,
+  });
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-    const sensors = useSensors(
-      useSensor(PointerSensor, 
-        {
-        activationConstraint: {
-          distance:1,
-        },
-      }
-    ),
-      useSensor(KeyboardSensor, {
-        coordinateGetter: sortableKeyboardCoordinates,
-      }),
-    );
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   useEffect(() => {
-    setSprints( 
+    setSprints(
       [...initialSprints, backLogSprint].map((sprint: ISprint) => {
         return {
           ...sprint,
@@ -219,9 +219,7 @@ const BackLog = ({
   };
 
   if (isLoadingColumns || isLoadingSprints || isLoadingIssues) {
-    return (
-      <BacklogSkeleton />
-    );
+    return <BacklogSkeleton />;
   }
   return (
     <DndContext
@@ -237,7 +235,7 @@ const BackLog = ({
       >
         {/* Sprint List */}
 
-        <div className="flex flex-col gap-2 min-w-[650px] overflow-x-auto">
+        <div className="flex min-w-[650px] flex-col gap-2 overflow-x-auto">
           {sprints?.map((sprint: ISprintIssues) => (
             <ScrumSprint
               key={sprint.id}
@@ -251,8 +249,7 @@ const BackLog = ({
       </SortableContext>
 
       {activeIssue && (
-        <DragOverlay
-        >
+        <DragOverlay>
           <IssueCardOverlay issue={activeIssue} />
         </DragOverlay>
       )}

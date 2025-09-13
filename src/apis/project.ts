@@ -11,6 +11,18 @@ interface ListProjectsParams {
   page?: number;
   limit?: number;
 }
+export interface ListProjectColumnsParams {
+  project_id: string;
+  assignee_ids?: string[];
+  sprint_ids?: string[];
+  types?: string[];
+  priorities?: string[];
+  title?: string;
+  due_date_from?: string;
+  due_date_to?: string;
+  created_at_from?: string;
+  created_at_to?: string;
+}
 
 const config = {
   withCredentials: true,
@@ -32,8 +44,12 @@ export const projects = {
     api.get<ResponseApi<Project[]>>(`/projects/user/${userId}`, config),
   listProjects: (params: ListProjectsParams = { page: 1, limit: 10 }) =>
     api.get<ResponseApi<Project>>("/projects", { ...config, params }),
-  getColumns: (projectId: string) =>
-    api.get<ResponseApi<IColumn[]>>(`/projects/${projectId}/columns`, config),
+  getColumns: (data: ListProjectColumnsParams) =>
+    api.post<ResponseApi<IColumn[]>>(
+      `/projects/${data.project_id}/columns`,
+      data,
+      config,
+    ),
   addColumns: (body: CreateColumnProjectParams) =>
     api.post<ResponseApi<IColumn>>(`/projects/add-column`, body, config),
   updateOrderColumns: (body: UpdateColumnOrderParams) =>

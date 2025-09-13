@@ -1,4 +1,4 @@
-import React, { useCallback, useState} from "react";
+import React, { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -74,10 +74,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
     projectId || "",
   );
-  const { user } = useAuthStore()
+  const { user } = useAuthStore();
   const { projects } = useUserProjects();
   const { project } = useProject(projectId || "");
-  const { columns } = useProjectColumns(selectedProjectId);
+  const { columns } = useProjectColumns({ project_id: selectedProjectId });
   const { sprints } = useProjectSprints(selectedProjectId);
   const { projectMembers } = useProjectMembers(selectedProjectId);
 
@@ -98,7 +98,9 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   });
 
   const isLoading = isCreating || isUpdating;
-  const { isLoading: isColumnsLoading } = useProjectColumns(selectedProjectId);
+  const { isLoading: isColumnsLoading } = useProjectColumns({
+    project_id: selectedProjectId,
+  });
 
   const defaultValues: IssueFormInputs = {
     title: "",

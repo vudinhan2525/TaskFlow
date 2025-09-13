@@ -3,7 +3,7 @@ import { useProjectColumns } from "@libs/hooks/useProject";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { IColumn } from "@libs/types/project";
 import StatusBadge from "../badge/statusBadge";
-import { memo, useState} from "react";
+import { memo, useState } from "react";
 
 const StatusDropdown = ({
   projectId,
@@ -15,7 +15,10 @@ const StatusDropdown = ({
   column: IColumn;
 }) => {
   const [isOpenDropdown, setIsOpenDropdown] = useState(false);
-  const { columns } = useProjectColumns(projectId, isOpenDropdown);
+  const { columns } = useProjectColumns(
+    { project_id: projectId },
+    isOpenDropdown,
+  );
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
   const handleChangeStatus = (updatedStatus: string) => {

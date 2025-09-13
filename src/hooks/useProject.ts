@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Project } from "../types";
-import { projects } from "@libs/apis/project";
+import { ListProjectColumnsParams, projects } from "@libs/apis/project";
 import { useUserMemberships } from "@libs/hooks/useProjectMember";
 import { toast } from "react-toastify";
 import { useAuth } from "./useAuth";
@@ -14,7 +14,7 @@ import { Dispatch, SetStateAction } from "react";
 import { AxiosError } from "axios";
 
 export function useUserProjects() {
-  const {user}= useAuth()
+  const { user } = useAuth();
   const userId = user?.id;
 
   const { memberships, isLoading, error } = useUserMemberships(userId || "");
@@ -162,7 +162,7 @@ export function useProject(projectId: string) {
 }
 
 export function useProjectColumns(
-  projectId: string | undefined,
+  data: ListProjectColumnsParams,
   isFetch?: boolean,
 ) {
   const {
@@ -170,13 +170,13 @@ export function useProjectColumns(
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["projectColumns", projectId],
+    queryKey: ["projectColumns", data.project_id],
     queryFn: async () => {
-      if (!projectId) throw new Error("Project ID is required");
-      const response = await projects.getColumns(projectId);
+      if (!data.project_id) throw new Error("Project ID is required");
+      const response = await projects.getColumns(data);
       return response.data;
     },
-    enabled: !!projectId && (isFetch === undefined ? true : isFetch),
+    enabled: !!data.project_id && (isFetch === undefined ? true : isFetch),
     // refetchOnMount: "always",
   });
 

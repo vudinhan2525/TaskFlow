@@ -68,7 +68,7 @@ const ScrumSprint = memo(
     );
 
     const [isExpanded, setIsExpanded] = useState(true);
-    const { columns } = useProjectColumns(projectId);
+    const { columns } = useProjectColumns({ project_id: projectId });
     const estimate = useMemo(() => {
       return sprint.issues.reduce((total, issue) => {
         return total + (issue.story_point || 0);

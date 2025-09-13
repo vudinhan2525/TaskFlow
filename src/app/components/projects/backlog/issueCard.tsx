@@ -42,7 +42,7 @@ const IssueCard = memo(
     };
 
     const { updateIssueAsync } = useUpdateIssue({ projectId });
-    const { columns } = useProjectColumns(projectId);
+    const { columns } = useProjectColumns({ project_id: projectId });
     const [issueSummary, setIssueSummary] = useState(issue?.summary);
     const [isEditingSummary, setIsEditingSummary] = useState(false);
 

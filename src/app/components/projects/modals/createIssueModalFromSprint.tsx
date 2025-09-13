@@ -53,7 +53,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
   projectId,
   sprintId,
 }) => {
-  const { columns = [] } = useProjectColumns(projectId);
+  const { columns = [] } = useProjectColumns({ project_id: projectId });
   const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
 

@@ -30,14 +30,13 @@ import KanbanBoardSkeleton from "../../skeleton/kanbanBoardSkeleton";
 
 export default function KanbanBoard() {
   const { projectId } = useParams();
-  const { columns: initialColumns, isLoading } = useProjectColumns(
-    projectId || "",
-  );
+  const { columns: initialColumns, isLoading } = useProjectColumns({
+    project_id: projectId || "",
+  });
   const [columns, setColumns] = useState<IColumn[]>(initialColumns);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [newColumnText, setNewColumnText] = useState("");
-  
   const { createColumn } = useAddProjectColumn({
     setColumns: setColumns,
   });
