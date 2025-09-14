@@ -1,4 +1,4 @@
-// Chat header showing room info and participants
+// ChatHeader.tsx
 import React from "react";
 import { RoomInfo } from "../../../hooks/useChat";
 
@@ -7,19 +7,29 @@ interface ChatHeaderProps {
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({ room }) => {
-  if (!room) return <div className="border-b p-4 font-semibold">Chat</div>;
+  if (!room)
+    return (
+      <div className="border-b bg-white p-4 font-semibold text-green-700">
+        Select a chat
+      </div>
+    );
+
   return (
-    <div className="flex items-center justify-between border-b bg-white p-4">
-      <div>
-        <div className="text-lg font-semibold">
-          {room.name || "Unnamed Room"}
+    <div className="border-b border-green-200 bg-white p-4 shadow-sm">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500 font-bold text-white">
+          {room.name?.charAt(0).toUpperCase() || "R"}
         </div>
-        <div className="text-xs text-gray-500">
-          {room.type === "GROUP" ? "Group chat" : "Direct chat"} •{" "}
-          {room.members.length} member{room.members.length !== 1 ? "s" : ""}
+        <div>
+          <div className="text-lg font-semibold text-gray-800">
+            {room.name || "Unnamed Room"}
+          </div>
+          <div className="text-sm text-green-600">
+            {room.type === "GROUP" ? "Group" : "Direct"} • {room.members.length}{" "}
+            member{room.members.length !== 1 ? "s" : ""}
+          </div>
         </div>
       </div>
-      {/* Optionally, add actions like add user, leave room, etc. */}
     </div>
   );
 };

@@ -29,8 +29,8 @@ interface UseChatOptions {
 
 export function useChat({
   userId,
-  // userName,
-  wsUrl = "ws://localhost:5003",
+  userName,
+  wsUrl = "ws://localhost:5003/ws",
   authToken,
 }: UseChatOptions) {
   const ws = useRef<WebSocket | null>(null);
@@ -47,14 +47,16 @@ export function useChat({
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentRoom = useRef<string | null>(null);
 
+  const canConnect = Boolean(userId && authToken);
   // Reconnect logic
   const connect = useCallback(() => {
-    if (
-      ws.current?.readyState === WebSocket.OPEN ||
-      ws.current?.readyState === WebSocket.CONNECTING
-    ) {
+    if (!canConnect) {
+      console.log("Cannot connect: userId or authToken missing");
+      setConnectionError("Authenticating...");
       return;
     }
+    if (ws.current?.readyState === WebSocket.OPEN) return;
+    if (ws.current?.readyState === WebSocket.CONNECTING) return;
 
     const socket = new WebSocket(wsUrl);
 
@@ -63,7 +65,7 @@ export function useChat({
       setConnected(true);
       setConnectionError(null);
       retryCount.current = 0;
-
+      console.log("authToken:", authToken);
       // Send auth token as first message
       socket.send(
         JSON.stringify({
@@ -117,6 +119,7 @@ export function useChat({
           } else {
             console.error("Invalid roomsList format", data);
           }
+          setLoadingRooms(false);
           break;
 
         case "roomCreated":
@@ -133,16 +136,32 @@ export function useChat({
           });
           break;
 
-        case "messageHistory":
-          setMessages((prev) => ({
-            ...prev,
-            [data.data.roomId]: [
-              ...(data.data.messages || []),
-              ...(prev[data.data.roomId] || []),
-            ],
-          }));
+        case "messageHistory": {
+          const { roomId, messages: newMessages } = data.data || {}; // ✅ Fix: data.data
+
+          if (!roomId || !Array.isArray(newMessages)) {
+            console.warn("Invalid messageHistory data", data);
+            setLoadingHistory(false);
+            return;
+          }
+
+          setMessages((prev) => {
+            const existingMessages = prev[roomId] || [];
+            const existingIds = new Set(existingMessages.map((m) => m.id));
+
+            const uniqueNewMessages = newMessages.filter(
+              (msg) => !existingIds.has(msg.id),
+            );
+
+            return {
+              ...prev,
+              [roomId]: [...uniqueNewMessages, ...existingMessages],
+            };
+          });
+
           setLoadingHistory(false);
           break;
+        }
 
         case "userStartedTyping":
           setTypingUsers((prev) => {
@@ -159,6 +178,7 @@ export function useChat({
 
         case "error":
           console.error("WebSocket error:", data.data);
+          setLoadingRooms(false);
           setConnectionError(data.data.message);
           break;
 
@@ -172,11 +192,12 @@ export function useChat({
 
   const fetchRooms = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) {
+      console.log("📡 Sending: getRooms");
       ws.current.send(JSON.stringify({ event: "getRooms" }));
     } else {
-      console.warn("WebSocket not open, cannot fetch rooms");
+      console.warn("WebSocket not open");
     }
-  }, []);
+  }, [ws]); // ✅ Now updates when ws changes
 
   const sendEvent = useCallback((event: string, data: any) => {
     if (ws.current?.readyState === WebSocket.OPEN) {
@@ -217,12 +238,16 @@ export function useChat({
 
   const loadHistory = useCallback(
     (roomId: string) => {
-      const msgs = messages[roomId] || [];
-      if (msgs.length === 0) return;
+      const roomMessages = messages[roomId] || [];
+      if (roomMessages.length === 0) return;
+
       setLoadingHistory(true);
+
+      // ✅ Use the createdAt of the oldest message
+      const oldestMessage = roomMessages[0]; // assuming sorted newest first
       sendEvent("getMessageHistory", {
         roomId,
-        before: msgs[0].id,
+        before: oldestMessage.createdAt, // ✅ ISO string
         limit: 30,
       });
     },
@@ -235,15 +260,18 @@ export function useChat({
     }
   }, [sendEvent]);
 
-  // Connect on mount
   useEffect(() => {
-    connect();
+    if (canConnect) {
+      connect();
+    }
+  }, [canConnect, connect]);
+  useEffect(() => {
     return () => {
       if (reconnectTimeoutRef.current)
         clearTimeout(reconnectTimeoutRef.current);
       ws.current?.close();
     };
-  }, [connect]);
+  }, []);
 
   return {
     connected,
