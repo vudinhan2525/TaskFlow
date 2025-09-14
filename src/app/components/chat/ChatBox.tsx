@@ -1,4 +1,4 @@
-// Messenger-like chat box using useChat hook
+// ChatBox.tsx
 import React, { useEffect, useRef, useState } from "react";
 import ChatMessage from "./ChatMessage";
 import { MessageResponse, MessageType } from "../../../hooks/useChat";
@@ -38,12 +38,12 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatListRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  // Infinite scroll for history
+  // Infinite scroll
   const handleScroll = () => {
     if (
       chatListRef.current &&
@@ -62,42 +62,71 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   };
 
   return (
-    <div className="flex h-full flex-col rounded-lg border bg-white shadow">
-      <div className="border-b px-4 py-2 font-semibold">
-        {roomName || "Chat"}
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-green-100 bg-white shadow-lg">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-green-500 to-green-600 px-4 py-3 text-white">
+        <div className="text-lg font-bold">{roomName || "Chat Room"}</div>
+        <div className="text-sm opacity-90">
+          {roomType === "GROUP" ? "Group" : "Direct"} • {messages.length}{" "}
+          messages
+        </div>
       </div>
+
+      {/* Messages */}
       <div
-        className="flex-1 overflow-y-auto p-4"
         ref={chatListRef}
         onScroll={handleScroll}
+        className="flex-1 space-y-3 overflow-y-auto bg-green-50 p-4"
         style={{ minHeight: 0 }}
       >
         {loadingHistory && (
-          <div className="mb-2 text-center text-xs text-gray-400">
-            Loading history...
+          <div className="text-center text-sm text-green-600 italic">
+            Loading older messages...
           </div>
         )}
-        {messages.map((msg: MessageResponse) => (
-          <ChatMessage key={msg.id} message={msg} onReply={setReplyTo} />
-        ))}
+        {messages.length === 0 ? (
+          <div className="py-8 text-center text-gray-400">No messages yet</div>
+        ) : (
+          messages
+            .slice()
+            .reverse()
+            .map((msg) => (
+              <ChatMessage
+                key={msg.id}
+                message={msg}
+                onReply={setReplyTo}
+                user={user}
+                isOwn={user?.id === msg.senderId}
+              />
+            ))
+        )}
         <div ref={messagesEndRef} />
       </div>
-      <div className="flex flex-col gap-1 border-t px-4 py-2">
+
+      {/* Typing Indicator */}
+      {typingUsers[roomId]?.length > 0 && (
+        <div className="border-t border-green-100 bg-green-50 px-4 py-1 text-xs text-green-700 italic">
+          {typingUsers[roomId].join(", ")} is typing...
+        </div>
+      )}
+
+      {/* Input Area */}
+      <div className="border-t border-green-200 bg-white px-4 py-3">
         {replyTo && (
-          <div className="mb-1 text-xs text-gray-600">
-            Replying to:{" "}
-            <span className="font-semibold">{replyTo.content}</span>
+          <div className="mb-2 flex items-center gap-2 rounded-lg bg-green-100 p-2 text-sm">
+            <span className="font-semibold text-green-800">Replying to:</span>
+            <span className="flex-1 truncate">{replyTo.content}</span>
             <button
-              className="ml-2 text-red-400 hover:underline"
               onClick={() => setReplyTo(null)}
+              className="font-bold text-red-500 hover:text-red-700"
             >
-              Cancel
+              ✕
             </button>
           </div>
         )}
         <div className="flex gap-2">
           <input
-            className="flex-1 rounded border px-2 py-1"
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -105,19 +134,16 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
               else startTyping();
             }}
             placeholder="Type a message..."
+            className="flex-1 rounded-full border border-green-300 px-4 py-2 focus:ring-2 focus:ring-green-400 focus:outline-none"
           />
           <button
-            className="rounded bg-blue-500 px-4 py-1 text-white"
             onClick={handleSend}
+            disabled={!input.trim()}
+            className="rounded-full bg-green-500 px-5 py-2 font-medium text-white transition hover:bg-green-600 disabled:bg-green-300"
           >
             Send
           </button>
         </div>
-        {typingUsers[roomId]?.length > 0 && (
-          <div className="mt-1 text-xs text-gray-400">
-            {typingUsers[roomId].join(", ")} typing...
-          </div>
-        )}
       </div>
     </div>
   );

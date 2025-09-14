@@ -11,7 +11,6 @@ const { Option } = Select;
 
 const ChatPage: React.FC = () => {
   const user = useSelector((state: any) => state.auth.user);
-  const token = useSelector((state: any) => state.auth.token); // Get auth token
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
@@ -37,7 +36,7 @@ const ChatPage: React.FC = () => {
   } = useChat({
     userId: user?.id ?? "",
     userName: user ? user.first_name + " " + user.last_name : "",
-    authToken: token, // Pass token to useChat
+    authToken: user?.token,
   });
 
   // Fetch available users
@@ -45,7 +44,7 @@ const ChatPage: React.FC = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:5000/api/users", {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${user.token}` },
         });
         setAvailableUsers(
           response.data.map((u: any) => ({
@@ -57,10 +56,10 @@ const ChatPage: React.FC = () => {
         console.error("Failed to fetch users:", error);
       }
     };
-    if (user && token) {
+    if (user && user.token) {
       fetchUsers();
     }
-  }, [user, token]);
+  }, [user]);
 
   console.log("ChatPage rooms:", rooms);
   if (rooms && rooms.length > 0) {
@@ -105,7 +104,8 @@ const ChatPage: React.FC = () => {
       console.error("Room name and members are required");
       return;
     }
-    createRoom(newRoomName, newRoomType, [...newRoomMembers, user.id]);
+    const members = Array.from(new Set([...newRoomMembers, user.id]));
+    createRoom(newRoomName, newRoomType, members);
     setIsCreateModalVisible(false);
     setNewRoomName("");
     setNewRoomType("DIRECT");
@@ -115,7 +115,13 @@ const ChatPage: React.FC = () => {
   const selectedRoomMessages = selectedRoomId
     ? messages[selectedRoomId] || []
     : [];
-
+  // if (!user || !token) {
+  //   return (
+  //     <div className="flex h-full items-center justify-center text-gray-400">
+  //       Loading chat...
+  //     </div>
+  //   );
+  // }
   return (
     <div className="flex h-screen w-full flex-col md:flex-row">
       <div className="w-full border-r bg-gray-50 md:w-1/4">
@@ -129,21 +135,13 @@ const ChatPage: React.FC = () => {
               Retry
             </button>
           </div>
-        ) : rooms.length > 0 ? (
+        ) : (
           <ChatRoomList
             currentRoomId={selectedRoomId}
             onSelectRoom={handleSelectRoom}
+            rooms={rooms}
+            onReload={fetchRooms}
           />
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center text-gray-400">
-            <p>No chats available</p>
-            <button
-              className="mt-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-              onClick={handleCreateChat}
-            >
-              Create a new chat
-            </button>
-          </div>
         )}
       </div>
       <div className="flex w-full flex-col md:w-3/4">

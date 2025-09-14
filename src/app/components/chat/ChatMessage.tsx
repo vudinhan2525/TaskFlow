@@ -1,63 +1,70 @@
+// ChatMessage.tsx
 import React from "react";
 import { MessageResponse } from "../../../hooks/useChat";
-import { useSelector } from "react-redux";
 
 interface ChatMessageProps {
   message: MessageResponse;
   onReply: (msg: MessageResponse) => void;
+  user: any;
+  isOwn: boolean;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, onReply }) => {
-  const user = useSelector((state: any) => state.auth.user);
-  const isOwn = user && message.senderId === user.id;
-  const repliedMessage = useSelector((state: any) =>
-    message.replyToId
-      ? state.chat.messages[message.roomId]?.find(
-          (m: MessageResponse) => m.id === message.replyToId,
-        )
-      : null,
-  );
+// Simple avatar fallback
+const Avatar = ({ name }: { name: string }) => (
+  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-sm font-bold text-white">
+    {name.charAt(0).toUpperCase()}
+  </div>
+);
+
+const ChatMessage: React.FC<ChatMessageProps> = ({
+  message,
+  onReply,
+  user,
+  isOwn,
+}) => {
+  const senderName = message.senderName || "Unknown";
 
   return (
-    <div className={`mb-2 flex ${isOwn ? "justify-end" : "justify-start"}`}>
+    <div
+      className={`flex items-start gap-2 ${isOwn ? "flex-row-reverse" : ""}`}
+    >
+      <Avatar name={senderName} />
       <div
-        className={`max-w-[70%] rounded-lg p-3 shadow-sm transition-all duration-200 ${
-          isOwn
-            ? "ml-auto bg-blue-100 text-right hover:bg-blue-200"
-            : "mr-auto bg-gray-100 text-left hover:bg-gray-200"
-        }`}
+        className={`flex max-w-[70%] flex-col ${isOwn ? "items-end" : "items-start"}`}
       >
-        <div
-          className={`mb-1 flex items-center gap-2 ${isOwn ? "justify-end" : "justify-start"}`}
-        >
-          <span className="text-sm font-semibold">{message.senderName}</span>
-          {message.replyToId && (
-            <span className="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
-              Reply
-            </span>
-          )}
-          <span className="min-w-[70px] text-right text-xs text-gray-500">
-            {new Date(message.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+        {!isOwn && (
+          <span className="mb-1 text-xs font-semibold text-gray-600">
+            {senderName}
           </span>
-        </div>
-        {message.replyToId && repliedMessage && (
-          <div className="mb-2 border-l-4 border-gray-300 pl-2 text-xs text-gray-600">
-            <div className="font-semibold">{repliedMessage.senderName}</div>
-            <div className="truncate">{repliedMessage.content}</div>
+        )}
+        {message.replyToId && (
+          <div className="mb-1 max-w-full rounded border-l-4 border-green-400 bg-white px-2 py-1 pl-2 text-xs text-gray-600">
+            <span className="font-medium">Reply to:</span>{" "}
+            {message.replyToId.slice(0, 8)}...
           </div>
         )}
-        <div className="text-sm">{message.content}</div>
-        <button
-          className="mt-1 text-xs text-blue-500 hover:underline"
-          onClick={() => onReply(message)}
-          aria-label={`Reply to message by ${message.senderName}`}
+        <div
+          className={`rounded-2xl px-4 py-2 shadow-sm ${
+            isOwn
+              ? "rounded-br-sm bg-green-500 text-white"
+              : "rounded-bl-sm border border-green-200 bg-white"
+          }`}
         >
-          Reply
-        </button>
+          {message.content}
+        </div>
+        <span className="mt-1 text-xs text-gray-400">
+          {new Date(message.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
       </div>
+      <button
+        onClick={() => onReply(message)}
+        className="ml-1 self-center text-xs text-green-500 opacity-0 transition group-hover:opacity-100 hover:text-green-700"
+      >
+        Reply
+      </button>
     </div>
   );
 };
