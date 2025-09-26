@@ -19,10 +19,12 @@ import { IoIosPrint } from "react-icons/io";
 import { LuCircleArrowRight } from "react-icons/lu";
 import { CiCircleChevUp } from "react-icons/ci";
 
-export const columnsIcon: Record<keyof Omit<IIssue, "key">, React.ReactNode> = {
+export type ITableColumn = keyof Omit<IIssue, "title">;
+
+export const columnsIcon: Record<ITableColumn, React.ReactNode> = {
   id: <FaPlus color="#626f86" />,
   project_id: <FaPlus color="#626f86" />,
-  title: <MdOutlineSubtitles color="#626f86" />,
+  key: <MdOutlineSubtitles color="#626f86" />,
   summary: <MdOutlineSummarize color="#626f86" />,
   description: <MdOutlineDescription color="#626f86" />,
   column: <LuCircleArrowRight color="#626f86" />,

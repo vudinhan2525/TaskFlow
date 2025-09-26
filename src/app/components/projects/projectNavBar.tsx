@@ -30,6 +30,10 @@ import type { CSSProperties } from "react";
 import { useProject } from "../../../hooks/useProject";
 import AddProjectMemberModal from "./modals/addProjectMemberModal";
 import { useIssueStore } from "@libs/store/useIssueStore";
+import { usePermission } from "@libs/hooks/usePermission";
+import { useAuthStore } from "@libs/store/useAuthStore";
+import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
+import { Tooltip } from "antd";
 interface NavItem {
   id: string;
   label: string;
@@ -63,7 +67,7 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     cursor: isDragging ? "grabbing" : "default",
     touchAction: "none",
   };
-  const {closeIssueDetail} = useIssueStore();
+  const { closeIssueDetail } = useIssueStore();
 
   return (
     <div
@@ -75,17 +79,17 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     >
       <Link
         to={item.route}
-        onClick={()=>{
+        onClick={() => {
           closeIssueDetail();
         }}
         className={`group relative flex w-full items-center px-6 py-3 text-sm font-medium no-underline transition-all duration-150 ${
           isActive
-            ? "border-green-600 bg-green-100 text-green-700 font-semibold"
-            : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:text-green-700 hover:font-semibold"
+            ? "border-green-600 bg-green-100 font-semibold text-green-700"
+            : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:font-semibold hover:text-green-700"
         }`}
       >
         <span
-          className={`mr-2 text-base transition-colors ${isActive ? "text-green-700" : "text-gray-500 group-hover:text-green-700 font-semibold"}`}
+          className={`mr-2 text-base transition-colors ${isActive ? "text-green-700" : "font-semibold text-gray-500 group-hover:text-green-700"}`}
         >
           {item.icon}
         </span>
@@ -207,11 +211,19 @@ const ProjectNavbar = (): React.ReactElement => {
       });
     }
   };
+
+  const { user } = useAuthStore();
+
+  const { isAllow, message } = usePermission({
+    user: user!,
+    action: PERMISSIONS_CONFIG.projectMember.add,
+  });
+
   return (
     <div className="flex h-full flex-col justify-between border-gray-200 bg-white shadow-sm">
       <div className="flex flex-col space-y-6">
         {/* Project Header */}
-        <div className=" p-2">
+        <div className="p-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {/* Project Avatar */}
@@ -231,13 +243,16 @@ const ProjectNavbar = (): React.ReactElement => {
                 </div>
               </div>
             </div>
-            <button
-              title="Invite Members to Project"
-              onClick={() => setIsAddMemberModalOpen(true)}
-              className="flex cursor-pointer items-center space-x-2 text-gray-500 duration-300 hover:scale-110"
-            >
-              <FaUserPlus className="mr-2 h-4 w-4" />
-            </button>
+            <Tooltip title={message}>
+              <button
+                disabled={!isAllow}
+                title="Invite Members to Project"
+                onClick={() => setIsAddMemberModalOpen(true)}
+                className="flex cursor-pointer items-center space-x-2 text-gray-500 duration-300 hover:scale-110"
+              >
+                <FaUserPlus className="mr-2 h-4 w-4" />
+              </button>
+            </Tooltip>
           </div>
         </div>
 

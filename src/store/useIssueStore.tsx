@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { IIssue } from "@libs/types/issue";
 
 interface IssueState {
   selectedIssueId: string | null;
@@ -30,7 +29,6 @@ export const useIssueStore = create<IssueState>((set) => ({
     params.delete("selectedIssue");
     window.history.pushState({}, "", `?${params.toString()}`);
   },
-
 
   selectedIssues: new Map<string, Set<string>>(),
   setSelectedIssues: (selectedIssues) => set({ selectedIssues }),

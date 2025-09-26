@@ -1,90 +1,81 @@
-import { Dropdown, type MenuProps } from "antd";
-import { useState, useEffect, useRef, memo } from "react";
-import React from "react";
-const TeamDropdown = memo(
-  ({
-    items,
-    currentItem,
-    children,
-    setIsOpenDropdown,
-  }: {
-    items: MenuProps["items"];
-    currentItem?: string;
-    children: React.ReactNode;
-    setIsOpenDropdown?: (isFetch: boolean) => void;
-  }) => {
-    const [searchText, setSearchText] = useState("");
-    const [visible, setVisible] = useState(false);
-    const [filteredItems, setFilteredItems] = useState(items);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+import ColumnDropdown from "./columnDropdown";
+import { ITeam } from "@libs/types/team";
+import { useProjectTeams } from "@libs/hooks/useTeam";
+import TeamBadge from "../badge/teamBade";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { memo, useMemo } from "react";
+import { useAuthStore } from "@libs/store/useAuthStore";
 
-    useEffect(() => {
-      if (searchText.length == 0) {
-        setFilteredItems(items);
-        return;
-      }
-      const filteredItems = items?.filter((item) => {
-        if (
-          !item ||
-          typeof item !== "object" ||
-          !("value" in item) ||
-          typeof item.value !== "string"
-        ) {
-          return false;
-        }
-        return item.value.toLowerCase().includes(searchText.toLowerCase());
-      });
-      setFilteredItems(filteredItems);
-    }, [searchText, items]);
-    const [elementHeight, setElementHeight] = useState(0);
-    useEffect(() => {
-      const container = document.getElementsByClassName("ant-table-cell");
-      if (container.length > 0) {
-        setElementHeight(container[0].clientHeight);
-      }
-    }, []);
+const TeamDropdown = ({
+  projectId,
+  issueId,
+  selectedTeamId,
+  columnField = "team_id",
+  isDisplayName = true,
+}: {
+  projectId: string;
+  issueId: string;
+  selectedTeamId: string;
+  columnField?: string;
+  isDisplayName?: boolean;
+}) => {
+  const { teams } = useProjectTeams(projectId);
+  const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-    return (
-      <div
-        style={{
-          blockSize: elementHeight,
-        }}
-        className="flex items-center"
-        ref={dropdownRef}
-      >
-        <Dropdown
-          menu={{
-            style: {
-              padding: "4px 0px",
-              borderRadius: "0px",
+  const handleChangeTeam = (teamId: string) => {
+    updateIssueAsync({
+      id: issueId,
+      data: { [columnField]: teamId },
+    });
+  };
+  const selectedTeam = useMemo(
+    () => teams?.find((team: ITeam) => team.id === selectedTeamId),
+    [teams, selectedTeamId],
+  );
+
+  const { user } = useAuthStore();
+  return (
+    <ColumnDropdown
+      disabled={user?.projectRole !== "OWNER" && user?.projectRole !== "ADMIN"}
+      items={
+        teams &&
+        teams
+          .map((team: ITeam) => ({
+            value: team.name,
+            key: team.id,
+            label: <TeamBadge team={team} isShowLabel={true} className="p-2" />,
+            onClick: () => {
+              handleChangeTeam(team.id);
             },
-            items: filteredItems,
-          }}
-          trigger={["click"]}
-          onOpenChange={(open) => {
-            setVisible(open);
-            if (setIsOpenDropdown) setIsOpenDropdown(open);
-          }}
-          open={visible}
-        >
-          {visible ? (
-            <div className="p-1">
-              <input
-                placeholder={currentItem}
-                value={searchText}
-                autoFocus={true}
-                onChange={(e) => setSearchText(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                className="h-full w-full rounded-none border-2 border-emerald-500 p-1 text-xs text-gray-800 outline-none"
-              />
-            </div>
-          ) : (
-            <div className="py-2">{children}</div>
-          )}
-        </Dropdown>
-      </div>
-    );
-  },
-);
+          }))
+          .concat({
+            value: "Unassigned",
+            key: "Unassigned",
+            label: (
+              <div className="flex items-center gap-2 p-2">
+                <div className="h-4 w-4 rounded-full bg-gray-300"></div>
+                <span className="text-sm text-gray-600">Unassigned</span>
+              </div>
+            ),
+            onClick: () => {
+              handleChangeTeam("");
+            },
+          })
+      }
+      children={
+        selectedTeam ? (
+          <TeamBadge team={selectedTeam} isShowLabel={isDisplayName} />
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 rounded-full bg-gray-300"></div>
+            {isDisplayName && (
+              <span className="text-sm text-gray-600">Unassigned</span>
+            )}
+          </div>
+        )
+      }
+    />
+  );
+};
 
-export default TeamDropdown;
+export default memo(TeamDropdown);

@@ -316,3 +316,13 @@ export function useDeleteColumn(
     error,
   };
 }
+
+export function usePermissions() {
+  const { data:permissions , isLoading: isLoadingPermissions, error: errorPermissions } = useQuery({
+    queryKey: ["permissions"],
+    queryFn: async () => {
+      const { data } = await projects.getPermissions();
+      return data.permissions;
+    },
+  });
+  return { permissions, isLoadingPermissions, errorPermissions };}

@@ -6,7 +6,7 @@ import { useUserMemberships } from "@libs/hooks/useProjectMember";
 
 interface ProjectInvitationsPopoverProps {
   userId: string;
-}
+} 
 
 const ProjectInvitationsPopover: React.FC<ProjectInvitationsPopoverProps> = ({ userId }) => {
   const { memberships } = useUserMemberships(userId);
@@ -28,4 +28,4 @@ const ProjectInvitationsPopover: React.FC<ProjectInvitationsPopoverProps> = ({ u
   );
 };
 
-export default ProjectInvitationsPopover;
+export default ProjectInvitationsPopover; 

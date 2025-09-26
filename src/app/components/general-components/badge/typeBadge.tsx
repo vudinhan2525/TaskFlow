@@ -57,10 +57,10 @@ const TypeBadge = ({
 
   return (
     <div
-      className={`flex cursor-pointer items-center gap-2 transition-colors duration-200 ${currentType?.hoverBg || "hover:bg-gray-50"} ${className}`}
+      className={`flex items-center gap-2 transition-colors duration-200 ${currentType?.hoverBg || "hover:bg-gray-50"} ${className}`}
     >
       <div
-        className={`flex items-center justify-center gap-2 rounded-md px-2 py-1 `}
+        className={`flex items-center justify-center gap-2 rounded-md px-2 py-1`}
       >
         {currentType?.icon}
 

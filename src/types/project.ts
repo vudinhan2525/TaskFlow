@@ -73,3 +73,11 @@ export interface UserStats {
   new_issues_count: number;
   recently_updated_count: number;
 }
+
+export interface IPermission {
+  id: string;
+  key: string;
+  resource: string; 
+  label: string;
+  description: string;
+}

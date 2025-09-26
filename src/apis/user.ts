@@ -6,10 +6,8 @@ const config = {
 };
 
 export const users = {
-  list: (keyword?: string) => {
-    const url = keyword
-      ? `/users/list-users?name=${keyword}`
-      : "/users/list-users";
+  list: (keyword: string, projectId?: string) => {
+    const url = `/users/list-users?name=${keyword}${projectId ? `&project_id=${projectId}` : ""}`;
     return api.get<ResponseApi<IUser[]>>(url, config);
   },
   getById: (userId: string) =>
@@ -24,6 +22,6 @@ export const users = {
   }) => api.post<ResponseApi<void>>("/users/change-password", data, config),
   getUserStats: (body: { id: string; is_sprintId: boolean }) =>
     api.post<ResponseApi<UserStats>>(`/users/stats/`, body, config),
-  updateUser: ( data: Partial<IUser>) =>
+  updateUser: (data: Partial<IUser>) =>
     api.put<ResponseApi<IUser>>(`/users`, data, config),
 };

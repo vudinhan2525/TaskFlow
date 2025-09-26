@@ -1,5 +1,5 @@
 import api, { ResponseApi } from "@libs/apis/api";
-import { IProjectMember } from "@libs/types/projectMember";
+import { IProjectMember, AddProjectMemberParams, ListProjectMemberParams } from "@libs/types/projectMember";
 import { IUser } from "@libs/types/user";
 
 const config = {
@@ -9,11 +9,7 @@ const config = {
   }
 };
 
-export interface AddProjectMemberParams {
-  project_id: string;
-  user_id: string;
-  role: string;
-}
+
 
 export const projectMembers = {
   add: (
@@ -23,8 +19,10 @@ export const projectMembers = {
   getUserByEmail: (email: string) =>
     api.get<ResponseApi<IUser>>(`/users/by-email/${email}`, config),
 
-  list: (projectId: string) =>
-    api.get<ResponseApi<IProjectMember[]>>(`/projects/${projectId}/members`, config),
+  list: ( params: ListProjectMemberParams) =>{
+    const url = `/projects/${params.project_id}/members${params.name ? `?name=${params.name}` : ""}${params.email ? `&email=${params.email}` : ""}`;
+    return api.get<ResponseApi<IProjectMember[]>>(url, { ...config });
+  },
 
   getUserMemberships: (userId: string) =>
     api.get<ResponseApi<IProjectMember[]>>(`/users/${userId}/memberships`, config),

@@ -1,7 +1,7 @@
 import Button from "@libs/app/components/general-components/button";
 import { ReactNode } from "react";
 import { LuX } from "react-icons/lu";
-
+import { motion,AnimatePresence } from "motion/react"
 interface BaseModalProps {
   title: string;
   buttonContent: string;
@@ -39,7 +39,23 @@ export default function Modal({
     <div 
     id="modal"
     onMouseDown={handleBackdropClick} className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50">
-      <div className={`bg-white rounded-lg shadow-xl min-w-[500px] p-6 animate-fade-in ${className}`}>
+      <AnimatePresence>
+
+      
+      <motion.div 
+        initial={{
+          x: 0,
+          y: 20,
+          opacity: 0.8,
+        }}
+        transition={{
+          type: "tween", 
+          duration: 0.2,
+          ease: "easeOut",
+        }}
+        animate={{ x: 0, y: 0, opacity: 1 }}
+        exit={{ x: 0, y: 50, opacity: 0 }}
+      className={`bg-white rounded-lg shadow-xl min-w-[500px] p-6 animate-fade-in ${className}`}>
         <div className="flex justify-between items-center mb-4">
           <h2 className={`text-2xl font-semibold ${style?.textColor}`}>{title}</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 focus:outline-none">
@@ -67,7 +83,9 @@ export default function Modal({
             {buttonContent}
           </Button>
         </div>
-      </div>
+      </motion.div>
+      </AnimatePresence>
+
     </div>
   );
 }

@@ -1,4 +1,5 @@
 export type UserRole = "User" | "Admin";
+import { TeamMemberRole } from "./projectMember";
 
 export interface IUser {
   id: string;
@@ -9,6 +10,8 @@ export interface IUser {
   updated_at: string;
   role: UserRole;
   avatar?: string;
+  projectRole?: TeamMemberRole;
+  projectPermission?: string[];
 }
 
 export interface GetUserParams {
@@ -28,5 +31,3 @@ export interface LoginUserRequest {
   email: string;
   password: string;
 }
-
-

@@ -30,7 +30,7 @@ const IssueDetailModal = () => {
                 opacity: 0.8,
               }}
               transition={{
-                type: "tween", // <— dùng tween để duration work
+                type: "tween", 
                 duration: 0.01,
                 ease: "easeOut",
               }}

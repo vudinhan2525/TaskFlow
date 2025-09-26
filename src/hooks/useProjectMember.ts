@@ -1,24 +1,37 @@
 import { projectMembers } from "@libs/apis/projectMember";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AddProjectMemberParams } from "@libs/apis/projectMember";
+import {
+  AddProjectMemberParams,
+  ListProjectMemberParams,
+} from "@libs/types/projectMember";
 import { toast } from "react-toastify";
+import { useAuthStore } from "@libs/store/useAuthStore";
 
-export function useProjectMembers(projectId: string) {
+export function useProjectMembers(params: ListProjectMemberParams) {
   const queryClient = useQueryClient();
-
+  const { user, setUser } = useAuthStore();
   const { data, isLoading, error } = useQuery({
-    queryKey: ["projectMembers", projectId],
+    queryKey: ["projectMembers", params.project_id, params.name, params.email],
     queryFn: async () => {
-      const res = await projectMembers.list(projectId);
-
+      const res = await projectMembers.list(params);
       // put each user into the user cache
       res.data.data.forEach((u) => {
         queryClient.setQueryData(["user", u.id], u);
+        if (user?.id === u.user_id) {
+          queryClient.setQueryData(["currentUser"], {
+            ...user,
+            projectRole: u.role,
+          });
+          setUser({
+            ...user,
+            projectRole: u.role,
+          });
+        }
       });
 
       return res;
     },
-    enabled: !!projectId,
+    enabled: !!params.project_id,
   });
   return {
     projectMembers: data?.data.data,

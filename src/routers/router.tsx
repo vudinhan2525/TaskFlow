@@ -29,6 +29,13 @@ const ProjectSettingsPage = lazy(
   () => import("@libs/app/pages/project/settingPage/settingPage"),
 );
 
+const TeamManagementPage = lazy(
+  () => import("@libs/app/pages/project/settingPage/teamManagementPage"),
+);
+const TeamDetailPage = lazy(
+  () => import("@libs/app/pages/project/settingPage/teamDetail"),
+);
+
 const AdminLayout = lazy(() => import("@libs/app/layouts/adminLayout"));
 const AdminRoute = lazy(() => import("./AdminRoute"));
 const UsersPage = lazy(() => import("@libs/app/pages/admin/users/UsersPage"));
@@ -103,8 +110,13 @@ const Router = (): React.ReactElement => {
               <Route path="list" element={<ListPage />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="sprints" element={<ActiveSprints />} />
-              <Route path="settings" element={<ProjectSettingsPage />} />
-              <Route path="detail" element={<SprintDetail />} />
+
+              <Route path="settings" element={<ProjectSettingsPage />}>
+                <Route path="teams" element={<TeamManagementPage />} />
+                <Route path="teams/:teamId" element={<TeamDetailPage />} />
+              </Route>
+              
+             
             </Route>
           </Route>
 

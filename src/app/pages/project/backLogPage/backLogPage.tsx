@@ -17,7 +17,7 @@ import PageFilter from "@libs/app/components/general-components/pageFilter";
 import { GetIssuesParams } from "@libs/types/issue";
 
 import { useIssueStore } from "@libs/store/useIssueStore";
-import { useSearchParams } from "react-router-dom";
+// import { useSearchParams } from "react-router-dom";
 import { getIssuesNotEpic } from "@libs/utils/issue";
 // import BacklogEpic from "@libs/app/components/projects/backlog/backlogEpic";
 import BacklogSkeleton from "@libs/app/components/skeleton/backlogSkeleton";
@@ -37,8 +37,8 @@ const BackLogPage: React.FC = () => {
     // is_fetch: true,
   });
 
-  const [searchParams] = useSearchParams();
-  const epicVisible = searchParams.get("epicVisible");
+  // const [searchParams] = useSearchParams();
+  // const epicVisible = searchParams.get("epicVisible");
   const { selectedIssueId } = useIssueStore();
   const [_, startTransition] = useTransition();
   const { sprints: initialSprints, isLoading: isLoadingSprints } =
@@ -79,9 +79,9 @@ const BackLogPage: React.FC = () => {
         <BacklogSkeleton />
       ) : (
         <div className="flex flex-1 gap-4 overflow-auto">
-          <div className="w-[20%]">
-            {/* <BacklogEpic issues={initialIssues} /> */}
-          </div>
+          {/* <div className="w-[20%]">
+            <BacklogEpic issues={initialIssues} />
+          </div> */}
 
           <PanelGroup
             className="flex w-full flex-1"

@@ -2,7 +2,6 @@ import ColumnDropdown from "./columnDropdown";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { ISprint } from "@libs/types/sprint";
-import RenderTextCell from "../../projects/list/common/RenderTextCell";
 import { useMemo } from "react";
 
 const SprintDropdown = ({
@@ -14,7 +13,6 @@ const SprintDropdown = ({
   issueId: string;
   sprintId: string;
 }) => {
-
   const { updateIssueAsync } = useUpdateIssue({ projectId });
   const { sprints } = useProjectSprints(projectId);
   const handleChangeSprint = (updatedSprintId: string) => {
@@ -75,7 +73,15 @@ const SprintDropdown = ({
               ?.name
           : "Unassigned"
       }
-      children={<RenderTextCell text={currentSprint?.name || "Unassigned"} />}
+      children={
+        <div className="">
+          <div className="flex justify-start rounded-sm border-1 border-gray-200 px-1 py-0.5">
+            <p className={`text-sm font-normal text-gray-800`}>
+              {currentSprint?.name || "Unassigned"}
+            </p>
+          </div>
+        </div>
+      }
     />
   );
 };

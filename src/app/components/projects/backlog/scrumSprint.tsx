@@ -24,7 +24,7 @@ import { useIssueStore } from "@libs/store/useIssueStore";
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
 }
-import { toggleIssue, isIssueSelected } from "@libs/utils/issue";
+import { toggleIssue } from "@libs/utils/issue";
 
 interface ScrumSprintProps {
   sprint: ISprintIssues;
@@ -75,8 +75,6 @@ const ScrumSprint = memo(
         return total + (issue.story_point || 0);
       }, 0);
     }, [sprint.issues]);
-
- 
 
     const buttonItems: MenuProps["items"] = [
       {

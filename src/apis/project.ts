@@ -6,6 +6,7 @@ import {
   ListProjectColumnsParams,
   UpdateColumnOrderParams,
   UpdateColumnProjectParams,
+  IPermission,
 } from "@libs/types/project";
 
 interface ListProjectsParams {
@@ -65,4 +66,7 @@ export const projects = {
       `/projects/columns/${body.column_id}`,
       config,
     ),
+
+  getPermissions: () =>
+    api.get<{permissions: IPermission[]}>(`/projects/permissions`, config),
 };
