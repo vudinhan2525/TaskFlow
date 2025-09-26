@@ -136,6 +136,7 @@ export function useUpdateIssue({
     },
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+
       queryClient.invalidateQueries({
         queryKey: ["issue", projectId, response.data.id],
       });

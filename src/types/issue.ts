@@ -21,7 +21,7 @@ export interface IIssue {
   due_date_from: string;
   due_date_to: string;
   // labels?: string[];
-  // team_id?: string;
+  team_id?: string;
 }
 export type IIssueWithoutCoulumn = Omit<IIssue, "column">;
 

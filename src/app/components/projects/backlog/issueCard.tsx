@@ -2,6 +2,7 @@ import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import { useState, useRef, useEffect, memo } from "react";
 import { Edit } from "lucide-react";
+
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
@@ -13,19 +14,13 @@ import TypeBadge from "../../general-components/badge/typeBadge";
 import UserDropdown from "../../general-components/dropdown/userDropdown";
 import CustomDatePicker from "../../general-components/customDatePicker";
 import { useIssueStore } from "@libs/store/useIssueStore";
+
+import { toggleIssue, isIssueSelected } from "@libs/utils/issue";
+
 const IssueCard = memo(
-  ({
-    issue,
-    projectId,
-    setIsSprintIssuesChecked,
-  }: {
-    issue: IIssue;
-    projectId: string;
-    setIsSprintIssuesChecked: (isSprintIssuesChecked: boolean) => void;
-  }) => {
+  ({ issue, projectId }: { issue: IIssue; projectId: string }) => {
     const navigate = useNavigate();
-    const { selectedIssues, setSelectedIssues, openIssueDetail } =
-      useIssueStore();
+    const { openIssueDetail } = useIssueStore();
 
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({
@@ -73,7 +68,7 @@ const IssueCard = memo(
 
     const handleIssueCardClick = () => {
       openIssueDetail(issue.id);
-      // showSideBarDetailIssue(issue);
+
       navigate(`/projects/${projectId}/backlog?selectedIssue=${issue.id}`);
     };
 
@@ -102,45 +97,13 @@ const IssueCard = memo(
                   e.stopPropagation();
                 }}
                 style={{
-                  opacity:
-                    selectedIssues &&
-                    selectedIssues[issue.sprint_id || ""] &&
-                    selectedIssues[issue.sprint_id || ""].find(
-                      (i) => i.id === issue.id,
-                    )
-                      ? "100"
-                      : "",
+                  opacity: isIssueSelected(issue) ? "100" : "",
                 }}
                 onPointerDown={stopPropagation}
-                checked={
-                  selectedIssues &&
-                  selectedIssues[issue.sprint_id || ""] &&
-                  selectedIssues[issue.sprint_id || ""].find(
-                    (i) => i.id === issue.id,
-                  )
-                    ? true
-                    : false
+                checked={isIssueSelected(issue)}
+                onChange={() =>
+                  toggleIssue(issue.id, issue.sprint_id || "backlog")
                 }
-                onChange={() => {
-                  if (
-                    selectedIssues &&
-                    selectedIssues[issue.sprint_id || ""] &&
-                    selectedIssues[issue.sprint_id || ""].includes(issue)
-                  ) {
-                    let temp: IIssue[] = selectedIssues[issue.sprint_id || ""];
-                    temp = temp.filter((i: IIssue) => i.id !== issue.id);
-                    setSelectedIssues({ [issue.sprint_id || ""]: temp });
-                    if (temp.length === 0) {
-                      setIsSprintIssuesChecked(false);
-                    }
-                  } else {
-                    const existingIssues =
-                      selectedIssues[issue.sprint_id || ""] || [];
-                    const newIssues = [...existingIssues, issue];
-                    setSelectedIssues({ [issue.sprint_id || ""]: newIssues });
-                    setIsSprintIssuesChecked(true);
-                  }
-                }}
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 opacity-0 group-hover:opacity-100 focus:ring-blue-500"
               />
 

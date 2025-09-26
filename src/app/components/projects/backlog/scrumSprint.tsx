@@ -24,6 +24,7 @@ import { useIssueStore } from "@libs/store/useIssueStore";
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
 }
+import { toggleIssue, isIssueSelected } from "@libs/utils/issue";
 
 interface ScrumSprintProps {
   sprint: ISprintIssues;
@@ -64,7 +65,7 @@ const ScrumSprint = memo(
       useState(false);
     const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
     const [isSprintIssuesChecked, setIsSprintIssuesChecked] = useState(
-      selectedIssues[sprint.id || ""]?.length ? true : false,
+      selectedIssues.get(sprint.id)?.size ? true : false,
     );
 
     const [isExpanded, setIsExpanded] = useState(true);
@@ -74,6 +75,8 @@ const ScrumSprint = memo(
         return total + (issue.story_point || 0);
       }, 0);
     }, [sprint.issues]);
+
+ 
 
     const buttonItems: MenuProps["items"] = [
       {
@@ -107,14 +110,20 @@ const ScrumSprint = memo(
 
     const handleToggleSprintIssuesChecked = () => {
       if (isSprintIssuesChecked) {
-        setSelectedIssues({ [sprint.id]: [] });
+        const newSelectedIssues = new Map(selectedIssues);
+        newSelectedIssues.set(sprint.id, new Set());
+        setSelectedIssues(newSelectedIssues);
         setIsSprintIssuesChecked(false);
       } else {
-        const issues: IIssue[] = [];
         for (const issue of sprint.issues) {
-          issues.push(issue);
+          toggleIssue(issue.id, issue.sprint_id || "backlog", true);
         }
-        setSelectedIssues({ [sprint.id]: issues });
+        const newSelectedIssues = new Map(selectedIssues);
+        newSelectedIssues.set(
+          sprint.id,
+          new Set(sprint.issues.map((issue) => issue.id)),
+        );
+        setSelectedIssues(newSelectedIssues);
         setIsSprintIssuesChecked(true);
       }
     };
@@ -126,7 +135,7 @@ const ScrumSprint = memo(
           className="overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm"
         >
           {/* Header */}
-          <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-2 py-1">
+          <div className="border-b border-gray-200 bg-[#f8f8f8] px-2 py-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <input
@@ -242,11 +251,7 @@ const ScrumSprint = memo(
                   {sprint.issues.length > 0 ? (
                     sprint.issues.map((issue) => (
                       <div key={issue.id} className="group relative my-1">
-                        <IssueCard
-                          issue={issue}
-                          projectId={projectId}
-                          setIsSprintIssuesChecked={setIsSprintIssuesChecked}
-                        />
+                        <IssueCard issue={issue} projectId={projectId} />
                         {/* // Line DragOverlay */}
                         <div
                           style={{

@@ -6,8 +6,10 @@ interface IssueState {
   openIssueDetail: (issue: string) => void;
   closeIssueDetail: () => void;
 
-  selectedIssues: Record<string, IIssue[]>;
-  setSelectedIssues: (issues: Record<string, IIssue[]>) => void;
+  // selectedIssues: Record<string, IIssue[]>;
+  // setSelectedIssues: (issues: Record<string, IIssue[]>) => void;
+  selectedIssues: Map<string, Set<string>>;
+  setSelectedIssues: (issues: Map<string, Set<string>>) => void;
 }
 
 const params = new URLSearchParams(window.location.search);
@@ -29,6 +31,7 @@ export const useIssueStore = create<IssueState>((set) => ({
     window.history.pushState({}, "", `?${params.toString()}`);
   },
 
-  selectedIssues: {},
+
+  selectedIssues: new Map<string, Set<string>>(),
   setSelectedIssues: (selectedIssues) => set({ selectedIssues }),
 }));

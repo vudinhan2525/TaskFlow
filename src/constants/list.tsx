@@ -14,7 +14,7 @@ import {
 } from "react-icons/md";
 import { FaCalendarAlt, FaPlus } from "react-icons/fa";
 import { IIssue } from "@libs/types/issue";
-// import { RiTeamFill } from "react-icons/ri";
+import { RiTeamFill } from "react-icons/ri";
 import { IoIosPrint } from "react-icons/io";
 import { LuCircleArrowRight } from "react-icons/lu";
 import { CiCircleChevUp } from "react-icons/ci";
@@ -41,7 +41,7 @@ export const columnsIcon: Record<keyof Omit<IIssue, "key">, React.ReactNode> = {
   completed_at: <FaCalendarAlt color="#626f86" />,
   // status: <FaCalendarAlt color="#626f86" />,
   // labels: <MdLabelImportantOutline color="#626f86" />,
-  // team_id: <RiTeamFill color="#626f86" />,
+  team_id: <RiTeamFill color="#626f86" />,
 };
 
 export const typeOptions = [

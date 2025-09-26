@@ -25,6 +25,10 @@ const SprintDetail = lazy(
 const AdminLoginPage = lazy(
   () => import("@libs/app/pages/admin/login/AdminLoginPage"),
 );
+const ProjectSettingsPage = lazy(
+  () => import("@libs/app/pages/project/settingPage/settingPage"),
+);
+
 const AdminLayout = lazy(() => import("@libs/app/layouts/adminLayout"));
 const AdminRoute = lazy(() => import("./AdminRoute"));
 const UsersPage = lazy(() => import("@libs/app/pages/admin/users/UsersPage"));
@@ -48,13 +52,7 @@ const ActiveSprints = lazy(() =>
     ),
   }),
 );
-const ProjectSettings = lazy(() =>
-  Promise.resolve({
-    default: () => (
-      <div className="p-8 text-center text-gray-600">Project Settings</div>
-    ),
-  }),
-);
+
 const VerifyPage = lazy(
   () => import("@libs/app/pages/auth/verifyPage/verifyPage"),
 );
@@ -105,7 +103,7 @@ const Router = (): React.ReactElement => {
               <Route path="list" element={<ListPage />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="sprints" element={<ActiveSprints />} />
-              <Route path="settings" element={<ProjectSettings />} />
+              <Route path="settings" element={<ProjectSettingsPage />} />
               <Route path="detail" element={<SprintDetail />} />
             </Route>
           </Route>

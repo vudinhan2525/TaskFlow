@@ -39,6 +39,13 @@ export const projects = {
       data,
       config,
     ),
+
+  getTeams: (projectId: string) =>
+    api.get<ResponseApi<{ id: string; name: string }[]>>(
+      `/projects/${projectId}/teams`,
+      config,
+    ),
+
   addColumns: (body: CreateColumnProjectParams) =>
     api.post<ResponseApi<IColumn>>(`/projects/add-column`, body, config),
   updateOrderColumns: (body: UpdateColumnOrderParams) =>

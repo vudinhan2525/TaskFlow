@@ -160,6 +160,12 @@ const ListTable = ({
     </span>
   )),
 
+  TableColumn("team_id", "Team", (_, { team_id }) => (
+    <span className="px-4 text-sm text-gray-500">
+      {team_id ? team_id.substring(0, 8) : ""}
+    </span>
+  )),
+
   // Story Point
   TableColumn("story_point", "Story Point", (_, { id }) => (
     <Suspense fallback={<FallBack />}>
