@@ -19,7 +19,7 @@ const Avatar = ({ name }: { name: string }) => (
 const ChatMessage: React.FC<ChatMessageProps> = ({
   message,
   onReply,
-  user,
+  // user,
   isOwn,
 }) => {
   const senderName = message.senderName || "Unknown";

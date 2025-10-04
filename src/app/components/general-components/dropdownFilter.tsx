@@ -31,7 +31,9 @@ const DropdownFilter = ({
   setFilters: (filters: any) => void;
 }) => {
   const { projectId } = useParams<{ projectId: string }>();
-  const { projectMembers } = useProjectMembers(projectId || "");
+  const { projectMembers } = useProjectMembers({
+    project_id: projectId as string,
+  });
   const { columns } = useProjectColumns({ project_id: projectId as string });
   return (
     <div className="w-[500px] rounded-lg bg-white shadow-lg">

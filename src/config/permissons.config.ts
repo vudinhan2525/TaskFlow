@@ -10,9 +10,9 @@ export const PERMISSIONS_CONFIG = {
     create: "team:create",
     update: "team:update",
     delete: "team:delete",
-    addMember: "team:addMember",
-    removeMember: "team:removeMember",
-    assignRole: "team:assignRole",
+    addMember: "team:add_member",
+    removeMember: "team:remove_member",
+    assignRole: "team:assign_role",
   },
   issue: {
     view: "issue:view",
@@ -20,8 +20,8 @@ export const PERMISSIONS_CONFIG = {
     update: "issue:update",
     delete: "issue:delete",
     assign: "issue:assign",
-    changePriority: "issue:changePriority",
-    changeSprint: "issue:changeSprint",
+    changePriority: "issue:change_priority",
+    changeSprint: "issue:change_sprint",
   },
   sprint: {
     view: "sprint:view",

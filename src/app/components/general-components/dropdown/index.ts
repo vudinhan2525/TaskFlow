@@ -4,6 +4,7 @@ import TypeDropdown from "./typeDropdown";
 import PriorityDropdown from "./priorityDropdown";
 import SprintDropdown from "./sprintDropdown";
 import UserDropdown from "./userDropdown";
+import ParentDropdown from "./parentDropdown";
 
 export {
   ColumnDropdown,
@@ -12,4 +13,5 @@ export {
   PriorityDropdown,
   SprintDropdown,
   UserDropdown,
+  ParentDropdown,
 };

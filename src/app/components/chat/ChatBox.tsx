@@ -1,6 +1,6 @@
 // ChatBox.tsx
 import React, { useEffect, useRef, useState } from "react";
-import ChatMessage from "./ChatMessage";
+// import ChatMessage from "./ChatMessage";
 import { MessageResponse, MessageType } from "../../../hooks/useChat";
 
 interface ChatBoxProps {
@@ -84,7 +84,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
             Loading older messages...
           </div>
         )}
-        {messages.length === 0 ? (
+        {/* {messages.length === 0 ? (
           <div className="py-8 text-center text-gray-400">No messages yet</div>
         ) : (
           messages
@@ -99,7 +99,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
                 isOwn={user?.id === msg.senderId}
               />
             ))
-        )}
+        )} */}
         <div ref={messagesEndRef} />
       </div>
 

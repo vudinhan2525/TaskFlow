@@ -10,6 +10,7 @@ import { useAuthStore } from "@libs/store/useAuthStore";
 import { useUserTeams } from "@libs/hooks/useTeam";
 import { usePermission } from "@libs/hooks/usePermission";
 import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
+import { getIssuesByEpic, getIssuesEpic } from "@libs/utils/issue";
 
 const ColumnInputFiled = lazy(() => import("./listTable/ColumnInputFiled"));
 const TypeDropdown = lazy(() =>
@@ -34,6 +35,9 @@ const CustomDatePicker = lazy(
 
 const TeamDropdown = lazy(
   () => import("../../general-components/dropdown/teamDropdown"),
+);
+const ParentDropdown = lazy(
+  () => import("../../general-components/dropdown/parentDropdown"),
 );
 
 interface ListTableProps {
@@ -64,13 +68,6 @@ const ListTable = ({
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { userTeams } = useUserTeams(projectId, user?.id || "");
-  const issueIdToIssue = useMemo(() => {
-    const map = new Map<string, IIssue>();
-    for (const issue of issues) {
-      map.set(issue.id, issue);
-    }
-    return map;
-  }, [issues]);
 
   const tableColumns: TableColumnType<IIssue>[] = useMemo(
     () => [
@@ -110,7 +107,10 @@ const ListTable = ({
         "Summary",
         (_, { id }) => (
           <Suspense fallback={<FallBack />}>
-            <ColumnInputFiled issue={issueIdToIssue.get(id)} field="summary" />
+            <ColumnInputFiled
+              issue={issues.find((issue) => issue.id === id)}
+              field="summary"
+            />
           </Suspense>
         ),
         250,
@@ -188,11 +188,18 @@ const ListTable = ({
         100,
       ),
 
-      // Parent Issue (không lazy)
-      TableColumn("parent_id", "Parent Issue", (_, { parent_id }) => (
-        <span className="px-4 text-sm text-gray-500">
-          {parent_id ? parent_id.substring(0, 8) : ""}
-        </span>
+      // Parent Issue
+      TableColumn("parent_id", "Parent Issue", (_, { id, parent_id, key }) => (
+        <Suspense fallback={<FallBack />}>
+          <div className="px-4">
+            <ParentDropdown
+              projectId={projectId}
+              issue={issues.find((issue) => issue.id === id)!}
+              currentParentId={parent_id}
+              currentIssueKey={key}
+            />
+          </div>
+        </Suspense>
       )),
 
       // Team
@@ -216,7 +223,7 @@ const ListTable = ({
         (_, { id }) => (
           <Suspense fallback={<FallBack />}>
             <ColumnInputFiled
-              issue={issueIdToIssue.get(id)}
+              issue={issues.find((issue) => issue.id === id)}
               field="story_point"
               inputType="number"
             />
@@ -232,7 +239,7 @@ const ListTable = ({
             field="due_date_from"
             projectId={projectId}
             className="px-2"
-            issue={issueIdToIssue.get(id)!}
+            issue={issues.find((issue) => issue.id === id)!}
           />
         </Suspense>
       )),
@@ -244,7 +251,7 @@ const ListTable = ({
             field="due_date_to"
             projectId={projectId}
             className="px-2"
-            issue={issueIdToIssue.get(id)!}
+            issue={issues.find((issue) => issue.id === id)!}
           />
         </Suspense>
       )),
@@ -257,14 +264,41 @@ const ListTable = ({
             projectId={projectId}
             className="px-2"
             isEditable={false}
-            issue={issueIdToIssue.get(id)!}
+            issue={issues.find((issue) => issue.id === id)!}
           />
         </Suspense>
       )),
     ],
-    [issueIdToIssue, projectId],
+    [issues, projectId],
   );
   type DataTypeWithKey = IIssue & { key: React.Key };
+
+  const dataSource = useMemo(() => {
+    const issuesByEpic = getIssuesByEpic(issues);
+    const epicIssues = getIssuesEpic(issues);
+
+    return epicIssues
+      .map((issue) => {
+        return {
+          ...issue,
+          children: issuesByEpic[issue.id]?.map((issue) => ({
+            ...issue,
+          })),
+        };
+      })
+      .concat(
+        issues
+          .filter(
+            (issue) =>
+              issue.parent_id === "no-epic" ||
+              (issue.parent_id === "" && issue.type !== "Epic"),
+          )
+          .map((issue) => ({
+            ...issue,
+            children: [],
+          })),
+      );
+  }, [issues]);
 
   return (
     <div className="relative">
@@ -300,7 +334,7 @@ const ListTable = ({
         //  TABLE SKELETON
         <Table
           columns={tableColumns}
-          dataSource={issues}
+          dataSource={dataSource}
           bordered={true}
           rowSelection={{ ...rowSelection }}
           scroll={{ y: 1000, x: 1000 }}
@@ -323,7 +357,7 @@ const ListTable = ({
                   (i) => i.id === props["data-row-key"],
                 );
                 const permissionResult = usePermission({
-                  user: user!,
+                  user: user,
                   action: PERMISSIONS_CONFIG.issue.update,
                   resource: {
                     issue: {

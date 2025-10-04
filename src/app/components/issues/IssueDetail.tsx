@@ -2,10 +2,6 @@ import { useRef, lazy, useMemo, useCallback } from "react";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
-import { IoLockClosedOutline } from "react-icons/io5";
-import { FaEye } from "react-icons/fa";
-import { CiShare2 } from "react-icons/ci";
-import { BsThreeDots } from "react-icons/bs";
 import { IoIosClose } from "react-icons/io";
 import { useIssue } from "@libs/hooks/useIssue";
 import { useParams } from "react-router-dom";
@@ -18,6 +14,7 @@ import { useUserTeamStore } from "@libs/store/useProjectStore";
 import { PermissionContext } from "@libs/app/context/permission.context";
 import { usePermission } from "@libs/hooks/usePermission";
 import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
+import TypeBadge from "../general-components/badge/typeBadge";
 
 //lazy load
 const Details = lazy(() => import("./detailsSection/detailsSection"));
@@ -49,46 +46,6 @@ const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
 
   const IssueDetailHeader = useMemo(
     () => [
-      {
-        key: "lock",
-        icon: <IoLockClosedOutline />,
-        label: "Lock Issue",
-        onClick: () => {
-          toast.info("Lock issue not implemented yet");
-        },
-      },
-      {
-        key: "watch",
-        icon: <FaEye />,
-        label: "Watch Issue",
-        onClick: () => {
-          toast.info("Watch issue not implemented yet");
-        },
-      },
-      // {
-      //   key: "like",
-      //   icon: <AiOutlineLike />,
-      //   label: "Like Issue",
-      //   onClick: () => {
-      //     toast.info("Like issue not implemented yet");
-      //   },
-      // },
-      {
-        key: "share",
-        icon: <CiShare2 />,
-        label: "Share Issue",
-        onClick: () => {
-          toast.info("Share issue not implemented yet");
-        },
-      },
-      {
-        key: "actions",
-        icon: <BsThreeDots />,
-        label: "Actions",
-        onClick: () => {
-          toast.info("Actions not implemented yet");
-        },
-      },
       {
         key: "close",
         icon: <IoIosClose />,
@@ -134,8 +91,9 @@ const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1">
-              <span className="text-xl font-semibold text-gray-600">
-                {selectedIssue?.title}
+              <TypeBadge isShowLabel={false} type={selectedIssue?.type} />
+              <span className="text-xs font-thin text-gray-600">
+                {selectedIssue?.key}
               </span>
             </div>
           </div>

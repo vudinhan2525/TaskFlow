@@ -1,4 +1,3 @@
-import { IColumn } from "@libs/types/project";
 export const statusColors = [
   {
     order: 1,
@@ -78,7 +77,10 @@ const StatusBadge = ({
   size = "small",
   className,
 }: {
-  column: IColumn;
+  column: {
+    name: string;
+    order: number;
+  };
   size?: "small" | "medium" | "large";
   className?: string;
 }) => {

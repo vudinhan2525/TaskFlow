@@ -29,7 +29,7 @@ interface UseChatOptions {
 
 export function useChat({
   userId,
-  userName,
+  // userName,
   wsUrl = "ws://localhost:5003/ws",
   authToken,
 }: UseChatOptions) {
@@ -119,7 +119,7 @@ export function useChat({
           } else {
             console.error("Invalid roomsList format", data);
           }
-          setLoadingRooms(false);
+          // setLoadingRooms(false);
           break;
 
         case "roomCreated":
@@ -178,7 +178,7 @@ export function useChat({
 
         case "error":
           console.error("WebSocket error:", data.data);
-          setLoadingRooms(false);
+          // setLoadingRooms(false);
           setConnectionError(data.data.message);
           break;
 

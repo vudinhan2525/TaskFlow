@@ -16,6 +16,7 @@ import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
 import { useProjectSprints } from "@libs/hooks/useSprint";
 import { IssuePriority, CreateIssueParams } from "@libs/types/issue";
 import { useAuthStore } from "@libs/store/useAuthStore";
+import { IssueType } from "@libs/types/issue";
 
 interface CreateIssueModalProps {
   isOpen: boolean;
@@ -30,14 +31,11 @@ interface CreateIssueModalProps {
     description?: string;
     column_id: string;
     priority: string;
-    type: "Bug" | "Task" | "Story" | "Epic";
+    type: IssueType;
     sprint_id?: string;
     assignee_id?: string;
   };
 }
-
-const ISSUE_TYPES = ["Bug", "Task", "Story", "Epic"] as const;
-type IssueType = (typeof ISSUE_TYPES)[number];
 
 interface IssueFormInputs {
   title: string;
@@ -57,7 +55,7 @@ const issueSchema = z.object({
   description: z.string().optional(),
   column_id: z.string().min(1),
   priority: z.enum(["Low", "Medium", "High", "Lowest", "Highest"] as const),
-  type: z.enum(ISSUE_TYPES),
+  type: z.enum(["Bug", "Task", "Story", "Epic"] as const),
   sprint_id: z.string().optional(),
   assignee_id: z.string().optional(),
   attachments: z.array(z.instanceof(File)).min(0),
@@ -79,7 +77,9 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
   const { project } = useProject(projectId || "");
   const { columns } = useProjectColumns({ project_id: selectedProjectId });
   const { sprints } = useProjectSprints(selectedProjectId);
-  const { projectMembers } = useProjectMembers(selectedProjectId);
+  const { projectMembers } = useProjectMembers({
+    project_id: selectedProjectId,
+  });
 
   const { createIssue, isLoading: isCreating } = useCreateIssue({
     projectId: selectedProjectId,
@@ -197,7 +197,7 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
       description: data.description,
       column_id: data.column_id,
       priority: data.priority,
-      type: data.type,
+      type: data.type as IssueType,
       sprint_id: data.sprint_id || "",
       reporter_id: user.id,
       assignee_id: data.assignee_id,
@@ -348,7 +348,10 @@ const CreateIssueModal: React.FC<CreateIssueModalProps> = ({
                 Type <span className="text-red-500">*</span>
               </label>
               <DropdownAntd
-                options={ISSUE_TYPES.map((value) => ({ value, label: value }))}
+                options={["Bug", "Task", "Story", "Epic"].map((value) => ({
+                  value,
+                  label: value,
+                }))}
                 placement="bottom"
                 rowClassName="w-full text-[15px]"
                 menuClassName="w-[180px]"

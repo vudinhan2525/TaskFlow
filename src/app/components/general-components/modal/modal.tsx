@@ -1,7 +1,9 @@
 import Button from "@libs/app/components/general-components/button";
 import { ReactNode } from "react";
 import { LuX } from "react-icons/lu";
-import { motion,AnimatePresence } from "motion/react"
+import { motion, AnimatePresence } from "motion/react";
+import { CheckCircle, AlertTriangle, Info } from "lucide-react";
+
 interface BaseModalProps {
   title: string;
   buttonContent: string;
@@ -12,13 +14,14 @@ interface BaseModalProps {
   onSubmit: any;
   children: ReactNode;
   className?: string;
-  style?:{
-    'textColor':string
-    'confirmButtonColor':string
-  }
+  style?: {
+    textColor?: string;
+    confirmButtonColor?: string;
+  };
+  variant?: "success" | "warning" | "info" | "default";
 }
 
-export default function Modal({ 
+export default function Modal({
   title,
   buttonContent = "Accept",
   onClose,
@@ -27,7 +30,8 @@ export default function Modal({
   onSubmit,
   children,
   className,
-  style
+  style,
+  variant = "default",
 }: BaseModalProps) {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
@@ -35,57 +39,102 @@ export default function Modal({
     }
   };
 
+  const getVariantStyles = () => {
+    switch (variant) {
+      case "success":
+        return {
+          icon: <CheckCircle className="h-5 w-5 text-green-600" />,
+          bg: "bg-green-100",
+          text: "text-green-700",
+        };
+      case "warning":
+        return {
+          icon: <AlertTriangle className="h-5 w-5 text-yellow-600" />,
+          bg: "bg-yellow-100",
+          text: "text-yellow-700",
+        };
+      case "info":
+        return {
+          icon: <Info className="h-5 w-5 text-blue-600" />,
+          bg: "bg-blue-100",
+          text: "text-blue-700",
+        };
+      default:
+        return {
+          icon: null,
+          bg: "bg-gray-100",
+          text: "text-gray-800",
+        };
+    }
+  };
+
+  const variantStyles = getVariantStyles();
+
   return (
-    <div 
-    id="modal"
-    onMouseDown={handleBackdropClick} className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      id="modal"
+      onMouseDown={handleBackdropClick}
+      className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    >
       <AnimatePresence>
+        <motion.div
+          initial={{ x: 0, y: 20, opacity: 0.8 }}
+          transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
+          animate={{ x: 0, y: 0, opacity: 1 }}
+          exit={{ x: 0, y: 50, opacity: 0 }}
+          className={`animate-fade-in min-w-[500px] rounded-lg bg-white p-6 shadow-xl ${className}`}
+        >
+          {/* Title Bar */}
+          <div className="mb-5 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {variantStyles.icon && (
+                <span
+                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${variantStyles.bg}`}
+                >
+                  {variantStyles.icon}
+                </span>
+              )}
+              <h2
+                className={`text-xl font-bold tracking-tight ${
+                  style?.textColor || variantStyles.text
+                }`}
+              >
+                {title}
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 transition-colors hover:text-gray-600 focus:outline-none"
+            >
+              <LuX className="h-6 w-6 cursor-pointer" />
+            </button>
+          </div>
 
-      
-      <motion.div 
-        initial={{
-          x: 0,
-          y: 20,
-          opacity: 0.8,
-        }}
-        transition={{
-          type: "tween", 
-          duration: 0.2,
-          ease: "easeOut",
-        }}
-        animate={{ x: 0, y: 0, opacity: 1 }}
-        exit={{ x: 0, y: 50, opacity: 0 }}
-      className={`bg-white rounded-lg shadow-xl min-w-[500px] p-6 animate-fade-in ${className}`}>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className={`text-2xl font-semibold ${style?.textColor}`}>{title}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 focus:outline-none">
-            <LuX className="w-7 h-7 cursor-pointer" />
-          </button>
-        </div>
-        {children}
+          {/* Children content */}
+          {children}
 
-        <div className="flex justify-end mt-4 space-x-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 cursor-pointer text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-          >
-            Cancel
-          </button>
-          <Button
-            isLoading={isLoadingButton}
-            onClick={() => {
-              if (onSubmit) onSubmit();
-            }}
-            disabled={isSubmitDisabled}
-            className={`px-4 py-2 cursor-pointer text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed ${style?.confirmButtonColor}`}
-          >
-            {buttonContent}
-          </Button>
-        </div>
-      </motion.div>
+          {/* Footer buttons */}
+          <div className="mt-6 flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="cursor-pointer rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+            >
+              Cancel
+            </button>
+            <Button
+              isLoading={isLoadingButton}
+              onClick={() => {
+                if (onSubmit) onSubmit();
+              }}
+              disabled={isSubmitDisabled}
+              className={`cursor-pointer rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${style?.confirmButtonColor}`}
+            >
+              {buttonContent}
+            </Button>
+          </div>
+        </motion.div>
       </AnimatePresence>
-
     </div>
   );
 }

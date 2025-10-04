@@ -24,9 +24,7 @@ export function getIssuesByEpic(issues: IIssue[]): {
   return epicIssues;
 }
 
-export function isIssueSelected(
-  issue: IIssue,
-) {
+export function isIssueSelected(issue: IIssue) {
   const { selectedIssues } = useIssueStore();
   return selectedIssues.get(issue.sprint_id || "")?.has(issue.id) ?? false;
 }

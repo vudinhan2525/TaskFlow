@@ -2,6 +2,7 @@ import { projectMembers } from "@libs/apis/projectMember";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AddProjectMemberParams,
+  AddProjectMemberToTeamParams,
   ListProjectMemberParams,
 } from "@libs/types/projectMember";
 import { toast } from "react-toastify";
@@ -40,7 +41,7 @@ export function useProjectMembers(params: ListProjectMemberParams) {
     error,
   };
 }
-export function useUserMemberships(userId: string) {
+export function useUserMemberships(userId: string, enabled?: boolean) {
   const {
     data: membershipsData,
     isLoading,
@@ -51,7 +52,7 @@ export function useUserMemberships(userId: string) {
       if (!userId) throw new Error("User ID is required");
       return projectMembers.getUserMemberships(userId);
     },
-    enabled: !!userId,
+    enabled: (!!userId && enabled) ?? true,
   });
 
   return {
@@ -89,6 +90,34 @@ export function useAddProjectMember(projectId: string) {
   return {
     addProjectMember,
     addProjectMemberAsync,
+    isLoading,
+    isSuccess,
+    error,
+  };
+}
+
+export function useAddProjectMemberToTeam() {
+  const {
+    mutate: addProjectMemberToTeam,
+    mutateAsync: addProjectMemberToTeamAsync,
+    isPending: isLoading,
+    isSuccess,
+    error,
+  } = useMutation({
+    mutationFn: (data: AddProjectMemberToTeamParams) => {
+      return projectMembers.addMembersToTeam(data);
+    },
+    onSuccess: () => {
+      toast.success("Project member added to team successfully!");
+    },
+    onError: (error) => {
+      console.log(error);
+      toast.error("Failed to add project member to team");
+    },
+  });
+  return {
+    addProjectMemberToTeam,
+    addProjectMemberToTeamAsync,
     isLoading,
     isSuccess,
     error,

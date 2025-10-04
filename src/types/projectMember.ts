@@ -20,6 +20,12 @@ export interface AddProjectMemberParams {
   role: TeamMemberRole;
 }
 
+export interface AddProjectMemberToTeamParams {
+  project_id: string;
+  team_id: string;
+  user_ids: string[];
+}
+
 export interface ListProjectMemberParams {
   project_id: string;
   name?: string;

@@ -11,6 +11,7 @@ interface FindUserProps {
   label?: string;
   placeholder?: string;
   className?: string;
+  excludeUserIds?: string[];
 }
 
 const FindUser = ({
@@ -19,6 +20,7 @@ const FindUser = ({
   label,
   placeholder = "e.g. Maria, maria@company.com",
   className,
+  excludeUserIds,
 }: FindUserProps) => {
   const [keyword, setKeyword] = useState("");
   const debouncedKeyword = useDebounce(keyword, 300);
@@ -60,6 +62,7 @@ const FindUser = ({
             value={value}
             showSearch={true}
             onChange={(newValue) => {
+              setKeyword("");
               onChange(newValue as string[]);
             }}
             loading={isLoading}
@@ -79,17 +82,21 @@ const FindUser = ({
             filterOption={false}
             options={
               keyword.length
-                ? projectMembers?.map((user: any) => ({
-                    label: (
-                      <div className="flex items-center gap-2">
-                        <UserAvatar
-                          userId={user.user_id}
-                          isDisplayName={true}
-                        />
-                      </div>
-                    ),
-                    value: user.user_id,
-                  }))
+                ? projectMembers
+                    ?.filter(
+                      (user: any) => !excludeUserIds?.includes(user.user_id),
+                    )
+                    .map((user: any) => ({
+                      label: (
+                        <div className="flex items-center gap-2">
+                          <UserAvatar
+                            userId={user.user_id}
+                            isDisplayName={true}
+                          />
+                        </div>
+                      ),
+                      value: user.user_id,
+                    }))
                 : []
             }
             onSearch={(v) => setKeyword(v)}

@@ -98,24 +98,31 @@ export const useUpdateTeam = (projectId: string) => {
   return { updateTeam, isLoading, isSuccess, error };
 };
 
-export function useUserTeams(projectId: string, userId: string) {
+export function useUserTeams(
+  projectId: string,
+  userId: string,
+  enabled?: boolean,
+) {
   const { setUser, user } = useAuthStore();
   const { setUserTeams } = useUserTeamStore();
   const { data, isLoading, error } = useQuery({
     queryKey: ["userTeam", projectId, userId],
     queryFn: async () => {
       const { data } = await teams.getUserTeam(projectId, userId);
+
       const projectPermission = data?.data
         .map((team) => team.permission_keys)
         .flat();
-      setUser({
-        ...user!,
-        projectPermission: projectPermission,
-      });
+      if (projectPermission.length > 0) {
+        setUser({
+          ...user!,
+          projectPermission: projectPermission,
+        });
+      }
       setUserTeams(data?.data);
       return data;
     },
-    enabled: !!projectId && !!userId,
+    enabled: !!projectId && !!userId && (enabled ?? true),
   });
   return {
     userTeams: data?.data,

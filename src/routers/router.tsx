@@ -19,9 +19,9 @@ const ProjectPage = lazy(
 const SettingsPage = lazy(
   () => import("@libs/app/pages/settings/settingsPage"),
 );
-const SprintDetail = lazy(
-  () => import("@libs/app/components/sprints/SprintDetail"),
-);
+// const SprintDetail = lazy(
+//   () => import("@libs/app/components/sprints/SprintDetail"),
+// );
 const AdminLoginPage = lazy(
   () => import("@libs/app/pages/admin/login/AdminLoginPage"),
 );
@@ -115,8 +115,6 @@ const Router = (): React.ReactElement => {
                 <Route path="teams" element={<TeamManagementPage />} />
                 <Route path="teams/:teamId" element={<TeamDetailPage />} />
               </Route>
-              
-             
             </Route>
           </Route>
 

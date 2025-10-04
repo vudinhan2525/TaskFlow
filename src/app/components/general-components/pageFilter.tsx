@@ -7,11 +7,12 @@ import { ChevronDown } from "lucide-react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { GetIssuesParams, IssuePriority, IssueType } from "@libs/types/issue";
 import { ListProjectColumnsParams } from "@libs/types/project";
-import _ from "lodash";
+import { get } from "lodash";
 
 const DropdownFilter = lazy(() => import("./dropdownFilter"));
 
 interface PageFilterProps {
+  initialFilters?: GetIssuesParams | ListProjectColumnsParams;
   onFiltersChange?: (
     filters: GetIssuesParams | ListProjectColumnsParams,
   ) => void;
@@ -41,7 +42,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
         ?.split(",")
         .filter(Boolean) as IssuePriority[]) || [],
     page: params.get("page") ? parseInt(params.get("page")!) : 1,
-    limit: params.get("limit") ? parseInt(params.get("limit")!) : 12,
+    limit: params.get("limit") ? parseInt(params.get("limit")!) : 100,
     project_id: projectId,
     is_fetch: true,
   });
@@ -117,7 +118,7 @@ const PageFilter = memo(({ onFiltersChange }: PageFilterProps) => {
     let count = 0;
     if (filters.keyword) count++;
     if (filters.due_date_from && filters.due_date_to) count++;
-    if ((_.get(filters, "column_ids.length", 0) as number) > 0) count++;
+    if ((get(filters, "column_ids.length", 0) as number) > 0) count++;
     if (filters.created_at_from && filters.created_at_to) count++;
     if (filters.assignee_ids && filters.assignee_ids.length > 0) count++;
     if (filters.priorities && filters.priorities.length > 0) count++;

@@ -12,6 +12,7 @@ import {
   Settings,
   Server,
   ChevronDown,
+  LoaderCircle,
 } from "lucide-react";
 import { usePermissions } from "@libs/hooks/useProject";
 import { AnimatePresence, motion } from "motion/react";
@@ -65,10 +66,12 @@ const PermissionsSettings = ({
   permissionKeys,
   setPermissionKeys,
   onSave,
+  isUpdatingTeam,
 }: {
   permissionKeys: Set<string>;
   setPermissionKeys: (permissionKeys: Set<string>) => void;
   onSave: () => void;
+  isUpdatingTeam?: boolean;
 }) => {
   const { permissions: rawPermissions } = usePermissions();
   const [PERMISSIONS_DATA, setPERMISSIONS_DATA] = useState<any[]>([]);
@@ -344,10 +347,13 @@ const PermissionsSettings = ({
       <div className="flex justify-end border-t border-gray-200 pt-6">
         <button
           onClick={onSave}
-          className="inline-flex items-center rounded-md border border-transparent bg-green-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
+          className={`inline-flex items-center rounded-md border border-transparent bg-green-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none ${isUpdatingTeam ? "cursor-not-allowed opacity-50" : ""}`}
         >
           <Save className="mr-2 h-4 w-4" />
           Save Settings
+          {isUpdatingTeam && (
+            <LoaderCircle className="ml-2 h-4 w-4 animate-spin" />
+          )}
         </button>
       </div>
     </div>

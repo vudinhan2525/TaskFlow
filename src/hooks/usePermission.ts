@@ -8,6 +8,13 @@ export interface PermissionResult {
   isAllow: boolean;
   message?: string;
 }
+export interface PermissionResource {
+  issue?: {
+    issue: IIssue;
+    teams: ITeam[];
+  };
+  sprint?: ISprint;
+}
 
 // Permission constants for better maintainability
 const PERMISSION_MESSAGES = {
@@ -48,10 +55,7 @@ const checkIssuePermissions = (
 const checkTeamMemberPermissions = (
   user: IUser,
   action: string,
-  resource?: {
-    issue?: { issue: IIssue; teams: ITeam[] };
-    sprint?: ISprint;
-  },
+  resource?: PermissionResource,
 ): PermissionResult => {
   const resourceType = resource?.issue
     ? "issue"
@@ -73,13 +77,7 @@ const checkTeamMemberPermissions = (
 const getRoleBasedPermission = (
   user: IUser,
   action: string,
-  resource?: {
-    issue?: {
-      issue: IIssue;
-      teams: ITeam[];
-    };
-    sprint?: ISprint;
-  },
+  resource?: PermissionResource,
 ): PermissionResult => {
   const role = user.projectRole;
   if (role === "ADMIN" || role === "OWNER") {
@@ -96,6 +94,7 @@ const getRoleBasedPermission = (
   if (role === "MEMBER") {
     return checkTeamMemberPermissions(user, action, resource);
   }
+  return checkTeamMemberPermissions(user, action, resource);
 
   return {
     isAllow: false,
@@ -106,13 +105,7 @@ const getRoleBasedPermission = (
 interface UsePermissionParams {
   user: IUser;
   action: string;
-  resource?: {
-    issue?: {
-      issue: IIssue;
-      teams: ITeam[];
-    };
-    sprint?: ISprint;
-  };
+  resource?: PermissionResource;
 }
 export function usePermission({
   user,

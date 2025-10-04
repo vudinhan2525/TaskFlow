@@ -28,6 +28,7 @@ export function useProjectIssues(body: GetIssuesParams) {
       body.created_at_to,
       body.page,
       body.limit,
+      body.is_fetch,
     ],
     queryFn: async () => {
       const response = await issues.list(body);
@@ -36,7 +37,7 @@ export function useProjectIssues(body: GetIssuesParams) {
       });
       return response.data;
     },
-    enabled: !!body?.project_id,
+    enabled: !!body?.project_id && !!body?.is_fetch,
   });
 
   return {
