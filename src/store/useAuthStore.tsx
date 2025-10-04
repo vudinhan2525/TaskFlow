@@ -5,13 +5,15 @@ interface AuthState {
   user: IUser | null;
   setUser: (user: IUser | null) => void;
 
-  error:string | null;
+  error: string | null;
   setError: (error: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  setUser: (user) => set({ user }),
+  setUser: (user) => {
+    set({ user });
+  },
 
   error: null,
   setError: (error) => set({ error }),

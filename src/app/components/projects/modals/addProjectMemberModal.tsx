@@ -1,25 +1,29 @@
-import React from "react";
+import React, { useRef, useState } from "react";
 import { projectMembers } from "@libs/apis/projectMember";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import DropdownAntd from "@libs/app/components/general-components/dropdown";
+import { Dropdown } from "antd";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-// import { useAddProjectMember } from "@libs/hooks/useProjectMember";
+import { FaAngleDown } from "react-icons/fa";
+import { TeamMemberRole } from "@libs/types/projectMember";
 interface AddProjectMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
 }
 
-// Define the member role type
-type MemberRole = "ADMIN" | "MEMBER" | "OWNER";
-
+const MemberRoleOptions = [
+  { value: "ADMIN", label: "Admin", description: "Admin" },
+  { value: "MEMBER", label: "Member", description: "Member" },
+  { value: "OWNER", label: "Owner", description: "Owner" },
+  { value: "VIEWER", label: "Viewer", description: "Viewer" },
+];
 const memberSchema = z.object({
   email: z.string().email("Valid email is required"),
-  role: z.enum(["ADMIN", "MEMBER", "OWNER"] as const),
+  role: z.enum(["ADMIN", "MEMBER", "OWNER", "VIEWER"] as const),
 });
 
 type MemberFormData = z.infer<typeof memberSchema>;
@@ -30,7 +34,7 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
   projectId,
 }) => {
   const queryClient = useQueryClient();
-
+  const dropDownRef = useRef<HTMLDivElement>(null);
   const {
     register,
     handleSubmit,
@@ -46,7 +50,8 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
     },
   });
 
-  // const {addProjectMemberAsync, isLoading} = useAddProjectMember(projectId);
+  // const { addProjectMemberAsync, isLoading } = useAddProjectMember(projectId);
+
   const addMember = useMutation({
     mutationFn: async (data: MemberFormData) => {
       // First get the user by email
@@ -60,7 +65,7 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
       return projectMembers.add({
         project_id: projectId,
         user_id: userId,
-        role: data.role,
+        role: data.role as TeamMemberRole,
       });
     },
     onSuccess: () => {
@@ -80,12 +85,9 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
     },
   });
 
+  const [isOpenSelectOption, setIsOpenSelectOption] = useState(false);
+
   const handleFormSubmit: SubmitHandler<MemberFormData> = (data) => {
-    // addProjectMemberAsync({
-    //   project_id: projectId,
-    //     user_id: userId,
-    //     role: data.role,
-    // })
     addMember.mutate(data);
   };
 
@@ -98,7 +100,7 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
       title="Invite people"
       onClose={onClose}
       buttonContent={addMember.isPending ? "Sending..." : "Send Invitation"}
-      onSubmit={handleSubmit(handleFormSubmit)}
+      onSubmit={() => handleSubmit(handleFormSubmit)()}
       isLoadingButton={addMember.isPending}
     >
       <div className="p-4">
@@ -123,36 +125,71 @@ const AddProjectMemberModal: React.FC<AddProjectMemberModalProps> = ({
               </p>
             )}
           </div>
-
-          <div>
+          <div className="w-full">
             <label className="mb-1 block text-sm font-medium text-gray-700">
               Role
             </label>
-            <DropdownAntd
-              options={[
-                { value: "ADMIN", label: "Admin" },
-                { value: "MEMBER", label: "Member" },
-                { value: "OWNER", label: "Owner" },
-              ]}
-              placement="bottom"
-              rowClassName="w-full text-[15px]"
-              menuClassName="w-[180px]"
-              className={
-                addMember.isPending ? "cursor-not-allowed opacity-50" : ""
-              }
-              parent={
+            <div ref={dropDownRef}>
+              <Dropdown
+                dropdownRender={(menu) => (
+                  <div
+                    style={{
+                      width: dropDownRef.current?.offsetWidth || "100%",
+                    }}
+                  >
+                    {menu}
+                  </div>
+                )}
+                className="!rounded-md !p-2"
+                menu={{
+                  style: {
+                    padding: "12px 0px",
+                  },
+                  items: MemberRoleOptions.map(
+                    (option: {
+                      value: string;
+                      label: string;
+                      description: string;
+                    }) => ({
+                      style: {
+                        padding: "0px",
+                        width: "100%",
+                      },
+                      key: option.value,
+                      label: (
+                        <div
+                          className={`flex flex-col border-l-2 border-transparent px-2 py-1 leading-5 hover:border-l-emerald-500 hover:bg-emerald-50 ${role == option.value && "border-l-emerald-500 bg-emerald-50"}`}
+                        >
+                          <p
+                            className={`text-md font-normal ${role == option.value && "text-emerald-500"}`}
+                          >
+                            {option.label}
+                          </p>
+                          <p className="text-sm leading-4 font-normal text-gray-500">
+                            {option.description}
+                          </p>
+                        </div>
+                      ),
+                      onClick: () => {
+                        setValue("role", option.value as TeamMemberRole);
+                      },
+                    }),
+                  ),
+                }}
+                trigger={["click"]}
+                open={isOpenSelectOption}
+                onOpenChange={setIsOpenSelectOption}
+              >
                 <div
-                  className={`w-full font-medium ${addMember.isPending ? "text-gray-400" : ""}`}
+                  className={`relative w-full cursor-pointer rounded-xs p-2 text-sm font-normal text-gray-500 hover:bg-gray-100 ${isOpenSelectOption ? "border-2 border-emerald-500 bg-none" : "border-1 border-gray-300"} `}
                 >
-                  {role === "MEMBER" ? "Member" : role}
+                  {role}
+                  <span className="absolute top-0 right-0 flex h-full items-center justify-center pr-2">
+                    <FaAngleDown />
+                  </span>
                 </div>
-              }
-              onClickItem={(option) => {
-                if (!addMember.isPending) {
-                  setValue("role", option.value as MemberRole);
-                }
-              }}
-            />
+              </Dropdown>
+            </div>
           </div>
         </form>
       </div>

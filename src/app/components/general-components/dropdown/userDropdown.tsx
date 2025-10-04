@@ -3,7 +3,7 @@ import { IProjectMember } from "@libs/types/projectMember";
 import UserAvatar from "../user/userAvatar";
 import { useProjectMembers } from "@libs/hooks/useProjectMember";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
-import {memo} from "react"
+import { memo } from "react";
 
 const UserDropdown = ({
   projectId,
@@ -18,7 +18,7 @@ const UserDropdown = ({
   columnField: string;
   isDisplayname?: boolean;
 }) => {
-  const { projectMembers } = useProjectMembers(projectId);
+  const { projectMembers } = useProjectMembers({ project_id: projectId });
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
   const handleChangeUser = (userId: string) => {
@@ -49,7 +49,10 @@ const UserDropdown = ({
           })
       }
       children={
-        <UserAvatar userId={selectedUserId || ""} isDisplayName={isDisplayname} />
+        <UserAvatar
+          userId={selectedUserId || ""}
+          isDisplayName={isDisplayname}
+        />
       }
     />
   );

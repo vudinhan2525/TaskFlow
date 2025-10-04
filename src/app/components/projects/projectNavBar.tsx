@@ -9,6 +9,8 @@ import {
   FaTasks,
   FaGlobe,
   FaUserPlus,
+  FaChevronLeft,
+  FaChevronRight,
 } from "react-icons/fa";
 import {
   DndContext,
@@ -30,6 +32,8 @@ import type { CSSProperties } from "react";
 import { useProject } from "../../../hooks/useProject";
 import AddProjectMemberModal from "./modals/addProjectMemberModal";
 import { useIssueStore } from "@libs/store/useIssueStore";
+import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
+import PermissionButton from "@libs/app/components/general-components/pemissionButton";
 interface NavItem {
   id: string;
   label: string;
@@ -40,11 +44,13 @@ interface NavItem {
 interface SortableNavItemProps {
   item: NavItem;
   isActive: boolean;
+  isCollapsed: boolean;
 }
 
 const SortableNavItem: React.FC<SortableNavItemProps> = ({
   item,
   isActive,
+  isCollapsed,
 }) => {
   const {
     attributes,
@@ -63,7 +69,7 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     cursor: isDragging ? "grabbing" : "default",
     touchAction: "none",
   };
-  const {closeIssueDetail} = useIssueStore();
+  const { closeIssueDetail } = useIssueStore();
 
   return (
     <div
@@ -75,27 +81,45 @@ const SortableNavItem: React.FC<SortableNavItemProps> = ({
     >
       <Link
         to={item.route}
-        onClick={()=>{
+        onClick={() => {
           closeIssueDetail();
         }}
-        className={`group relative flex w-full items-center px-6 py-3 text-sm font-medium no-underline transition-all duration-150 ${
+        className={`group relative flex w-full items-center ${
+          isCollapsed ? "justify-center px-0" : "justify-start px-6"
+        } py-3 text-sm font-medium no-underline transition-all duration-150 ${
           isActive
-            ? "border-green-600 bg-green-100 text-green-700 font-semibold"
-            : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:text-green-700 hover:font-semibold"
+            ? "border-green-600 bg-green-100 font-semibold text-green-700"
+            : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50 hover:font-semibold hover:text-green-700"
         }`}
       >
         <span
-          className={`mr-2 text-base transition-colors ${isActive ? "text-green-700" : "text-gray-500 group-hover:text-green-700 font-semibold"}`}
+          className={`${
+            isCollapsed ? "mr-0" : "mr-2"
+          } text-base transition-colors ${
+            isActive
+              ? "text-green-700"
+              : "font-semibold text-gray-500 group-hover:text-green-700"
+          }`}
         >
           {item.icon}
         </span>
-        <span className="whitespace-nowrap">{item.label}</span>
+        {!isCollapsed && (
+          <span className="whitespace-nowrap">{item.label}</span>
+        )}
       </Link>
     </div>
   );
 };
 
-const ProjectNavbar = (): React.ReactElement => {
+interface ProjectNavbarProps {
+  isCollapsed?: boolean;
+  onToggle?: () => void;
+}
+
+const ProjectNavbar: React.FC<ProjectNavbarProps> = ({
+  isCollapsed = false,
+  onToggle,
+}) => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
@@ -207,43 +231,65 @@ const ProjectNavbar = (): React.ReactElement => {
       });
     }
   };
+
   return (
     <div className="flex h-full flex-col justify-between border-gray-200 bg-white shadow-sm">
       <div className="flex flex-col space-y-6">
         {/* Project Header */}
-        <div className=" p-2">
+        <div className="p-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {/* Project Avatar */}
+            <div
+              className={`flex items-center ${isCollapsed ? "w-full justify-center space-x-0" : "space-x-4"}`}
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded bg-green-600 text-sm font-semibold text-gray-50">
                 {project?.name?.substring(0, 2)?.toUpperCase() || "PR"}
               </div>
-
-              {/* Project Info */}
-              <div className="flex items-center space-x-3">
-                <div>
-                  <h1 className="text-md font-bold text-gray-800">
-                    {project?.name || "Project Name"}
-                  </h1>
-                  <p className="text-sm text-gray-500">
-                    {project?.key || "PROJ"} • Software project
-                  </p>
+              {!isCollapsed && (
+                <div className="flex items-center space-x-3">
+                  <div>
+                    <h1 className="text-md font-bold text-gray-800">
+                      {project?.name || "Project Name"}
+                    </h1>
+                    <p className="text-sm text-gray-500">
+                      {project?.key || "PROJ"} • Software project
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
-            <button
-              title="Invite Members to Project"
-              onClick={() => setIsAddMemberModalOpen(true)}
-              className="flex cursor-pointer items-center space-x-2 text-gray-500 duration-300 hover:scale-110"
-            >
-              <FaUserPlus className="mr-2 h-4 w-4" />
-            </button>
+            <div className="flex items-center space-x-2">
+              {!isCollapsed && (
+                <PermissionButton
+                  title="Invite Members to Project"
+                  action={PERMISSIONS_CONFIG.projectMember.add}
+                  handleClick={() => setIsAddMemberModalOpen(true)}
+                >
+                  <div className="flex cursor-pointer items-center space-x-2 text-gray-500 duration-300 hover:scale-110">
+                    <FaUserPlus className="mr-2 h-4 w-4" />
+                  </div>
+                </PermissionButton>
+              )}
+              {onToggle && (
+                <button
+                  type="button"
+                  onClick={onToggle}
+                  className="rounded p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  aria-label={
+                    isCollapsed ? "Expand sidebar" : "Collapse sidebar"
+                  }
+                >
+                  {isCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Navigation Tabs */}
         <div className="w-full">
-          <nav className="scrollbar-hide nav-item flex w-full flex-col items-center space-x-1">
+          <nav
+            className={`scrollbar-hide nav-item flex w-full flex-col ${isCollapsed ? "items-center" : "items-start"} space-x-1`}
+          >
             <DndContext
               onDragEnd={handleDragEnd}
               sensors={sensors}
@@ -258,6 +304,7 @@ const ProjectNavbar = (): React.ReactElement => {
                     key={item.id}
                     item={item}
                     isActive={location.pathname === item.route}
+                    isCollapsed={isCollapsed}
                   />
                 ))}
               </SortableContext>

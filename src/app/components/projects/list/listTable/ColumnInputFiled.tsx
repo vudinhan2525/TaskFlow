@@ -1,24 +1,22 @@
 import { IIssue } from "@libs/types/issue";
 import { useState, useEffect } from "react";
+import { useUpdateIssue } from "@libs/hooks/useIssue";
+
 const ColumnInputFiled = ({
   issue,
   field,
   inputType = "text",
-  handleChangeCellValue,
 }: {
   issue: IIssue | undefined;
   field: keyof IIssue;
   inputType?: "text" | "number";
-  handleChangeCellValue: (
-    id: string,
-    field: keyof IIssue,
-    value: string,
-  ) => void;
 }) => {
-
   const [newValue, setNewValue] = useState(
     issue?.[field] || (inputType === "number" ? 0 : ""),
   );
+  const { updateIssueAsync } = useUpdateIssue({
+    projectId: issue?.project_id || "",
+  });
   useEffect(() => {
     setNewValue(issue?.[field] || (inputType === "number" ? 0 : ""));
   }, [issue, field, inputType]);
@@ -33,7 +31,10 @@ const ColumnInputFiled = ({
       type={inputType}
       onBlur={(e) => {
         if (e.target.value !== issue?.[field]) {
-          handleChangeCellValue(issue.id, field, e.target.value);
+          updateIssueAsync({
+            id: issue.id,
+            data: { [field]: e.target.value },
+          });
         }
       }}
       value={newValue?.toString()}

@@ -6,6 +6,7 @@ import {
   ListProjectColumnsParams,
   UpdateColumnOrderParams,
   UpdateColumnProjectParams,
+  IPermission,
 } from "@libs/types/project";
 
 interface ListProjectsParams {
@@ -39,6 +40,13 @@ export const projects = {
       data,
       config,
     ),
+
+  getTeams: (projectId: string) =>
+    api.get<ResponseApi<{ id: string; name: string }[]>>(
+      `/projects/${projectId}/teams`,
+      config,
+    ),
+
   addColumns: (body: CreateColumnProjectParams) =>
     api.post<ResponseApi<IColumn>>(`/projects/add-column`, body, config),
   updateOrderColumns: (body: UpdateColumnOrderParams) =>
@@ -58,4 +66,7 @@ export const projects = {
       `/projects/columns/${body.column_id}`,
       config,
     ),
+
+  getPermissions: () =>
+    api.get<{permissions: IPermission[]}>(`/projects/permissions`, config),
 };

@@ -10,11 +10,15 @@ interface ProjectMemberInvitationsProps {
   userId: string;
 }
 
-const ProjectMemberInvitations: React.FC<ProjectMemberInvitationsProps> = ({ userId }) => {
+const ProjectMemberInvitations: React.FC<ProjectMemberInvitationsProps> = ({
+  userId,
+}) => {
   const queryClient = useQueryClient();
 
   const { memberships, isLoading } = useUserMemberships(userId);
-  const pendingMemberships = memberships.filter((member: IProjectMember) => member.is_pending);
+  const pendingMemberships = memberships.filter(
+    (member: IProjectMember) => member.is_pending,
+  );
 
   const acceptInvitationMutation = useMutation({
     mutationFn: ({ projectId }: { projectId: string; userId: string }) =>
@@ -53,24 +57,37 @@ const ProjectMemberInvitations: React.FC<ProjectMemberInvitationsProps> = ({ use
       <h3 className="text-lg font-medium">Project Invitations</h3>
       <div className="space-y-2">
         {pendingMemberships.map((member: IProjectMember) => (
-          <div key={member.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div
+            key={member.id}
+            className="flex items-center justify-between rounded-lg bg-gray-50 p-3"
+          >
             <div>
               <p className="font-medium">{member.project.name}</p>
               <p className="text-sm text-gray-500">Role: {member.role}</p>
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => acceptInvitationMutation.mutate({ projectId: member.project_id, userId })}
+                onClick={() =>
+                  acceptInvitationMutation.mutate({
+                    projectId: member.project_id,
+                    userId,
+                  })
+                }
                 disabled={acceptInvitationMutation.isPending}
-                className="p-2 text-green-600 hover:bg-green-50 rounded-full"
+                className="rounded-full p-2 text-green-600 hover:bg-green-50"
                 title="Accept Invitation"
               >
                 <FaCheck />
               </button>
               <button
-                onClick={() => rejectInvitationMutation.mutate({ projectId: member.project_id, userId })}
+                onClick={() =>
+                  rejectInvitationMutation.mutate({
+                    projectId: member.project_id,
+                    userId,
+                  })
+                }
                 disabled={rejectInvitationMutation.isPending}
-                className="p-2 text-red-600 hover:bg-red-50 rounded-full"
+                className="rounded-full p-2 text-red-600 hover:bg-red-50"
                 title="Reject Invitation"
               >
                 <FaTimes />

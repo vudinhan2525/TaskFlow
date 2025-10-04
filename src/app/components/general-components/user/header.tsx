@@ -6,13 +6,11 @@ import logo from "@libs/assets/taskflow.png";
 import Button from "../button";
 import { useNavigate } from "react-router-dom";
 import SearchHeader from "@libs/app/components/general-components/user/search";
-import { useUserProjects } from "@libs/hooks/useProject";
-import DropdownAntd from "../dropdown";
 
 // Lazy load Component
-// const NotificationsPopover = lazy(
-//   () => import("../../notifications/notificationsPopover"),
-// );
+const NotificationsPopover = lazy(
+  () => import("../../notifications/notificationsPopover"),
+);
 const ProjectInvitationsPopover = lazy(
   () => import("../../projects/projectInvitationsPopover"),
 );
@@ -20,14 +18,15 @@ const CreateIssueModal = lazy(
   () => import("../../projects/modals/createIssueModal"),
 );
 
+// 👇 Lazy load ProjectDropdown (fetch sẽ chỉ chạy khi mount)
+const ProjectDropdown = lazy(() => import("../dropdown/projectDropdown"));
+
 export const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
   const [_, startTransition] = useTransition();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const { projects } = useUserProjects();
 
   const handleOpenCreateIssue = () => {
     startTransition(() => {
@@ -38,10 +37,11 @@ export const Header = () => {
   const handleCloseIssueModal = () => {
     setIsCreateIssueModalOpen(false);
   };
+
   return (
     <div>
       <header className="flex w-full items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
-        {/* Left section - Logo and dropdowns */}
+        {/* Left section */}
         <div className="flex w-1/4 items-center space-x-4">
           {/* Logo */}
           <div
@@ -51,31 +51,12 @@ export const Header = () => {
             <Image src={logo} className="h-[17px] w-[100px]" />
           </div>
 
-          {/* Project Dropdown - Only show when authenticated */}
-          {user && projects.length > 0 && (
-            <div className="relative">
-              <DropdownAntd
-                options={projects.map((project) => ({
-                  value: project.id,
-                  label: project.name,
-                }))}
-                placement="bottom"
-                onClickItem={(option) => {
-                  navigate(`/projects/${option.value}`);
-                }}
-                menuClassName={"min-w-[120px]"}
-                rowClassName="font-semibold text-gray-700"
-                parent={
-                  <div className="flex items-center space-x-2">Projects</div>
-                }
-              />
-            </div>
-          )}
+          {/* Project Dropdown - Lazy fetch khi click */}
+          {user && <ProjectDropdown />}
         </div>
 
-        {/*Middle section - Search and Add more*/}
+        {/*Middle section */}
         <div className="flex w-1/2 items-center justify-center space-x-4">
-          {/* Search Box */}
           <div className="relative w-[60%]">
             <SearchHeader />
           </div>
@@ -86,14 +67,11 @@ export const Header = () => {
           )}
         </div>
 
-        {/* Right section - Search, notifications, settings, and user */}
+        {/* Right section */}
         {user && (
           <div className="flex w-1/4 items-center justify-end space-x-2">
-            {/* Notifications */}
-            {/* <NotificationsPopover /> */}
-            {/* Project Invitations */}
+            <NotificationsPopover />
             <ProjectInvitationsPopover userId={user?.id || ""} />
-            {/* Settings Icon */}
             <div
               className="cursor-pointer rounded-full p-2 text-gray-600 hover:bg-gray-100"
               onClick={() => navigate("/settings")}

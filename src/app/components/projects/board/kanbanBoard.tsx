@@ -35,6 +35,7 @@ export default function KanbanBoard() {
   const [filter, setFilter] =
     useState<ListProjectColumnsParams>(DEFAULT_FILTER);
   const { columns: initialColumns, isLoading } = useProjectColumns(filter);
+
   const [columns, setColumns] = useState<IColumn[]>(initialColumns);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);

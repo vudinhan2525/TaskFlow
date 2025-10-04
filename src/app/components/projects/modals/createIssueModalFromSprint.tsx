@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import { useProjectColumns } from "@libs/hooks/useProject";
-import { CreateIssueParams, IssuePriority } from "@libs/types/issue";
+import { CreateIssueParams, IssuePriority, IssueType } from "@libs/types/issue";
 
 import { useAuthStore } from "@libs/store/useAuthStore";
 
@@ -212,10 +212,7 @@ const CreateIssueModalFromSprint: React.FC<CreateIssueModalFromSprintProps> = ({
                 menuClassName="w-[380px]"
                 parent={<div className="w-full">{type}</div>}
                 onClickItem={(option) =>
-                  setValue(
-                    "type",
-                    option.value as "Bug" | "Task" | "Story" | "Epic",
-                  )
+                  setValue("type", option.value as IssueType)
                 }
               />
               {errors.type && (

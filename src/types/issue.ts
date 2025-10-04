@@ -1,7 +1,7 @@
 import { IColumn } from "@libs/types/project";
 export interface IIssue {
   id: string;
-  key:string;
+  key: string;
   title: string;
   project_id: string;
   sprint_id?: string;
@@ -21,7 +21,7 @@ export interface IIssue {
   due_date_from: string;
   due_date_to: string;
   // labels?: string[];
-  // team_id?: string;
+  team_id?: string;
 }
 export type IIssueWithoutCoulumn = Omit<IIssue, "column">;
 
@@ -64,7 +64,6 @@ export interface CreateIssueParams {
   story_point?: number;
   attachments?: string[];
   due_date_to?: string;
-
 }
 
 export interface GetActivitiesParams {

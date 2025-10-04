@@ -1,4 +1,3 @@
-import { IColumn } from "@libs/types/project";
 export const statusColors = [
   {
     order: 1,
@@ -78,7 +77,10 @@ const StatusBadge = ({
   size = "small",
   className,
 }: {
-  column: IColumn;
+  column: {
+    name: string;
+    order: number;
+  };
   size?: "small" | "medium" | "large";
   className?: string;
 }) => {
@@ -86,7 +88,7 @@ const StatusBadge = ({
 
   return (
     <div
-      className={`flex cursor-pointer items-center gap-2 rounded-2xl transition-colors duration-200 ${statusColors[column.order].hoverBg} ${className}`}
+      className={`flex items-center gap-2 rounded-2xl transition-colors duration-200 ${statusColors[column.order].hoverBg} ${className}`}
     >
       <div
         className={`rounded-2xl ${statusColors[column.order].bgColor} flex items-center gap-1 ${sizeClasses[size].button}`}

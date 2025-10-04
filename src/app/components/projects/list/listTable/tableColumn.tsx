@@ -4,9 +4,10 @@ import { type TableColumnType } from "antd";
 import { get } from "lodash";
 import React from "react";
 import { FaPlus, FaListUl } from "react-icons/fa";
+import { ITableColumn } from "@libs/constants/list";
 
 const fixedField = ["title", "type"];
-
+  
 const TableColumn = (
   key: string,
   title: string,
@@ -25,10 +26,9 @@ const TableColumn = (
           </div>
           <div className="rounded-md p-1 group-hover:hidden">
             {key in columnsIcon ? (
-              columnsIcon[key as keyof IIssue]
+              columnsIcon[key as ITableColumn]
             ) : (
-              <FaPlus className="h-3 w-3 text-[#6c757d]" />
-
+              <FaPlus className="h-3 w-3 text-[#6c757d]" /> 
             )}
           </div>
           <span className="text-xs font-bold text-[#6c757d]">{title}</span>

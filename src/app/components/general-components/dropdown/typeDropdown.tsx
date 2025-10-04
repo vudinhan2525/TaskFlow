@@ -2,7 +2,7 @@ import ColumnDropdown from "./columnDropdown";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { IssueType } from "@libs/types/issue";
 import TypeBadge, { typeOptions } from "../badge/typeBadge";
-import {memo} from "react"
+import { memo } from "react";
 
 const TypeDropdown = ({
   projectId,

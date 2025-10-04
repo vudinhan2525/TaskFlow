@@ -19,7 +19,7 @@ const BacklogPageSkeleton: React.FC = () => {
 
       <div className="flex flex-1 gap-4">
         {/* Sidebar */}
-
+    
         {/* Main backlog list */}
         <div className="flex flex-1 flex-col gap-4">
           {Array.from({ length: 10 }).map((_, idx) => (

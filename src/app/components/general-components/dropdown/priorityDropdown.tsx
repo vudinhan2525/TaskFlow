@@ -2,8 +2,7 @@ import ColumnDropdown from "./columnDropdown";
 import { IssuePriority } from "@libs/types/issue";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import PriorityBadge, { priorityOptions } from "../badge/priorityBadge";
-import {memo} from "react"
-
+import { memo } from "react";
 
 const PriorityDropdown = ({
   projectId,
@@ -41,7 +40,13 @@ const PriorityDropdown = ({
             border: "none",
             boxShadow: "none",
           },
-          label: <PriorityBadge priority={option.name as IssuePriority} isShowLabel={true} className="p-2" />,
+          label: (
+            <PriorityBadge
+              priority={option.name as IssuePriority}
+              isShowLabel={true}
+              className="p-2"
+            />
+          ),
           onClick: () => {
             handleChangePriority(option.name as IssuePriority);
           },

@@ -5,10 +5,9 @@ import { FaPlus } from "react-icons/fa";
 import { BsThreeDots } from "react-icons/bs";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
 import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
+import CustomInput from "../../general-components/customInput";
 
-const AttachmentCard = lazy(
-  () => import("./attachmentCard"),
-);
+const AttachmentCard = lazy(() => import("./attachmentCard"));
 const TextEditor = lazy(() => import("./textEditor"));
 const MetadataSection = ({
   selectedIssue,
@@ -19,7 +18,6 @@ const MetadataSection = ({
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   handleUpdateIssue: (key: string, value: string) => void;
 }) => {
-  const [summary, setSummary] = useState(selectedIssue?.summary || "");
   const [, startTransition] = useTransition();
   const [isShowingTextEditor, setIsShowingTextEditor] = useState(false);
   const { updateIssueAsync } = useUpdateIssue({
@@ -62,31 +60,15 @@ const MetadataSection = ({
   return (
     <div className="flex w-full flex-1 flex-col gap-2">
       {/* Summary */}
-      <div className="wiki flex items-center justify-between">
-        <input
-          type="text"
-          value={summary}
-          onChange={(e) => {
-            setSummary(e.target.value);
-          }}
-          onBlur={() => {
-            if (summary !== selectedIssue?.summary) {
-              handleUpdateIssue("summary", summary);
-            }
-          }}
-          className="w-full cursor-pointer rounded border-2 border-transparent bg-transparent p-2 text-sm font-semibold text-gray-500 outline-none hover:bg-gray-200 focus:border-emerald-500"
-        />
-      </div>
-      {/* <div className="flex flex-row gap-2">
-        <button className="flex cursor-pointer items-center gap-2 rounded-sm border-1 border-gray-300 px-3 py-1 text-sm font-medium text-gray-800 hover:bg-gray-200">
-          <FaPlus />
-          <span className="text-sm font-medium text-gray-800">Add</span>
-        </button>
-        <button className="flex cursor-pointer items-center gap-2 rounded-sm border-1 border-gray-300 px-3 py-1 text-sm font-medium text-gray-800 hover:bg-gray-200">
-          <TbHexagon3D />
-          <span className="text-sm font-medium text-gray-800">Apps</span>
-        </button>
-      </div> */}
+      <CustomInput
+        field="summary"
+        value={selectedIssue?.summary || ""}
+        inputType="text"
+        handleUpdateIssue={handleUpdateIssue}
+        containerClassName="flex items-center w-full justify-between"
+        contentClassName="text-sm font-medium! px-1 w-full text-gray-500"
+      />
+
       {/* Description */}
       <div className="flex w-full flex-col items-start gap-1">
         <p className="py-1 text-sm font-bold text-gray-600">Description</p>
@@ -166,5 +148,3 @@ const MetadataSection = ({
   );
 };
 export default MetadataSection;
-
-

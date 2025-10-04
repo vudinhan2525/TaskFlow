@@ -6,11 +6,11 @@ import { CiSettings } from "react-icons/ci";
 import {
   StatusDropdown,
   PriorityDropdown,
-  TypeDropdown,
+  // TypeDropdown,
   SprintDropdown,
 } from "../../general-components/dropdown/index";
 import UserAvatar from "../../general-components/user/userAvatar";
-import CustomInput from "../../projects/backlog/customInput";
+import CustomInput from "../../general-components/customInput";
 import CustomDatePicker from "../../general-components/customDatePicker";
 import UserDropdown from "../../general-components/dropdown/userDropdown";
 
@@ -32,7 +32,9 @@ const DetailRow = ({
       <span className="min-w-[35%] text-xs font-semibold text-gray-700">
         {label}
       </span>
-      <div className={layout === "horizontal" ? "w-full" : "w-2/3"}>{children}</div>
+      <div className={layout === "horizontal" ? "w-full" : "w-2/3"}>
+        {children}
+      </div>
     </div>
   );
 };
@@ -51,7 +53,7 @@ const Details = ({
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex h-full flex-col gap-4">
       <div className="h-full overflow-y-auto rounded-xs border border-gray-300">
         <div
           className="flex cursor-pointer items-center rounded-xs border-2 border-transparent p-2 hover:bg-gray-200 active:border-emerald-500"
@@ -70,7 +72,7 @@ const Details = ({
           </div>
         </div>
         {isDetailsOpen && (
-          <div className="flex flex-col space-y-6 p-4 overflow-auto">
+          <div className="flex flex-col space-y-6 overflow-auto p-4">
             <DetailRow label="Assignee" layout={layout}>
               <UserDropdown
                 projectId={projectId}
@@ -97,13 +99,13 @@ const Details = ({
               />
             </DetailRow>
 
-            <DetailRow label="Type" layout={layout}>
+            {/* <DetailRow label="Type" layout={layout}>
               <TypeDropdown
                 projectId={projectId}
                 issueId={selectedIssue.id}
                 type={selectedIssue.type}
               />
-            </DetailRow>
+            </DetailRow> */}
 
             <DetailRow label="Due Date To" layout={layout}>
               <CustomDatePicker

@@ -3,7 +3,6 @@ import type { Project } from "../types";
 import { projects } from "@libs/apis/project";
 import { useUserMemberships } from "@libs/hooks/useProjectMember";
 import { toast } from "react-toastify";
-import { useAuth } from "./useAuth";
 import {
   CreateColumnProjectParams,
   IColumn,
@@ -13,12 +12,16 @@ import {
 } from "@libs/types/project";
 import { Dispatch, SetStateAction } from "react";
 import { AxiosError } from "axios";
+import { useAuthStore } from "@libs/store/useAuthStore";
 
-export function useUserProjects() {
-  const { user } = useAuth();
+export function useUserProjects(options?: { enabled?: boolean }) {
+  const { user } = useAuthStore();
   const userId = user?.id;
 
-  const { memberships, isLoading, error } = useUserMemberships(userId || "");
+  const { memberships, isLoading, error } = useUserMemberships(
+    userId || "",
+    options?.enabled,
+  );
 
   // Filter out pending memberships and map to project info
   const validMemberships = memberships.filter(
@@ -315,4 +318,19 @@ export function useDeleteColumn(
     isSuccess,
     error,
   };
+}
+
+export function usePermissions() {
+  const {
+    data: permissions,
+    isLoading: isLoadingPermissions,
+    error: errorPermissions,
+  } = useQuery({
+    queryKey: ["permissions"],
+    queryFn: async () => {
+      const { data } = await projects.getPermissions();
+      return data.permissions;
+    },
+  });
+  return { permissions, isLoadingPermissions, errorPermissions };
 }

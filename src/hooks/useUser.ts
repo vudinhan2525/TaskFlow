@@ -24,13 +24,14 @@ export function useUserById(userId: string) {
 }
 
 
-export function useListUser(keyword?: string) {
+export function useListUser(keyword: string, projectId?: string) {
   const { data, isLoading, error } = useQuery({
     queryKey: ["users", keyword],
     queryFn: async () => {
-      const { data } = await users.list(keyword);
+      const { data } = await users.list(keyword, projectId);
       return data;
     },
+    enabled: !!keyword ,
   });
   return {
     users: data?.data,

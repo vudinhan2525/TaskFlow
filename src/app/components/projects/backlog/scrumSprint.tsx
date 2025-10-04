@@ -1,8 +1,7 @@
-import { useState, memo, useMemo } from "react";
+import { useState, memo, useMemo, useTransition, lazy } from "react";
 import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/useProject";
 import Button from "@libs/app/components/general-components/button";
-import CreateSprintModal from "@libs/app/components/projects/modals/createSprintModal";
 import { formatSprintDate } from "../../../../utils/date";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
 import { ISprint } from "@libs/types/index";
@@ -17,10 +16,13 @@ import {
   SortableContext,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useSortable } from "@dnd-kit/sortable";
 import { useDeleteSprint } from "@libs/hooks/useSprint";
 import { useUpdateIssue } from "@libs/hooks/useIssue";
-import { useIssueStore } from "@libs/store/useIssueStore";
+import { useDroppable } from "@dnd-kit/core";
+import { useOverItem } from "@libs/app/context/overItem.context";
+const CompleteSprintModal = lazy(
+  () => import("@libs/app/components/projects/modals/completeSprintModal"),
+);
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
 }
@@ -29,18 +31,25 @@ interface ScrumSprintProps {
   sprint: ISprintIssues;
   projectId: string;
   isDragging: boolean;
-  overItemId: string | null;
+  setIsCreateSprintModalOpen: (isOpen: boolean, sprint: ISprint | null) => void;
 }
 
 const ScrumSprint = memo(
-  ({ sprint, projectId, isDragging, overItemId }: ScrumSprintProps) => {
-    const { setNodeRef } = useSortable({
+  ({
+    sprint,
+    projectId,
+    isDragging,
+    setIsCreateSprintModalOpen,
+  }: ScrumSprintProps) => {
+    const { overItemId } = useOverItem();
+    const { setNodeRef } = useDroppable({
       id: sprint.id,
       data: {
         type: "Sprint",
         sprint,
       },
     });
+    const [, startTransition] = useTransition();
 
     const { deleteSprint } = useDeleteSprint({
       projectId,
@@ -50,22 +59,14 @@ const ScrumSprint = memo(
     });
     const { updateIssueAsync } = useUpdateIssue({
       projectId,
-      onClose: () => {
-        // setIsUpdateSprintModalOpen(false);
-      },
     });
-    const { selectedIssues, setSelectedIssues } = useIssueStore();
 
     const [isOpenButtonMenu, setIsOpenButtonMenu] = useState(false);
-
-    const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] =
+    const [isCompleteSprintModalOpen, setIsCompleteSprintModalOpen] =
       useState(false);
     const [isDeleteSprintModalOpen, setIsDeleteSprintModalOpen] =
       useState(false);
     const [isCreateIssueModalOpen, setIsCreateIssueModalOpen] = useState(false);
-    const [isSprintIssuesChecked, setIsSprintIssuesChecked] = useState(
-      selectedIssues[sprint.id || ""]?.length ? true : false,
-    );
 
     const [isExpanded, setIsExpanded] = useState(true);
     const { columns } = useProjectColumns({ project_id: projectId });
@@ -79,7 +80,10 @@ const ScrumSprint = memo(
       {
         label: "Edit Sprint",
         key: "edit-sprint",
-        // onClick: () => setIsUpdateSprintModalOpen(true),
+        onClick: () =>
+          startTransition(() => {
+            setIsCreateSprintModalOpen(true, sprint);
+          }),
       },
       {
         label: "Delete Sprint",
@@ -99,23 +103,9 @@ const ScrumSprint = memo(
           });
         }
         // Delete the sprint after all issues are updated
-        await deleteSprint(sprint?.id);
+        deleteSprint(sprint?.id);
       } catch (error) {
         console.log(error);
-      }
-    };
-
-    const handleToggleSprintIssuesChecked = () => {
-      if (isSprintIssuesChecked) {
-        setSelectedIssues({ [sprint.id]: [] });
-        setIsSprintIssuesChecked(false);
-      } else {
-        const issues: IIssue[] = [];
-        for (const issue of sprint.issues) {
-          issues.push(issue);
-        }
-        setSelectedIssues({ [sprint.id]: issues });
-        setIsSprintIssuesChecked(true);
       }
     };
 
@@ -126,15 +116,9 @@ const ScrumSprint = memo(
           className="overflow-hidden rounded-sm border border-gray-200 bg-white shadow-sm"
         >
           {/* Header */}
-          <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white px-2 py-1">
+          <div className="border-b border-gray-200 bg-[#f8f8f8] px-2 py-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <input
-                  type="checkbox"
-                  checked={isSprintIssuesChecked}
-                  onChange={handleToggleSprintIssuesChecked}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
                 <button
                   title="Expand/Collapse Sprint"
                   className="scale-110 text-gray-500 transition-colors hover:cursor-pointer hover:text-gray-900"
@@ -187,11 +171,24 @@ const ScrumSprint = memo(
                     variant="secondary"
                     className="rounded-lg border border-gray-300 bg-white px-1 py-1 text-sm text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
                   >
-                    {new Date(sprint.date_started).getTime() <
-                    new Date().getTime() ? (
+                    {sprint.name == "Backlog" ? (
                       <span
                         onClick={() => {
-                          // setIsUpdateSprintModalOpen(true)
+                          startTransition(() => {
+                            setIsCreateSprintModalOpen(true, null);
+                          });
+                        }}
+                        className="text-sm font-semibold text-gray-900"
+                      >
+                        Create Sprint
+                      </span>
+                    ) : new Date(sprint.date_started).getTime() <
+                      new Date().getTime() ? (
+                      <span
+                        onClick={() => {
+                          startTransition(() => {
+                            setIsCompleteSprintModalOpen(true);
+                          });
                         }}
                         className="text-sm font-semibold text-gray-900"
                       >
@@ -200,7 +197,9 @@ const ScrumSprint = memo(
                     ) : (
                       <span
                         onClick={() => {
-                          // setIsUpdateSprintModalOpen(true)
+                          startTransition(() => {
+                            setIsCreateSprintModalOpen(true, sprint);
+                          });
                         }}
                         className="text-sm font-semibold text-gray-900"
                       >
@@ -242,11 +241,7 @@ const ScrumSprint = memo(
                   {sprint.issues.length > 0 ? (
                     sprint.issues.map((issue) => (
                       <div key={issue.id} className="group relative my-1">
-                        <IssueCard
-                          issue={issue}
-                          projectId={projectId}
-                          setIsSprintIssuesChecked={setIsSprintIssuesChecked}
-                        />
+                        <IssueCard issue={issue} projectId={projectId} />
                         {/* // Line DragOverlay */}
                         <div
                           style={{
@@ -290,18 +285,6 @@ const ScrumSprint = memo(
             onConfirm={handleDeleteSprint}
           />
 
-          <CreateSprintModal
-            isOpen={isCreateSprintModalOpen}
-            onClose={() => setIsCreateSprintModalOpen(false)}
-            projectId={projectId}
-            isEditing={true}
-            initialSprint={{
-              id: sprint?.id,
-              name: sprint?.name,
-              date_started: sprint?.date_started,
-              date_ended: sprint?.date_ended,
-            }}
-          />
           <CreateIssueModal
             isOpen={isCreateIssueModalOpen}
             onClose={() => setIsCreateIssueModalOpen(false)}
@@ -325,6 +308,13 @@ const ScrumSprint = memo(
             </div>
           </div>
         </div>
+
+        <CompleteSprintModal
+          isOpen={isCompleteSprintModalOpen}
+          onClose={() => setIsCompleteSprintModalOpen(false)}
+          projectId={projectId}
+          sprint={sprint}
+        />
       </div>
     );
   },

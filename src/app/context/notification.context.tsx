@@ -2,8 +2,14 @@ import { connectSocket } from "@libs/apis/notiApi";
 import { notificationApi } from "@libs/apis/notification";
 import { useAuthStore } from "@libs/store/useAuthStore";
 import { INotification } from "@libs/types/notification";
-import {get} from "lodash";
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { get } from "lodash";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 interface NotificationContextType {
   notifications: INotification[];
@@ -40,7 +46,7 @@ export const NotificationProvider: React.FC<{
   };
 
   useEffect(() => {
-    const userId = get(user,'id');
+    const userId = get(user, "id");
     if (userId) {
       const socket = connectSocket(userId);
 
@@ -55,10 +61,9 @@ export const NotificationProvider: React.FC<{
     }
   }, [user]);
 
-
-  const unreadCount= useMemo(()=>{
+  const unreadCount = useMemo(() => {
     return notifications.filter((n) => !n?.is_read).length;
-  },[notifications])
+  }, [notifications]);
 
   return (
     <NotificationContext.Provider

@@ -95,10 +95,7 @@
   height: 40px !important;
 }
 
-.btn {
-  
-}
-.btn > span, 
-.btn > svg {
-  transform: scale(0.8); /* thu nhỏ content */
+.ant-select-selector{
+  padding:6px  !important;
+  border-radius: 8px !important;
 }

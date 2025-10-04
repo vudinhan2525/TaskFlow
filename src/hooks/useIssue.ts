@@ -8,6 +8,7 @@ import {
 import { toast } from "react-toastify";
 
 export function useProjectIssues(body: GetIssuesParams) {
+  const queryClient = useQueryClient();
   const {
     data: issuesData,
     isLoading,
@@ -27,12 +28,16 @@ export function useProjectIssues(body: GetIssuesParams) {
       body.created_at_to,
       body.page,
       body.limit,
+      body.is_fetch,
     ],
     queryFn: async () => {
       const response = await issues.list(body);
+      response.data.data.forEach((issue) => {
+        queryClient.setQueryData(["issue", body.project_id, issue.id], issue);
+      });
       return response.data;
     },
-    enabled: !!body?.project_id && (body?.is_fetch ? body.is_fetch : false),
+    enabled: !!body?.project_id && !!body?.is_fetch,
   });
 
   return {
@@ -136,6 +141,7 @@ export function useUpdateIssue({
     },
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
+
       queryClient.invalidateQueries({
         queryKey: ["issue", projectId, response.data.id],
       });

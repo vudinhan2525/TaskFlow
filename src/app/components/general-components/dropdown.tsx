@@ -15,6 +15,8 @@ interface DropDownProps {
   rowClassName?: string;
   className?: string;
   value?: Option;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   placement?:
     | "top"
     | "left"
@@ -38,22 +40,36 @@ export default function DropdownAntd({
   className,
   rowClassName,
   placement = "bottomRight",
+  open: controlledOpen,
+  onOpenChange,
 }: DropDownProps) {
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
   const dropDownOpt = () => {
     return (
       <div className={` ${menuClassName}`}>
         {options.map((option, idx) => (
           <div
             onClick={() => {
-              setOpen(false);
+              if (isControlled) {
+                onOpenChange && onOpenChange(false);
+              } else {
+                setUncontrolledOpen(false);
+              }
               if (onClickItem) onClickItem(option);
             }}
             key={idx}
-            className={`px-2 py-1 rounded-md flex gap-2 items-center  cursor-pointer hover:bg-gray-200 transition-all ${rowClassName}`}
+            className={`flex cursor-pointer items-center gap-2 rounded-md px-2 py-1 transition-all hover:bg-gray-200 ${rowClassName}`}
           >
-            {option?.icon && <div className="min-w-[20px] flex items-center justify-center">{option.icon}</div>}
-            {value && value.value === option.value && <FaCheck className="w-5 h-5" />}
+            {option?.icon && (
+              <div className="flex min-w-[20px] items-center justify-center">
+                {option.icon}
+              </div>
+            )}
+            {value && value.value === option.value && (
+              <FaCheck className="h-5 w-5" />
+            )}
             <div className="">{option.label}</div>
           </div>
         ))}
@@ -68,12 +84,18 @@ export default function DropdownAntd({
         arrow={false}
         placement={placement}
         open={open}
-        onOpenChange={(bool) => setOpen(bool)}
+        onOpenChange={(bool) => {
+          if (isControlled) {
+            onOpenChange && onOpenChange(bool);
+          } else {
+            setUncontrolledOpen(bool);
+          }
+        }}
       >
         <div
-          className={`border-[1px] flex items-center justify-between gap-2 border-gray-300 px-3 py-[6px] rounded-md cursor-pointer ${className}`}
+          className={`flex cursor-pointer items-center justify-between gap-2 rounded-md border-[1px] border-gray-300 px-3 py-[6px] ${className}`}
         >
-          <div className="text-gray-700 font-semibold">{parent}</div>
+          <div className="font-semibold text-gray-700">{parent}</div>
           <FaChevronDown className="text-gray-500" />
         </div>
       </Popover>

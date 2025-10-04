@@ -1,17 +1,21 @@
 import { Dropdown, type MenuProps } from "antd";
 import { useState, useEffect, useRef, memo } from "react";
-import React from "react";
+import { useRowPermission } from "@libs/app/context/permission.context";
+import { Tooltip } from "antd/lib";
+
 const ColumnDropdown = memo(
   ({
     items,
     currentItem,
     children,
     setIsOpenDropdown,
+    disabled,
   }: {
     items: MenuProps["items"];
     currentItem?: string;
     children: React.ReactNode;
     setIsOpenDropdown?: (isFetch: boolean) => void;
+    disabled?: boolean;
   }) => {
     const [searchText, setSearchText] = useState("");
     const [visible, setVisible] = useState(false);
@@ -44,45 +48,59 @@ const ColumnDropdown = memo(
       }
     }, []);
 
+    const permissionResult = useRowPermission() || {
+      isAllow: true,
+      message: "",
+    };
+    // const hasPermission = true;
+
     return (
-      <div
-        style={{
-          blockSize: elementHeight,
-        }}
-        className="flex items-center"
-        ref={dropdownRef}
+      <Tooltip
+        placement="top"
+        trigger={["click", "hover"]}
+        // open={!permissionResult.isAllow}
+        title={permissionResult.isAllow ? "" : permissionResult.message}
       >
-        <Dropdown
-          menu={{
-            style: {
-              padding: "4px 0px",
-              borderRadius: "0px",
-            },
-            items: filteredItems,
+        <div
+          style={{
+            blockSize: elementHeight,
           }}
-          trigger={["click"]}
-          onOpenChange={(open) => {
-            setVisible(open);
-            if (setIsOpenDropdown) setIsOpenDropdown(open);
-          }}
-          open={visible}
+          className={`flex items-center ${!permissionResult.isAllow ? "cursor-not-allowed" : ""}`}
+          ref={dropdownRef}
         >
-          {visible ? (
-            <div className="p-1">
-              <input
-                placeholder={currentItem}
-                value={searchText}
-                autoFocus={true}
-                onChange={(e) => setSearchText(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
-                className="h-full w-full rounded-none border-2 border-emerald-500 p-1 text-xs text-gray-800 outline-none"
-              />
-            </div>
-          ) : (
-            <div className="py-2">{children}</div>
-          )}
-        </Dropdown>
-      </div>
+          <Dropdown
+            disabled={!permissionResult.isAllow || disabled}
+            menu={{
+              style: {
+                padding: "4px 0px",
+                borderRadius: "0px",
+              },
+              items: filteredItems,
+            }}
+            trigger={["click"]}
+            onOpenChange={(open) => {
+              setVisible(open);
+              if (setIsOpenDropdown) setIsOpenDropdown(open);
+            }}
+            open={visible}
+          >
+            {visible ? (
+              <div className="p-1">
+                <input
+                  placeholder={currentItem}
+                  value={searchText}
+                  autoFocus={true}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="h-full w-full rounded-none border-2 border-emerald-500 p-1 text-xs text-gray-800 outline-none"
+                />
+              </div>
+            ) : (
+              <div className="py-2">{children}</div>
+            )}
+          </Dropdown>
+        </div>
+      </Tooltip>
     );
   },
 );
