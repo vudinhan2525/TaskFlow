@@ -14,7 +14,7 @@ import {
   ChevronDown,
   LoaderCircle,
 } from "lucide-react";
-import { usePermissions } from "@libs/hooks/useProject";
+import { usePermissions } from "@libs/hooks/apis/useProject";
 import { AnimatePresence, motion } from "motion/react";
 
 // Map resource -> display info

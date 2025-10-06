@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { projectMembers } from "@libs/apis/projectMember";
 import { IProjectMember } from "@libs/types/projectMember";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { useUserMemberships } from "@libs/hooks/useProjectMember";
+import { useUserMemberships } from "@libs/hooks/apis/useProjectMember";
 
 interface ProjectMemberInvitationsProps {
   userId: string;

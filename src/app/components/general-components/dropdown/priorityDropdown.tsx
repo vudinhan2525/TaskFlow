@@ -1,6 +1,6 @@
 import ColumnDropdown from "./columnDropdown";
 import { IssuePriority } from "@libs/types/issue";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import PriorityBadge, { priorityOptions } from "../badge/priorityBadge";
 import { memo } from "react";
 

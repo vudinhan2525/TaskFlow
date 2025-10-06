@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "../types";
+import type { Project } from "../../types";
 import { projects } from "@libs/apis/project";
-import { useUserMemberships } from "@libs/hooks/useProjectMember";
+import { useUserMemberships } from "@libs/hooks/apis/useProjectMember";
 import { toast } from "react-toastify";
 import {
   CreateColumnProjectParams,

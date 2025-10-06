@@ -13,9 +13,9 @@ import PriorityBadge, {
 import UserAvatar from "@libs/app/components/general-components/user/userAvatar";
 const { RangePicker } = DatePicker;
 import { useParams } from "react-router-dom";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
+import { useProjectMembers } from "@libs/hooks/apis/useProjectMember";
 
-import { useProjectColumns } from "@libs/hooks/useProject";
+import { useProjectColumns } from "@libs/hooks/apis/useProject";
 
 const DropdownFilter = ({
   handleClearFilters,

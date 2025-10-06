@@ -3,7 +3,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import { useCreateSprint, useUpdateSprint } from "@libs/hooks/useSprint";
+import { useCreateSprint, useUpdateSprint } from "@libs/hooks/apis/useSprint";
 import { LuCalendar, LuClock, LuChevronDown } from "react-icons/lu";
 
 interface CreateSprintModalProps {

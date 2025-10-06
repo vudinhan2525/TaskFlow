@@ -1,7 +1,7 @@
 import IssueAnalytics from "@libs/app/components/projects/report/IssueAnalytics";
 import MetricCards from "@libs/app/components/projects/report/MetricCards";
 import StatusOverview from "@libs/app/components/projects/report/StatusOverview";
-import { useGetUserStats } from "@libs/hooks/useUser";
+import { useGetUserStats } from "@libs/hooks/apis/useUser";
 import React from "react";
 import { useParams } from "react-router-dom";
 // import TeamOverview from "./components/TeamOverview";

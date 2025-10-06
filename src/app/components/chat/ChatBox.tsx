@@ -1,7 +1,7 @@
 // ChatBox.tsx
 import React, { useEffect, useRef, useState } from "react";
 // import ChatMessage from "./ChatMessage";
-import { MessageResponse, MessageType } from "../../../hooks/useChat";
+import { MessageResponse, MessageType } from "../../../hooks/apis/useChat";
 
 interface ChatBoxProps {
   roomId: string;

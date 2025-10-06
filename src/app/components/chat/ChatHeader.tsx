@@ -1,6 +1,6 @@
 // ChatHeader.tsx
 import React from "react";
-import { RoomInfo } from "../../../hooks/useChat";
+import { RoomInfo } from "../../../hooks/apis/useChat";
 
 interface ChatHeaderProps {
   room: RoomInfo | undefined;

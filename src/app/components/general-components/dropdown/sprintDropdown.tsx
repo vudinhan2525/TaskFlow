@@ -1,6 +1,6 @@
 import ColumnDropdown from "./columnDropdown";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
-import { useProjectSprints } from "@libs/hooks/useSprint";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
+import { useProjectSprints } from "@libs/hooks/apis/useSprint";
 import { ISprint } from "@libs/types/sprint";
 import { useMemo } from "react";
 

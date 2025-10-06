@@ -20,13 +20,19 @@ import {
 import { IColumn, ListProjectColumnsParams } from "@libs/types/project";
 import { IIssue } from "@libs/types/issue";
 import { useParams } from "react-router-dom";
-import { useAddProjectColumn, useProjectColumns } from "@libs/hooks/useProject";
+import {
+  useAddProjectColumn,
+  useProjectColumns,
+} from "@libs/hooks/apis/useProject";
 import { LuCirclePlus } from "react-icons/lu";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { FaChartLine } from "react-icons/fa";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
 import IssueCard from "./issueCard";
 import PageFilter from "@libs/app/components/general-components/pageFilter";
 import KanbanBoardSkeleton from "../../skeleton/kanbanBoardSkeleton";
+import { RefreshCcw } from "lucide-react";
+
 const DEFAULT_FILTER: ListProjectColumnsParams = {
   project_id: "",
 };
@@ -294,14 +300,37 @@ export default function KanbanBoard() {
   return (
     <div className="flex flex-col gap-4 p-4">
       <h1 className="p-2 text-2xl font-bold text-gray-700">Kanban Board</h1>
-      <PageFilter
-        onFiltersChange={(filters) => {
-          setFilter({
-            ...filters,
-            project_id: projectId,
-          } as ListProjectColumnsParams);
-        }}
-      />
+      <div className="flex items-center justify-between">
+        <PageFilter
+          onFiltersChange={(filters) => {
+            setFilter({
+              ...filters,
+              project_id: projectId,
+            } as ListProjectColumnsParams);
+          }}
+        />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="cursor-pointer rounded-md bg-blue-600 p-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+          >
+            Complete sprint
+          </button>
+
+          <button
+            type="button"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-sm border border-gray-300 bg-white p-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <RefreshCcw className="text-md" size={20} fontSize={800} />
+          </button>
+          <button
+            type="button"
+            className="inline-flex cursor-pointer items-center gap-1 rounded-sm border border-gray-300 bg-white p-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <FaChartLine className="text-md" size={20} fontSize={800} />
+          </button>
+        </div>
+      </div>
       {isLoading || columns.length === 0 ? (
         <KanbanBoardSkeleton />
       ) : (

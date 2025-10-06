@@ -1,6 +1,6 @@
 import { IIssue } from "@libs/types/issue";
 import { useState, useEffect } from "react";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 
 const ColumnInputFiled = ({
   issue,

@@ -1,5 +1,5 @@
 import ColumnDropdown from "./columnDropdown";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { IssueType } from "@libs/types/issue";
 import TypeBadge, { typeOptions } from "../badge/typeBadge";
 import { memo } from "react";

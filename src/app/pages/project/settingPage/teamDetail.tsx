@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 import PermissionsSettings from "../../../components/projects/settings/permissionSettings";
 import { useParams } from "react-router-dom";
-import { useProjectTeamById } from "@libs/hooks/useTeam";
+import { useProjectTeamById } from "@libs/hooks/apis/useTeam";
 import UserAvatar from "@libs/app/components/general-components/user/userAvatar";
-import { useUpdateTeam } from "@libs/hooks/useTeam";
+import { useUpdateTeam } from "@libs/hooks/apis/useTeam";
 import AddProjectTeamMemberModal from "@libs/app/components/projects/modals/addProjectTeamMemberModal";
 
 import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";

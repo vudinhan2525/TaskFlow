@@ -1,7 +1,7 @@
 import Modal from "@libs/app/components/general-components/modal/modal";
 import { useState } from "react";
 import FindUser from "@libs/app/components/general-components/findUser";
-import { useAddProjectMemberToTeam } from "@libs/hooks/useProjectMember";
+import { useAddProjectMemberToTeam } from "@libs/hooks/apis/useProjectMember";
 interface AddProjectTeamMemberModalProps {
   isOpen: boolean;
   onClose: () => void;

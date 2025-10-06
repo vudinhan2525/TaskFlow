@@ -1,8 +1,8 @@
 import { Tooltip } from "antd";
 import { useAuthStore } from "@libs/store/useAuthStore";
-import { usePermission } from "@libs/hooks/usePermission";
+import { usePermission } from "@libs/hooks/common/usePermission";
 import { IUser } from "@libs/types/user";
-import { PermissionResource } from "@libs/hooks/usePermission";
+import { PermissionResource } from "@libs/hooks/common/usePermission";
 
 export const PermissionButton = ({
   title,

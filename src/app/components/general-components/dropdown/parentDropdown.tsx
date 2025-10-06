@@ -1,6 +1,6 @@
 import { memo } from "react";
-import { useProjectIssues } from "@libs/hooks/useIssue";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useProjectIssues } from "@libs/hooks/apis/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import ColumnDropdown from "./columnDropdown";
 import { IIssue } from "@libs/types/issue";
 
@@ -19,7 +19,8 @@ const ParentDropdown = ({
 }: ParentDropdownProps) => {
   const { issues: epicIssues } = useProjectIssues({
     project_id: projectId,
-    types: ["epic"],
+    types: ["Epic"],
+    is_fetch: true,
   });
 
   const { updateIssueAsync } = useUpdateIssue({ projectId });

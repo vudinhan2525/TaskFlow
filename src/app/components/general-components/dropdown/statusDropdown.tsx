@@ -1,6 +1,6 @@
 import ColumnDropdown from "./columnDropdown";
-import { useProjectColumns } from "@libs/hooks/useProject";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useProjectColumns } from "@libs/hooks/apis/useProject";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { IColumn } from "@libs/types/project";
 import StatusBadge from "../badge/statusBadge";
 import { memo, useState } from "react";

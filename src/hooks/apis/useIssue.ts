@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { issues } from "../apis/issue";
+import { issues } from "../../apis/issue";
 import {
   CreateIssueParams,
   GetActivitiesParams,

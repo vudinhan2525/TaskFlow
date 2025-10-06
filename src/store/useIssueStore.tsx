@@ -1,3 +1,4 @@
+import { IIssue } from "@libs/types/issue";
 import { create } from "zustand";
 
 interface IssueState {
@@ -5,10 +6,11 @@ interface IssueState {
   openIssueDetail: (issue: string) => void;
   closeIssueDetail: () => void;
 
-  // selectedIssues: Record<string, IIssue[]>;
-  // setSelectedIssues: (issues: Record<string, IIssue[]>) => void;
   selectedIssues: Map<string, Set<string>>;
   setSelectedIssues: (issues: Map<string, Set<string>>) => void;
+
+  epicIssues: IIssue[];
+  setEpicIssues: (issues: IIssue[]) => void;
 }
 
 const params = new URLSearchParams(window.location.search);
@@ -32,4 +34,7 @@ export const useIssueStore = create<IssueState>((set) => ({
 
   selectedIssues: new Map<string, Set<string>>(),
   setSelectedIssues: (selectedIssues) => set({ selectedIssues }),
+
+  epicIssues: [],
+  setEpicIssues: (issues) => set({ epicIssues: issues }),
 }));

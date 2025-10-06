@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useProjectIssues } from "@libs/hooks/useIssue";
+import { useProjectIssues } from "@libs/hooks/apis/useIssue";
 import { GetIssuesParams, IIssue } from "@libs/types/issue";
 import ListTable from "./listTable";
 import { TableRowSelection } from "antd/es/table/interface";

@@ -29,7 +29,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { CSSProperties } from "react";
-import { useProject } from "../../../hooks/useProject";
+import { useProject } from "../../../hooks/apis/useProject";
 import AddProjectMemberModal from "./modals/addProjectMemberModal";
 import { useIssueStore } from "@libs/store/useIssueStore";
 import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";

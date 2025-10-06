@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ConfigProvider, Select, Spin } from "antd";
 import UserAvatar from "./user/userAvatar";
-import { useDebounce } from "@libs/hooks/useDebounce";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
+import { useDebounce } from "@libs/hooks/common/useDebounce";
+import { useProjectMembers } from "@libs/hooks/apis/useProjectMember";
 import { useParams } from "react-router-dom";
 
 interface FindUserProps {

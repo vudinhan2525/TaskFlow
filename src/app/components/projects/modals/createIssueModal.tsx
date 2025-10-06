@@ -10,10 +10,10 @@ import {
   useProject,
   useProjectColumns,
   useUserProjects,
-} from "@libs/hooks/useProject";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import { useCreateIssue, useUpdateIssue } from "@libs/hooks/useIssue";
-import { useProjectSprints } from "@libs/hooks/useSprint";
+} from "@libs/hooks/apis/useProject";
+import { useProjectMembers } from "@libs/hooks/apis/useProjectMember";
+import { useCreateIssue, useUpdateIssue } from "@libs/hooks/apis/useIssue";
+import { useProjectSprints } from "@libs/hooks/apis/useSprint";
 import { IssuePriority, CreateIssueParams } from "@libs/types/issue";
 import { useAuthStore } from "@libs/store/useAuthStore";
 import { IssueType } from "@libs/types/issue";

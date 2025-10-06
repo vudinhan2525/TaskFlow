@@ -6,7 +6,7 @@ import {
   useDeleteColumn,
   useUpdateColumn,
   useUpdateProjectOrderColumn,
-} from "@libs/hooks/useProject";
+} from "@libs/hooks/apis/useProject";
 import { IIssue } from "@libs/types/issue";
 import { IColumn } from "@libs/types/project";
 import { Popover } from "antd";

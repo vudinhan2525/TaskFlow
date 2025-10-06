@@ -1,10 +1,10 @@
-import  { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import UserTable from "@libs/app/components/admin/users/UserTable";
 import UserModal from "@libs/app/components/admin/users/UserModal";
 import SearchFilters from "@libs/app/components/admin/common/SearchFilters";
-import { useListUser } from "@libs/hooks/useUser";
+import { useListUser } from "@libs/hooks/apis/useUser";
 import { IUser } from "@libs/types/user";
-import { useDebounce } from "@libs/hooks/useDebounce";
+import { useDebounce } from "@libs/hooks/common/useDebounce";
 
 export type UserSortField = "name" | "email" | "role" | "created_at";
 export type SortOrder = "asc" | "desc";

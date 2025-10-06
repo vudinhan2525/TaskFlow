@@ -1,8 +1,8 @@
 import ColumnDropdown from "./columnDropdown";
 import { IProjectMember } from "@libs/types/projectMember";
 import UserAvatar from "../user/userAvatar";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useProjectMembers } from "@libs/hooks/apis/useProjectMember";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { memo } from "react";
 
 const UserDropdown = ({

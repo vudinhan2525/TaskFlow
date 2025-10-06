@@ -1,18 +1,18 @@
 import { useRef, lazy, useMemo, useCallback } from "react";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
 import { IoIosClose } from "react-icons/io";
-import { useIssue } from "@libs/hooks/useIssue";
+import { useIssue } from "@libs/hooks/apis/useIssue";
 import { useParams } from "react-router-dom";
 import { useIssueStore } from "@libs/store/useIssueStore";
 import IssueDetailSkeleton from "../skeleton/issueDetailSkeleton";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { useElementSize } from "@libs/hooks/useElementSize";
+import { useElementSize } from "@libs/hooks/common/useElementSize";
 import { useAuthStore } from "@libs/store/useAuthStore";
 import { useUserTeamStore } from "@libs/store/useProjectStore";
 import { PermissionContext } from "@libs/app/context/permission.context";
-import { usePermission } from "@libs/hooks/usePermission";
+import { usePermission } from "@libs/hooks/common/usePermission";
 import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
 import TypeBadge from "../general-components/badge/typeBadge";
 

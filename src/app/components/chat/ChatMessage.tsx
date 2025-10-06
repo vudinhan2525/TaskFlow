@@ -1,6 +1,6 @@
 // ChatMessage.tsx
 import React from "react";
-import { MessageResponse } from "../../../hooks/useChat";
+import { MessageResponse } from "../../../hooks/apis/useChat";
 
 interface ChatMessageProps {
   message: MessageResponse;

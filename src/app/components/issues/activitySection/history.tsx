@@ -1,4 +1,4 @@
-import { useActivities } from "@libs/hooks/useIssue";
+import { useActivities } from "@libs/hooks/apis/useIssue";
 
 export default function History({
   issueId,
@@ -96,7 +96,7 @@ export default function History({
 
   const formatFieldLabel = (field: string) => {
     switch (field) {
-    case "Description":
+      case "Description":
         return "updated the description";
       case "Status":
         return "changed status";

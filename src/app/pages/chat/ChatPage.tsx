@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useChat, MessageType } from "../../../hooks/useChat";
+import { useChat, MessageType } from "../../../hooks/apis/useChat";
 import ChatRoomList from "../../components/chat/ChatRoomList";
 import ChatHeader from "../../components/chat/ChatHeader";
 import ChatBox from "../../components/chat/ChatBox";

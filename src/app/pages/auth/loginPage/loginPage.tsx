@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import OrthersLogin from "@libs/app/components/general-components/orthersLogin";
 import { Link } from "react-router-dom";
-import { useAuth } from "@libs/hooks/useAuth";
+import { useAuth } from "@libs/hooks/apis/useAuth";
 
 import Button from "@libs/app/components/general-components/button";
 // Schema definition with Zod
