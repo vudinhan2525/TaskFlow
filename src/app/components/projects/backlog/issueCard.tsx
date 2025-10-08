@@ -1,6 +1,6 @@
 import { IIssue } from "@libs/types/issue";
 import { useProjectColumns } from "@libs/hooks/apis/useProject";
-import { useState, useEffect, memo, useCallback } from "react";
+import { useState, useEffect, memo, useCallback, useRef } from "react";
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -11,7 +11,6 @@ import StatusDropdown from "../../general-components/dropdown/statusDropdown";
 import TypeBadge from "../../general-components/badge/typeBadge";
 import UserDropdown from "../../general-components/dropdown/userDropdown";
 import ParentDropdown from "../../general-components/dropdown/parentDropdown";
-
 import CustomDatePicker from "../../general-components/customDatePicker";
 import { useIssueStore } from "@libs/store/useIssueStore";
 import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
@@ -20,7 +19,7 @@ import { useAuthStore } from "@libs/store/useAuthStore";
 import { useUserTeams } from "@libs/hooks/apis/useTeam";
 import { PermissionContext } from "@libs/app/context/permission.context";
 
-const DroppableWrapper = memo(
+const DragableWrapper = memo(
   ({ issueId, children }: { issueId: string; children: React.ReactNode }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({
@@ -86,10 +85,12 @@ const IssueCard = memo(
     useEffect(() => {
       setIssueSummary(issue.summary);
     }, [issue.summary]);
+    const ref = useRef<HTMLDivElement>(null);
 
     return (
-      <DroppableWrapper issueId={issue.id}>
+      <DragableWrapper issueId={issue.id}>
         <div
+          ref={ref}
           className={`group bg-white px-2 py-1 shadow-sm transition-all duration-200 hover:bg-gray-100`}
         >
           <PermissionContext.Provider value={permissionResult}>
@@ -133,7 +134,10 @@ const IssueCard = memo(
               <div
                 className="grid w-[35%] max-w-[50%] min-w-[400px] grid-cols-12 gap-1"
                 onPointerDown={stopPropagation}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  console.log("clicked");
+                  e.stopPropagation();
+                }}
               >
                 {/* parent dropdown */}
                 <div className="col-span-4 flex items-center hover:cursor-pointer">
@@ -188,7 +192,7 @@ const IssueCard = memo(
             </div>
           </PermissionContext.Provider>
         </div>
-      </DroppableWrapper>
+      </DragableWrapper>
     );
   },
 );

@@ -49,6 +49,7 @@ export interface ListProjectColumnsParams {
   due_date_to?: string;
   created_at_from?: string;
   created_at_to?: string;
+  active_sprint_only?: boolean;
 }
 
 export interface StatusCount {
@@ -77,7 +78,7 @@ export interface UserStats {
 export interface IPermission {
   id: string;
   key: string;
-  resource: string; 
+  resource: string;
   label: string;
   description: string;
 }

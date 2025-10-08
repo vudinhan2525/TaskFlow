@@ -41,11 +41,13 @@ const PriorityDropdown = ({
             boxShadow: "none",
           },
           label: (
-            <PriorityBadge
-              priority={option.name as IssuePriority}
-              isShowLabel={true}
-              className="p-2"
-            />
+            <div className="border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200">
+              <PriorityBadge
+                priority={option.name as IssuePriority}
+                isShowLabel={true}
+                className="hover:bg-transparent!"
+              />
+            </div>
           ),
           onClick: () => {
             handleChangePriority(option.name as IssuePriority);

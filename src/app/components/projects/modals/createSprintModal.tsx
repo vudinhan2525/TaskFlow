@@ -5,20 +5,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import { useCreateSprint, useUpdateSprint } from "@libs/hooks/apis/useSprint";
 import { LuCalendar, LuClock, LuChevronDown } from "react-icons/lu";
-
+import { ISprint } from "@libs/types/sprint";
+import { IIssue } from "@libs/types/issue";
+interface ISprintIssues extends ISprint {
+  issues: IIssue[];
+}
 interface CreateSprintModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
   isEditing?: boolean;
-  initialSprint?: {
-    id: string;
-    name: string;
-    date_started: string;
-    date_ended: string;
-    goal?: string;
-    duration?: number;
-  };
+  initialSprint?: ISprint | null | ISprintIssues;
 }
 
 const sprintSchema = z
@@ -99,6 +96,8 @@ const CreateSprintModal: React.FC<CreateSprintModalProps> = ({
       setValue("date_ended", initialSprint.date_ended.split("T")[0]);
       setValue("goal", initialSprint.goal || "");
     }
+
+    console.log(initialSprint);
   }, [isEditing, initialSprint, setValue]);
 
   const handleFormSubmit: SubmitHandler<SprintFormData> = async (data) => {

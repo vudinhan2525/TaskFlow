@@ -95,7 +95,7 @@ const TeamBadge = ({
           className={`${sizeClasses[size].icon} ${selectedColor.textColor}`}
         />
         {isShowLabel && (
-          <p className={`font-semibold ${selectedColor.textColor}`}>
+          <p className={`truncate font-semibold ${selectedColor.textColor}`}>
             {team.name || "Unnamed Team"}
           </p>
         )}

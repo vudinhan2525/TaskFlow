@@ -15,6 +15,9 @@ interface BacklogContextType {
     height: number;
   };
   setIssueCardSize: (size: { width: number; height: number }) => void;
+
+  scrollTop: number;
+  setScrollTop: (scrollTop: number) => void;
 }
 
 const BacklogContext = createContext<BacklogContextType | undefined>(undefined);
@@ -47,6 +50,14 @@ export const useIssueCardSize = () => {
   return context;
 };
 
+export const useScrollTop = () => {
+  const context = useContext(BacklogContext);
+  if (context === undefined) {
+    throw new Error("useScrollTop must be used within an ScrollTopProvider");
+  }
+  return context;
+};
+
 interface BacklogProviderProps {
   children: ReactNode;
 }
@@ -63,7 +74,7 @@ export const BacklogProvider: React.FC<BacklogProviderProps> = ({
     width: number;
     height: number;
   }>({ width: 0, height: 0 });
-
+  const [scrollTop, setScrollTop] = useState(0);
   return (
     <BacklogContext.Provider
       value={{
@@ -73,6 +84,8 @@ export const BacklogProvider: React.FC<BacklogProviderProps> = ({
         setScrumSprintSize,
         issueCardSize,
         setIssueCardSize,
+        scrollTop,
+        setScrollTop,
       }}
     >
       {children}

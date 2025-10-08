@@ -43,7 +43,21 @@ const TeamDropdown = ({
           .map((team: ITeam) => ({
             value: team.name,
             key: team.id,
-            label: <TeamBadge team={team} isShowLabel={true} className="p-2" />,
+            style: {
+              padding: 0,
+              background: "white",
+              border: "none",
+              boxShadow: "none",
+            },
+            label: (
+              <div className="border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200">
+                <TeamBadge
+                  team={team}
+                  isShowLabel={true}
+                  className="hover:bg-transparent!"
+                />
+              </div>
+            ),
             onClick: () => {
               handleChangeTeam(team.id);
             },
@@ -51,8 +65,14 @@ const TeamDropdown = ({
           .concat({
             value: "Unassigned",
             key: "Unassigned",
+            style: {
+              padding: 0,
+              background: "white",
+              border: "none",
+              boxShadow: "none",
+            },
             label: (
-              <div className="flex items-center gap-2 p-2">
+              <div className="flex items-center gap-2 border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200">
                 <div className="h-4 w-4 rounded-full bg-gray-300"></div>
                 <span className="text-sm text-gray-600">Unassigned</span>
               </div>

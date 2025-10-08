@@ -43,12 +43,12 @@ const BackLogPageContent: React.FC = () => {
     handleDragEnd,
     activeIssue,
     isDragging,
-    sensors,
     sprintIssues,
     issues,
     isCreateSprintModalOpen,
     setIsCreateSprintModalOpen,
     selectedIssueId,
+    sensors,
   } = useBackLogPage(projectId);
 
   return (
@@ -117,15 +117,7 @@ const BackLogPageContent: React.FC = () => {
                   minSize={50}
                   maxSize={100}
                 >
-                  <div
-                    onScroll={(e) => {
-                      console.log(
-                        "onScroll",
-                        (e.target as HTMLDivElement).scrollTop,
-                      );
-                    }}
-                    className="h-full overflow-auto pr-4"
-                  >
+                  <div className="h-full overflow-auto pr-4">
                     <ul className="flex min-w-[650px] flex-col gap-2 overflow-x-auto">
                       {sprintIssues?.map((sprint: ISprintIssues) => (
                         <div key={sprint.id}>
@@ -133,8 +125,16 @@ const BackLogPageContent: React.FC = () => {
                             sprint={sprint}
                             projectId={projectId}
                             isDragging={isDragging}
-                            setIsCreateSprintModalOpen={(isOpen, sprint) => {
-                              setIsCreateSprintModalOpen({ isOpen, sprint });
+                            setIsCreateSprintModalOpen={(data: {
+                              isOpen: boolean;
+                              sprint?: ISprintIssues | ISprint | null;
+                            }) => {
+                              setIsCreateSprintModalOpen(
+                                data as {
+                                  isOpen: boolean;
+                                  sprint: ISprint | null;
+                                },
+                              );
                             }}
                           />
                         </div>
@@ -180,6 +180,7 @@ const BackLogPageContent: React.FC = () => {
               )}
             </DragOverlay>
           </div>
+          -+
         </DndContext>
       )}
 
@@ -197,6 +198,7 @@ const BackLogPageContent: React.FC = () => {
             });
           }}
           projectId={projectId}
+          initialSprint={isCreateSprintModalOpen.sprint}
         />
       )}
     </div>

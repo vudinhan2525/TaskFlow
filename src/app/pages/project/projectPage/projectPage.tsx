@@ -6,7 +6,7 @@ import ProjectStat from "@libs/app/components/projects/dashboard/projectStat";
 import ProjectTable from "@libs/app/components/projects/dashboard/projectTable";
 import ProjectDeadlines from "@libs/app/components/projects/dashboard/projectDeadlines";
 import CreateProjectModal from "@libs/app/components/projects/modals/createProjectModal";
-import { Helmet} from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 
 const filterOptions = [
   { value: "newest", label: "Newest" },

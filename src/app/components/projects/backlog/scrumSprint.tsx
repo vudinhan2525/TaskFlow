@@ -49,7 +49,10 @@ interface ScrumSprintProps {
   sprint: ISprintIssues;
   projectId: string;
   isDragging: boolean;
-  setIsCreateSprintModalOpen: (isOpen: boolean, sprint: ISprint | null) => void;
+  setIsCreateSprintModalOpen: (data: {
+    isOpen: boolean;
+    sprint?: ISprint | null | ISprintIssues;
+  }) => void;
 }
 
 const ScrumSprint = memo(
@@ -92,7 +95,11 @@ const ScrumSprint = memo(
         key: "edit-sprint",
         onClick: () =>
           startTransition(() => {
-            setIsCreateSprintModalOpen(true, sprint);
+            console.log(sprint);
+            setIsCreateSprintModalOpen({
+              isOpen: true,
+              sprint: sprint,
+            });
           }),
       },
       {
@@ -183,7 +190,10 @@ const ScrumSprint = memo(
                         <span
                           onClick={() => {
                             startTransition(() => {
-                              setIsCreateSprintModalOpen(true, null);
+                              setIsCreateSprintModalOpen({
+                                isOpen: true,
+                                sprint: null,
+                              });
                             });
                           }}
                           className="text-sm font-semibold text-gray-900"
@@ -206,7 +216,10 @@ const ScrumSprint = memo(
                         <span
                           onClick={() => {
                             startTransition(() => {
-                              setIsCreateSprintModalOpen(true, sprint);
+                              setIsCreateSprintModalOpen({
+                                isOpen: true,
+                                sprint: sprint,
+                              });
                             });
                           }}
                           className="text-sm font-semibold text-gray-900"
@@ -240,7 +253,7 @@ const ScrumSprint = memo(
             </div>
             {/* Body */}
             {isExpanded && (
-              <div className="flex flex-col gap-2 divide-y divide-gray-100 bg-[#f8f8f8] p-2">
+              <div className="flex flex-col gap-2 divide-y divide-gray-100 bg-[#f8f8f8] p-2 px-3">
                 <div>
                   <SortableContext
                     strategy={horizontalListSortingStrategy}
@@ -256,10 +269,19 @@ const ScrumSprint = memo(
                               opacity:
                                 isDragging && issue.id === overItemId ? 1 : 0,
                             }}
-                            className="absolute bottom-[-6px] left-0 z-50 flex w-full flex-row items-center"
+                            className="absolute top-[-2px] left-0 z-50 flex w-full flex-row items-center"
+                          >
+                            <div className="h-[2px] w-full bg-emerald-500" />
+                          </div>
+
+                          <div
+                            style={{
+                              opacity:
+                                isDragging && issue.id === overItemId ? 1 : 0,
+                            }}
+                            className="absolute top-[-6px] left-[-8px] z-50 flex w-full flex-row items-center"
                           >
                             <div className="z-50 rounded-[100%] border-1 border-emerald-500 p-1" />
-                            <div className="h-[2px] w-full bg-emerald-500" />
                           </div>
                         </div>
                       ))

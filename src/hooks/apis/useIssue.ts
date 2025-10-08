@@ -183,8 +183,6 @@ export function useDeleteIssue({
   } = useMutation({
     mutationFn: (issueId: string) => issues.delete(projectId, issueId),
     onSuccess: () => {
-      // toast.success("Issue deleted successfully!");
-      // Invalidate all issue-related queries for this project
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
       if (onClose) onClose();
     },

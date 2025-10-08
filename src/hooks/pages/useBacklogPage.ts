@@ -8,13 +8,10 @@ import {
   useSensors,
   useSensor,
   PointerSensor,
-  MouseSensor,
-  KeyboardSensor,
   DragStartEvent,
   DragOverEvent,
   DragEndEvent,
 } from "@dnd-kit/core";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { ISprint } from "@libs/types/sprint";
 import { IIssue } from "@libs/types/issue";
 import { GetIssuesParams } from "@libs/types/issue";
@@ -40,12 +37,12 @@ export const useBackLogPage = (projectId: string) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [filters, setFilters] = useState<GetIssuesParams>({
     project_id: projectId,
-    limit: 16,
+    limit: 100,
     is_fetch: true,
   });
   const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState<{
     isOpen: boolean;
-    sprint: ISprint | null;
+    sprint: ISprint | null | ISprintIssues;
   }>({ isOpen: false, sprint: null });
   const { selectedIssueId } = useIssueStore();
   const { setOverItemId } = useOverItem();
@@ -56,9 +53,7 @@ export const useBackLogPage = (projectId: string) => {
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [sprintIssues, setSprintIssues] = useState<ISprintIssues[]>([]);
-  const [scrollTop, setScrollTop] = useState(0);
 
-  // 🧠 Derived state
   useEffect(() => {
     if (sprints.length && issues.length) {
       const issuesNotEpic = getIssuesNotEpic(issues);
@@ -71,7 +66,6 @@ export const useBackLogPage = (projectId: string) => {
         })),
       );
     }
-    console.log(sprints, issues);
   }, [sprints, issues, isLoadingSprints, isLoadingIssues]);
 
   const handleDragStart = useCallback(
@@ -194,7 +188,7 @@ export const useBackLogPage = (projectId: string) => {
 
           //Drop into the target sprint
           if (isOverSprint) {
-            newSprints[targetSprintIndex].issues.push(activeIssue);
+            newSprints[targetSprintIndex].issues.push(activeIssue as IIssue);
           } else {
             const targetIssueIndex = newSprints[
               targetSprintIndex
@@ -203,7 +197,7 @@ export const useBackLogPage = (projectId: string) => {
             newSprints[targetSprintIndex].issues.splice(
               targetIssueIndex,
               0,
-              activeIssue,
+              activeIssue as IIssue,
             );
           }
           return newSprints;
@@ -225,11 +219,7 @@ export const useBackLogPage = (projectId: string) => {
   );
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 0.01 } }),
-    useSensor(MouseSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
   );
 
   return {
@@ -244,8 +234,6 @@ export const useBackLogPage = (projectId: string) => {
     isLoadingIssues,
     selectedIssueId,
     isDragging,
-    scrollTop,
-    setScrollTop,
     activeIssue,
     sensors,
     handleDragStart,
