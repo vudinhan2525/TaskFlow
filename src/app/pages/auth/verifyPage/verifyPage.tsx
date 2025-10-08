@@ -5,7 +5,7 @@ import Image from "@libs/app/components/general-components/image";
 import logo from "@libs/assets/taskflow.png";
 import { Link, useLocation } from "react-router-dom";
 import Button from "@libs/app/components/general-components/button";
-import { useAuth } from "@libs/hooks/useAuth";
+import { useAuth } from "@libs/hooks/apis/useAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@libs/store";
 import { setError } from "@libs/store/slices/authSlice";

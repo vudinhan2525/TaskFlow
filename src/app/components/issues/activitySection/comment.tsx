@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useComments, useCreateComment } from "@libs/hooks/useComment";
+import { useComments, useCreateComment } from "@libs/hooks/apis/useComment";
 import { IComment } from "@libs/types/comment";
 
 interface CommentProps {

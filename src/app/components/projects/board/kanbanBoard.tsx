@@ -1,49 +1,41 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   DndContext,
   DragEndEvent,
   DragOverEvent,
   DragStartEvent,
-  KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
   DragOverlay,
-  closestCorners,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
-  sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { IColumn, ListProjectColumnsParams } from "@libs/types/project";
-import { IIssue } from "@libs/types/issue";
+import { IColumn } from "@libs/types/project";
+import { IIssue, IIssueWithoutCoulumn } from "@libs/types/issue";
 import { useParams } from "react-router-dom";
-import { useAddProjectColumn, useProjectColumns } from "@libs/hooks/useProject";
+import { useAddProjectColumn } from "@libs/hooks/apis/useProject";
 import { LuCirclePlus } from "react-icons/lu";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { KanbanColumn } from "@libs/app/components/projects/board/kanbanColumn";
 import IssueCard from "./issueCard";
-import PageFilter from "@libs/app/components/general-components/pageFilter";
-import KanbanBoardSkeleton from "../../skeleton/kanbanBoardSkeleton";
-const DEFAULT_FILTER: ListProjectColumnsParams = {
-  project_id: "",
-};
-export default function KanbanBoard() {
+import { useOverItem } from "@libs/app/context/board.context";
+
+export default function KanbanBoard({
+  initialColumns,
+}: {
+  initialColumns: IColumn[];
+}) {
   const { projectId } = useParams();
-  const [filter, setFilter] =
-    useState<ListProjectColumnsParams>(DEFAULT_FILTER);
-  const { columns: initialColumns, isLoading } = useProjectColumns(filter);
 
   const [columns, setColumns] = useState<IColumn[]>(initialColumns);
   const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [newColumnText, setNewColumnText] = useState("");
-  const { createColumn } = useAddProjectColumn({
-    setColumns: setColumns,
-  });
-
+  const { setOverItemId } = useOverItem();
   const { updateIssue } = useUpdateIssue({
     projectId: projectId || "",
     isNotToasting: true,
@@ -53,9 +45,6 @@ export default function KanbanBoard() {
       activationConstraint: {
         distance: 1,
       },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 
@@ -86,128 +75,22 @@ export default function KanbanBoard() {
   // Handler for when item is dragged over a droppable area
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
-      const { active, over } = event;
-      if (!over || !activeIssue) return;
-
-      const activeId = active.id as string;
+      const { over } = event;
+      if (!over) return;
       const overId = over.id as string;
+      const overRect = over.rect; // bounding box của issue bị hover
+      const draggingY = event.active.rect.current.translated?.top ?? 0;
+      const middleY = overRect.top + overRect.height / 2;
 
-      if (activeId === overId) {
-        return;
-      }
-      // Check if we're hovering over a column
-      const isOverColumn = columns.some((col) => col.id === overId);
-      if (isOverColumn) {
-        // We're dropping onto a column directly
-        setColumns((prevColumns) => {
-          // Find which column the active issue belongs to
-          const sourceColumnIndex = prevColumns.findIndex((column) =>
-            column.issues.some((issue) => issue.id === activeId),
-          );
-
-          if (sourceColumnIndex === -1) return prevColumns;
-
-          // Remove from the source column
-          const newColumns = [...prevColumns];
-          const activeIssue = newColumns[sourceColumnIndex].issues.find(
-            (issue) => issue.id === activeId,
-          );
-
-          if (!activeIssue) return prevColumns;
-
-          newColumns[sourceColumnIndex] = {
-            ...newColumns[sourceColumnIndex],
-            issues: newColumns[sourceColumnIndex].issues.filter(
-              (issue) => issue.id !== activeId,
-            ),
-          };
-
-          // Add to the target column (at the end)
-          const targetColumnIndex = prevColumns.findIndex(
-            (column) => column.id === overId,
-          );
-
-          if (targetColumnIndex === -1) return prevColumns;
-
-          newColumns[targetColumnIndex] = {
-            ...newColumns[targetColumnIndex],
-            issues: [...newColumns[targetColumnIndex].issues, activeIssue],
-          };
-
-          return newColumns;
-        });
-        setActiveColumn(overId);
-        return;
+      if (draggingY < middleY) {
+        console.log("Insert ABOVE", over.id);
+        // => nghĩa là thả vào trên issue này
+      } else {
+        console.log("Insert BELOW", over.id);
+        // => nghĩa là thả vào dưới issue này
       }
 
-      // We're over an issue
-      // Find out which column the over issue belongs to
-      let overColumnId = null;
-      let overIssue = null;
-
-      for (const column of columns) {
-        overIssue = column.issues.find((issue) => issue.id === overId);
-        if (overIssue) {
-          overColumnId = column.id;
-          break;
-        }
-      }
-
-      if (!overColumnId || !overIssue) return;
-
-      // Only proceed if we're over a different column or we're reordering within the same column
-      if (activeColumn !== overColumnId) {
-        const prevColumns = [...columns];
-        const sourceColumnIndex = prevColumns.findIndex((column) =>
-          column.issues.some((issue) => issue.id === activeId),
-        );
-
-        // Find the target column index
-        const targetColumnIndex = prevColumns.findIndex(
-          (column) => column.id === overColumnId,
-        );
-
-        if (sourceColumnIndex === -1 || targetColumnIndex === -1) {
-          return prevColumns;
-        }
-
-        // Get the active issue
-        const issueToMove = prevColumns[sourceColumnIndex].issues.find(
-          (issue) => issue.id === activeId,
-        );
-
-        if (!issueToMove) return prevColumns;
-
-        // Create new columns array
-        const newColumns = [...prevColumns];
-
-        // Remove from source
-        newColumns[sourceColumnIndex] = {
-          ...newColumns[sourceColumnIndex],
-          issues: newColumns[sourceColumnIndex].issues.filter(
-            (issue) => issue.id !== activeId,
-          ),
-        };
-
-        // Find where to insert in target
-        const overIssueIndex = newColumns[targetColumnIndex].issues.findIndex(
-          (issue) => issue.id === overId,
-        );
-        // Insert in target
-        newColumns[targetColumnIndex] = {
-          ...newColumns[targetColumnIndex],
-          issues: [
-            ...newColumns[targetColumnIndex].issues.slice(
-              0,
-              overIssueIndex + 1,
-            ),
-            issueToMove,
-            ...newColumns[targetColumnIndex].issues.slice(overIssueIndex + 1),
-          ],
-        };
-        setActiveColumn(newColumns[targetColumnIndex].id);
-        setColumns(newColumns);
-      }
+      setOverItemId(overId);
     },
     [columns, activeIssue],
   );
@@ -219,17 +102,42 @@ export default function KanbanBoard() {
 
       setActiveIssue(null);
       setActiveColumn(null);
+      setOverItemId("");
 
       if (!over) return;
 
       const activeId = active.id as string;
       const overId = over.id as string;
+      if (activeId === overId) return;
 
-      // Update issue status in backend
-      if (projectId) {
-        const targetColumn = columns.find((col) =>
-          col.issues.some((issue) => issue.id === overId),
-        );
+      if (over.data.current?.type === "Column") {
+        const targetColumn = over.data.current?.column;
+        setColumns((prevColumns: IColumn[]) => {
+          const sourceColumnIndex = prevColumns.findIndex(
+            (column) => column.id === activeColumn,
+          );
+          const newColumns = [...prevColumns];
+          const activeIssue = newColumns[sourceColumnIndex].issues.find(
+            (issue) => issue.id === activeId,
+          );
+
+          newColumns[sourceColumnIndex].issues = newColumns[
+            sourceColumnIndex
+          ].issues.filter((issue) => issue.id !== activeId);
+
+          const targetColumnIndex = newColumns.findIndex(
+            (column) => column.id === targetColumn.id,
+          );
+
+          newColumns[targetColumnIndex] = {
+            ...newColumns[targetColumnIndex],
+            issues: [
+              ...newColumns[targetColumnIndex].issues,
+              activeIssue as IIssueWithoutCoulumn,
+            ],
+          };
+          return newColumns;
+        });
         if (targetColumn) {
           updateIssue({
             id: activeId,
@@ -238,14 +146,9 @@ export default function KanbanBoard() {
             },
           });
         }
-      }
-      if (activeId === overId) return;
-
-      const isOverColumn = columns.some((col) => col.id === overId);
-
-      if (isOverColumn) {
         return;
       }
+
       // We're dropping onto another issue
       setColumns((prevColumns) => {
         // Find the column containing our active issue
@@ -279,88 +182,120 @@ export default function KanbanBoard() {
 
           return newColumns;
         }
+        // Cross-column movement
+        if (activeColumnIndex !== overColumnIndex) {
+          setColumns((prevColumns: IColumn[]) => {
+            const sourceColumnIndex = prevColumns.findIndex(
+              (column) => column.id === activeColumn,
+            );
+            // Get the active issue
+            const issueToMove = prevColumns[sourceColumnIndex].issues.find(
+              (issue) => issue.id === activeId,
+            );
+            const newColumns = [...prevColumns];
 
-        return prevColumns; // Cross-column movement was handled in dragOver
+            // Remove from source
+            newColumns[sourceColumnIndex] = {
+              ...newColumns[sourceColumnIndex],
+              issues: newColumns[sourceColumnIndex].issues.filter(
+                (issue) => issue.id !== activeId,
+              ),
+            };
+
+            // Find where to insert in target
+            const overIssueIndex = newColumns[overColumnIndex].issues.findIndex(
+              (issue) => issue.id === overId,
+            );
+            // Insert in target
+            newColumns[overColumnIndex] = {
+              ...newColumns[overColumnIndex],
+              issues: [
+                ...newColumns[overColumnIndex].issues.slice(0, overIssueIndex),
+                issueToMove,
+                ...newColumns[overColumnIndex].issues.slice(overIssueIndex),
+              ] as IIssueWithoutCoulumn[],
+            };
+
+            return newColumns;
+          });
+        }
+
+        return prevColumns;
       });
+      if (projectId) {
+        const targetColumn = columns.find((col) =>
+          col.issues.some((issue) => issue.id === overId),
+        );
+        if (targetColumn) {
+          updateIssue({
+            id: activeId,
+            data: {
+              column_id: targetColumn.id,
+            },
+          });
+        }
+      }
     },
     [columns, activeIssue],
   );
+  const { createColumn } = useAddProjectColumn({
+    setColumns: setColumns,
+  });
 
-  useEffect(() => {
-    if (initialColumns.length > 0) {
-      setColumns(initialColumns);
-    }
-  }, [initialColumns]);
   return (
-    <div className="flex flex-col gap-4 p-4">
-      <h1 className="p-2 text-2xl font-bold text-gray-700">Kanban Board</h1>
-      <PageFilter
-        onFiltersChange={(filters) => {
-          setFilter({
-            ...filters,
-            project_id: projectId,
-          } as ListProjectColumnsParams);
-        }}
-      />
-      {isLoading || columns.length === 0 ? (
-        <KanbanBoardSkeleton />
-      ) : (
-        <div className="flex">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={columns.map((col) => col.id)}
-              strategy={horizontalListSortingStrategy}
-            >
-              {columns.map((column) => (
-                <KanbanColumn
-                  key={column.id}
-                  column={column}
-                  setColumns={setColumns}
-                  columns={columns}
-                  projectId={projectId}
-                />
-              ))}
-              <div className="relative h-[200px] w-80 rounded-lg bg-gray-100 p-4">
-                <input
-                  id="email-address"
-                  autoComplete="email"
-                  onChange={(e) => {
-                    setNewColumnText(e.target.value);
-                  }}
-                  placeholder="New Stage"
-                  className={`relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
-                />
-                <div className="absolute top-[60%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] items-center justify-center">
-                  <LuCirclePlus
-                    className="cursor-pointer text-4xl text-gray-600"
-                    onClick={() => {
-                      if (!newColumnText || !projectId) {
-                        return;
-                      }
-                      createColumn({
-                        name: newColumnText,
-                        projectId: projectId,
-                      });
-                      setNewColumnText("");
-                    }}
-                  />
-                </div>
-              </div>
-            </SortableContext>
-            <DragOverlay>
-              {activeIssue ? (
-                <IssueCard issue={activeIssue} isDragging={false} />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        </div>
-      )}
+    <div className="flex">
+      <DndContext
+        sensors={sensors}
+        // collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={columns.map((col) => col.id)}
+          strategy={horizontalListSortingStrategy}
+        >
+          {columns.map((column) => (
+            <KanbanColumn
+              key={column.id}
+              column={column}
+              setColumns={setColumns}
+              columns={columns}
+              projectId={projectId}
+              isDragging={activeIssue !== null}
+            />
+          ))}
+          <div className="relative h-[200px] w-80 rounded-lg bg-gray-100 p-4">
+            <input
+              id="email-address"
+              autoComplete="email"
+              onChange={(e) => {
+                setNewColumnText(e.target.value);
+              }}
+              placeholder="New Stage"
+              className={`relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
+            />
+            <div className="absolute top-[60%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] items-center justify-center">
+              <LuCirclePlus
+                className="cursor-pointer text-4xl text-gray-600"
+                onClick={() => {
+                  if (!newColumnText || !projectId) {
+                    return;
+                  }
+                  createColumn({
+                    name: newColumnText,
+                    projectId: projectId,
+                  });
+                  setNewColumnText("");
+                }}
+              />
+            </div>
+          </div>
+        </SortableContext>
+        <DragOverlay>
+          {activeIssue && <IssueCard issue={activeIssue} isDragging={false} />}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }

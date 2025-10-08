@@ -1,6 +1,6 @@
 import { useState, lazy, useTransition } from "react";
 import { FaGear } from "react-icons/fa6";
-import { useAuth } from "@libs/hooks/useAuth";
+import { useAuth } from "@libs/hooks/apis/useAuth";
 import Image from "../image";
 import logo from "@libs/assets/taskflow.png";
 import Button from "../button";

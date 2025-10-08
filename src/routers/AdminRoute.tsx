@@ -2,7 +2,7 @@ import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "@libs/store";
-import { useAuth } from "@libs/hooks/useAuth";
+import { useAuth } from "@libs/hooks/apis/useAuth";
 
 const AdminRoute = (): React.ReactElement => {
   const { isLoading } = useAuth();

@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAdminAuth } from "@libs/hooks/useAdminAuth";
+import { useAdminAuth } from "@libs/hooks/common/useAdminAuth";
 import { isAxiosError } from "axios";
 
 const adminLoginSchema = z.object({

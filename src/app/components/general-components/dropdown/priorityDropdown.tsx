@@ -1,6 +1,6 @@
 import ColumnDropdown from "./columnDropdown";
 import { IssuePriority } from "@libs/types/issue";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import PriorityBadge, { priorityOptions } from "../badge/priorityBadge";
 import { memo } from "react";
 
@@ -41,11 +41,13 @@ const PriorityDropdown = ({
             boxShadow: "none",
           },
           label: (
-            <PriorityBadge
-              priority={option.name as IssuePriority}
-              isShowLabel={true}
-              className="p-2"
-            />
+            <div className="border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200">
+              <PriorityBadge
+                priority={option.name as IssuePriority}
+                isShowLabel={true}
+                className="hover:bg-transparent!"
+              />
+            </div>
           ),
           onClick: () => {
             handleChangePriority(option.name as IssuePriority);

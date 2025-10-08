@@ -1,6 +1,6 @@
 // ChatRoomList.tsx
 import React, { useState } from "react";
-import { RoomInfo } from "@libs/hooks/useChat";
+import { RoomInfo } from "@libs/hooks/apis/useChat";
 import { useDebounce } from "./useDebounce";
 interface ChatRoomListProps {
   currentRoomId: string | null;

@@ -1,8 +1,8 @@
 import ColumnDropdown from "./columnDropdown";
 import { IProjectMember } from "@libs/types/projectMember";
 import UserAvatar from "../user/userAvatar";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useProjectMembers } from "@libs/hooks/apis/useProjectMember";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { memo } from "react";
 
 const UserDropdown = ({
@@ -32,8 +32,17 @@ const UserDropdown = ({
           .map((member: IProjectMember) => ({
             value: member.user?.first_name + " " + member.user?.last_name,
             key: member.user_id,
-
-            label: <UserAvatar userId={member.user_id} isDisplayName={true} />,
+            style: {
+              padding: 0,
+              background: "white",
+              border: "none",
+              boxShadow: "none",
+            },
+            label: (
+              <div className="border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200">
+                <UserAvatar userId={member.user_id} isDisplayName={true} />
+              </div>
+            ),
             onClick: () => {
               handleChangeUser(member.user_id);
             },
@@ -41,8 +50,17 @@ const UserDropdown = ({
           .concat({
             value: "Unasigned",
             key: "Unasigned",
-
-            label: <UserAvatar userId={""} isDisplayName={true} />,
+            style: {
+              padding: 0,
+              background: "white",
+              border: "none",
+              boxShadow: "none",
+            },
+            label: (
+              <div className="border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200">
+                <UserAvatar userId={""} isDisplayName={true} />
+              </div>
+            ),
             onClick: () => {
               handleChangeUser("");
             },

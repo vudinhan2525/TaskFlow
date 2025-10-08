@@ -1,6 +1,6 @@
 // PermissionContext.tsx
 import { createContext, useContext } from "react";
-import { PermissionResult } from "@libs/hooks/usePermission";
+import { PermissionResult } from "@libs/hooks/common/usePermission";
 
 export const PermissionContext = createContext<PermissionResult | undefined>(
   undefined,

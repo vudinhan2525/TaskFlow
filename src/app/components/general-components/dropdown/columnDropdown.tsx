@@ -65,6 +65,9 @@ const ColumnDropdown = memo(
           style={{
             blockSize: elementHeight,
           }}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
           className={`flex items-center ${!permissionResult.isAllow ? "cursor-not-allowed" : ""}`}
           ref={dropdownRef}
         >

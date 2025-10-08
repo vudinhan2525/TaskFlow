@@ -7,8 +7,8 @@ import { PaginationRes } from "@libs/apis/api";
 import { useNavigate } from "react-router-dom";
 import { PermissionContext } from "@libs/app/context/permission.context";
 import { useAuthStore } from "@libs/store/useAuthStore";
-import { useUserTeams } from "@libs/hooks/useTeam";
-import { usePermission } from "@libs/hooks/usePermission";
+import { useUserTeams } from "@libs/hooks/apis/useTeam";
+import { usePermission } from "@libs/hooks/common/usePermission";
 import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
 import { getIssuesByEpic, getIssuesEpic } from "@libs/utils/issue";
 
@@ -299,14 +299,9 @@ const ListTable = ({
           })),
       );
   }, [issues]);
-
   return (
     <div className="relative">
-      {isFetching ||
-      issues.length === 0 ||
-      !user ||
-      !userTeams ||
-      !userTeams.length ? (
+      {isFetching || issues.length === 0 || !user || !userTeams ? (
         //  TABLE SKELETON
         <Table
           rowKey="key"

@@ -1,7 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
 import ProtectedRoute from "./ProtectedRoute";
-// import type { ReactNode } from "react";
 import ChatPage from "@libs/app/pages/chat/ChatPage";
 // Lazy load pages
 const ProjectLayout = lazy(() => import("@libs/app/layouts/projectLayout"));
@@ -19,9 +18,9 @@ const ProjectPage = lazy(
 const SettingsPage = lazy(
   () => import("@libs/app/pages/settings/settingsPage"),
 );
-// const SprintDetail = lazy(
-//   () => import("@libs/app/components/sprints/SprintDetail"),
-// );
+const SprintDetail = lazy(
+  () => import("@libs/app/components/sprints/SprintDetail"),
+);
 const AdminLoginPage = lazy(
   () => import("@libs/app/pages/admin/login/AdminLoginPage"),
 );
@@ -110,7 +109,7 @@ const Router = (): React.ReactElement => {
               <Route path="list" element={<ListPage />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="sprints" element={<ActiveSprints />} />
-
+              <Route path="sprints/:sprintId" element={<SprintDetail />} />
               <Route path="settings" element={<ProjectSettingsPage />}>
                 <Route path="teams" element={<TeamManagementPage />} />
                 <Route path="teams/:teamId" element={<TeamDetailPage />} />

@@ -8,7 +8,7 @@ import logo from "@libs/assets/taskflow.png";
 import OrthersLogin from "@libs/app/components/general-components/orthersLogin";
 import { Link } from "react-router-dom";
 import Button from "@libs/app/components/general-components/button";
-import { useAuth } from "@libs/hooks/useAuth";
+import { useAuth } from "@libs/hooks/apis/useAuth";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@libs/store";
 import { setError } from "@libs/store/slices/authSlice";
@@ -31,7 +31,9 @@ const registerSchema = z
       .regex(/[A-Z]/, { message: "Mật khẩu phải có ít nhất 1 chữ hoa" })
       .regex(/[a-z]/, { message: "Mật khẩu phải có ít nhất 1 chữ thường" })
       .regex(/[0-9]/, { message: "Mật khẩu phải có ít nhất 1 số" })
-      .regex(/[^A-Za-z0-9]/, { message: "Mật khẩu phải có ít nhất 1 ký tự đặc biệt" }),
+      .regex(/[^A-Za-z0-9]/, {
+        message: "Mật khẩu phải có ít nhất 1 ký tự đặc biệt",
+      }),
     password_confirm: z.string(),
   })
   .refine((data) => data.password === data.password_confirm, {
@@ -72,25 +74,30 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Left side - Form */}
-      <div className="w-full md:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+      <div className="flex w-full items-center justify-center px-4 sm:px-6 md:w-1/2 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
           <div>
             <div className="flex justify-center">
               <Link to={"/"} className="cursor-pointer">
-                <Image src={logo} className="w-[200px] h-[40px]" />
+                <Image src={logo} className="h-[40px] w-[200px]" />
               </Link>
             </div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Đăng ký tài khoản TaskFlow</h2>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Đăng ký tài khoản TaskFlow
+            </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
               Hoặc{" "}
-              <Link to="/login" className="font-medium text-green-600 hover:text-green-500">
+              <Link
+                to="/login"
+                className="font-medium text-green-600 hover:text-green-500"
+              >
                 đăng nhập ngay nếu bạn đã có tài khoản
               </Link>
             </p>
           </div>
 
           {isSuccess && (
-            <div className="bg-green-50 border-l-4 border-green-400 p-4">
+            <div className="border-l-4 border-green-400 bg-green-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -108,7 +115,8 @@ const RegisterPage: React.FC = () => {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-green-700">
-                    Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản.
+                    Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài
+                    khoản.
                   </p>
                 </div>
               </div>
@@ -116,7 +124,7 @@ const RegisterPage: React.FC = () => {
           )}
 
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4">
+            <div className="border-l-4 border-red-400 bg-red-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
@@ -140,10 +148,13 @@ const RegisterPage: React.FC = () => {
           )}
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="rounded-md -space-y-px">
-              <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2">
+            <div className="-space-y-px rounded-md">
+              <div className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="first_name"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
                     Tên
                   </label>
                   <input
@@ -151,16 +162,23 @@ const RegisterPage: React.FC = () => {
                     {...register("first_name")}
                     type="text"
                     autoComplete="given-name"
-                    className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
+                    className={`relative block w-full appearance-none rounded-md border px-3 py-2 ${
                       errors.first_name ? "border-red-300" : "border-gray-300"
-                    } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
+                    } text-gray-900 placeholder-gray-500 focus:z-10 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
                     placeholder="Tên"
                   />
-                  {errors.first_name && <p className="mt-1 text-sm text-red-600">{errors.first_name.message}</p>}
+                  {errors.first_name && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.first_name.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="last_name"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
                     Họ
                   </label>
                   <input
@@ -168,17 +186,24 @@ const RegisterPage: React.FC = () => {
                     {...register("last_name")}
                     type="text"
                     autoComplete="family-name"
-                    className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
+                    className={`relative block w-full appearance-none rounded-md border px-3 py-2 ${
                       errors.last_name ? "border-red-300" : "border-gray-300"
-                    } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
+                    } text-gray-900 placeholder-gray-500 focus:z-10 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
                     placeholder="Họ"
                   />
-                  {errors.last_name && <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>}
+                  {errors.last_name && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.last_name.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <div className="mt-6">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="email"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
                   Email
                 </label>
                 <input
@@ -186,16 +211,23 @@ const RegisterPage: React.FC = () => {
                   {...register("email")}
                   type="email"
                   autoComplete="email"
-                  className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
+                  className={`relative block w-full appearance-none rounded-md border px-3 py-2 ${
                     errors.email ? "border-red-300" : "border-gray-300"
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
+                  } text-gray-900 placeholder-gray-500 focus:z-10 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
                   placeholder="Email"
                 />
-                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="mt-6">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="password"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
                   Mật khẩu
                 </label>
                 <input
@@ -203,16 +235,23 @@ const RegisterPage: React.FC = () => {
                   {...register("password")}
                   type="password"
                   autoComplete="new-password"
-                  className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
+                  className={`relative block w-full appearance-none rounded-md border px-3 py-2 ${
                     errors.password ? "border-red-300" : "border-gray-300"
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
+                  } text-gray-900 placeholder-gray-500 focus:z-10 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
                   placeholder="Mật khẩu"
                 />
-                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>}
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               <div className="mt-6">
-                <label htmlFor="password_confirm" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="password_confirm"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
                   Xác nhận mật khẩu
                 </label>
                 <input
@@ -220,19 +259,28 @@ const RegisterPage: React.FC = () => {
                   {...register("password_confirm")}
                   type="password"
                   autoComplete="new-password"
-                  className={`appearance-none rounded-md relative block w-full px-3 py-2 border ${
-                    errors.password_confirm ? "border-red-300" : "border-gray-300"
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
+                  className={`relative block w-full appearance-none rounded-md border px-3 py-2 ${
+                    errors.password_confirm
+                      ? "border-red-300"
+                      : "border-gray-300"
+                  } text-gray-900 placeholder-gray-500 focus:z-10 focus:border-green-500 focus:ring-green-500 focus:outline-none sm:text-sm`}
                   placeholder="Xác nhận mật khẩu"
                 />
                 {errors.password_confirm && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password_confirm.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.password_confirm.message}
+                  </p>
                 )}
               </div>
             </div>
 
             <div>
-              <Button variant="primary" isLoading={isLoading} type="submit" className="w-full">
+              <Button
+                variant="primary"
+                isLoading={isLoading}
+                type="submit"
+                className="w-full"
+              >
                 Đăng ký
               </Button>
             </div>

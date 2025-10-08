@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Search, Users } from "lucide-react";
 import AddProjectTeamModal from "../../../components/projects/modals/createProjectTeamModal";
-import { useProjectTeams } from "@libs/hooks/useTeam";
+import { useProjectTeams } from "@libs/hooks/apis/useTeam";
 import { useNavigate, useParams } from "react-router-dom";
 import UserAvatar from "@libs/app/components/general-components/user/userAvatar";
 

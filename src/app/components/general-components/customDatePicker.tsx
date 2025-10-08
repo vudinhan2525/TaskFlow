@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import DatePicker from "antd/lib/date-picker";
 import { IIssue } from "@libs/types/issue";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";

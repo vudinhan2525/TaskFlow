@@ -1,6 +1,6 @@
 import ColumnDropdown from "./columnDropdown";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
-import { useProjectSprints } from "@libs/hooks/useSprint";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
+import { useProjectSprints } from "@libs/hooks/apis/useSprint";
 import { ISprint } from "@libs/types/sprint";
 import { useMemo } from "react";
 
@@ -40,7 +40,7 @@ const SprintDropdown = ({
           },
           label: (
             <div
-              className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+              className={`flex items-center gap-1 border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200`}
             >
               <p className="text-sm font-medium">{sprint.name}</p>
             </div>
@@ -58,7 +58,7 @@ const SprintDropdown = ({
           },
           label: (
             <div
-              className={`flex items-center gap-1 p-2 transition-all hover:border-l-2 hover:border-emerald-500 hover:bg-gray-300`}
+              className={`flex items-center gap-1 border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200`}
             >
               <p className="text-sm font-medium">Unassigned</p>
             </div>

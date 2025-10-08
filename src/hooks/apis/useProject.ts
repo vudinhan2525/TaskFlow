@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "../types";
+import type { Project } from "../../types";
 import { projects } from "@libs/apis/project";
-import { useUserMemberships } from "@libs/hooks/useProjectMember";
+import { useUserMemberships } from "@libs/hooks/apis/useProjectMember";
 import { toast } from "react-toastify";
 import {
   CreateColumnProjectParams,
@@ -169,6 +169,7 @@ export function useProjectColumns(
   data: ListProjectColumnsParams,
   isFetch?: boolean,
 ) {
+  const queryClient = useQueryClient();
   const {
     data: columnsData,
     isLoading,
@@ -191,6 +192,14 @@ export function useProjectColumns(
     queryFn: async () => {
       if (!data.project_id) throw new Error("Project ID is required");
       const response = await projects.getColumns(data);
+      response.data.data.forEach((column) => {
+        column.issues.forEach((issue) => {
+          queryClient.setQueryData(
+            ["issue", issue.project_id, issue.id],
+            issue,
+          );
+        });
+      });
       return response.data;
     },
     enabled: !!data.project_id && (isFetch === undefined ? true : isFetch),

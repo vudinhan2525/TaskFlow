@@ -1,6 +1,6 @@
 import ColumnDropdown from "./columnDropdown";
-import { useProjectColumns } from "@libs/hooks/useProject";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useProjectColumns } from "@libs/hooks/apis/useProject";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { IColumn } from "@libs/types/project";
 import StatusBadge from "../badge/statusBadge";
 import { memo, useState } from "react";
@@ -42,7 +42,11 @@ const StatusDropdown = ({
             border: "none",
             boxShadow: "none",
           },
-          label: <StatusBadge column={column} className="p-2" />,
+          label: (
+            <div className="border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200">
+              <StatusBadge column={column} className="p-2" />
+            </div>
+          ),
           onClick: () => {
             handleChangeStatus(column.id);
           },

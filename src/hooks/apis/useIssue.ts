@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { issues } from "../apis/issue";
+import { issues } from "../../apis/issue";
 import {
   CreateIssueParams,
   GetActivitiesParams,
@@ -183,8 +183,6 @@ export function useDeleteIssue({
   } = useMutation({
     mutationFn: (issueId: string) => issues.delete(projectId, issueId),
     onSuccess: () => {
-      // toast.success("Issue deleted successfully!");
-      // Invalidate all issue-related queries for this project
       queryClient.invalidateQueries({ queryKey: ["issues", projectId] });
       if (onClose) onClose();
     },

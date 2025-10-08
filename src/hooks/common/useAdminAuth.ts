@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
-import { setUser } from "../store/slices/authSlice";
-import { queryClient } from "../apis/react-query";
+import { setUser } from "../../store/slices/authSlice";
+import { queryClient } from "../../apis/react-query";
 import { auth } from "@libs/apis/auth";
 import { useNavigate } from "react-router-dom";
 

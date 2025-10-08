@@ -5,7 +5,7 @@ import { useImageCropContext } from "../../cropper/imageCropProvider";
 import Button from "../../general-components/button";
 import Cropper from "../../cropper/cropper";
 import { RotationSlider, ZoomSlider } from "../../cropper/slider";
-import { useUpdateUser } from "@libs/hooks/useUser";
+import { useUpdateUser } from "@libs/hooks/apis/useUser";
 import Modal from "../../general-components/modal/modal";
 import { IUser } from "@libs/types/user";
 

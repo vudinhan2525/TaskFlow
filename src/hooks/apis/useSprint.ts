@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { sprints } from "../apis/sprint";
+import { sprints } from "../../apis/sprint";
 import { toast } from "react-toastify";
 import { ISprint } from "@libs/types/index";
 

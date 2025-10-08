@@ -1,44 +1,14 @@
-import React, {
-  useState,
-  lazy,
-  Suspense,
-  useTransition,
-  useRef,
-  useCallback,
-  useEffect,
-} from "react";
+import React, { useState, lazy, Suspense, useTransition, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { useProjectSprints } from "@libs/hooks/useSprint";
-import { useProjectIssues, useUpdateIssue } from "@libs/hooks/useIssue";
 import { Helmet } from "react-helmet-async";
-import BackLog from "@libs/app/components/projects/backlog/backlog";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import Button from "@libs/app/components/general-components/button";
 import PageFilter from "@libs/app/components/general-components/pageFilter";
-import { GetIssuesParams } from "@libs/types/issue";
-import { useIssueStore } from "@libs/store/useIssueStore";
+import { GetIssuesParams, IIssue } from "@libs/types/issue";
 import BacklogSkeleton from "@libs/app/components/skeleton/backlogSkeleton";
-import {
-  DndContext,
-  useSensor,
-  PointerSensor,
-  DragStartEvent,
-  DragOverEvent,
-  DragEndEvent,
-  DragOverlay,
-  useSensors,
-  KeyboardSensor,
-} from "@dnd-kit/core";
-import {
-  sortableKeyboardCoordinates,
-  SortableContext,
-} from "@dnd-kit/sortable";
-import { IIssue } from "@libs/types/issue";
-import { getIssuesNotEpic } from "@libs/utils/issue";
-import {
-  OverItemProvider,
-  useOverItem,
-} from "@libs/app/context/overItem.context";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { SortableContext } from "@dnd-kit/sortable";
+import { BacklogProvider } from "@libs/app/context/backlog.context";
 const BacklogEpic = lazy(
   () => import("@libs/app/components/projects/backlog/backlogEpic"),
 );
@@ -47,32 +17,17 @@ const CreateSprintModal = lazy(
   () => import("@libs/app/components/projects/modals/createSprintModal"),
 );
 import IssueDetailSkeleton from "@libs/app/components/skeleton/issueDetailSkeleton";
+import TypeBadge from "@libs/app/components/general-components/badge/typeBadge";
+import { useBackLogPage } from "@libs/hooks/pages/useBacklogPage";
+import ScrumSprint from "@libs/app/components/projects/backlog/scrumSprint";
 import { ISprint } from "@libs/types/sprint";
+
 interface ISprintIssues extends ISprint {
   issues: IIssue[];
 }
-const backLogSprint: ISprintIssues = {
-  id: "",
-  name: "Backlog",
-  date_started: new Date().toISOString(),
-  date_ended: new Date().toISOString(),
-  project_id: "",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  issues: [],
-  duration: 0,
-  goal: "",
-};
 
 const BackLogPageContent: React.FC = () => {
   const { projectId = "" } = useParams();
-  const [isCreateSprintModalOpen, setIsCreateSprintModalOpen] = useState<{
-    isOpen: boolean;
-    sprint: ISprint | null;
-  }>({
-    isOpen: false,
-    sprint: null,
-  });
   const containerRef = useRef<HTMLDivElement>(null);
   const [filters, setFilters] = useState<GetIssuesParams>({
     project_id: projectId,
@@ -80,193 +35,21 @@ const BackLogPageContent: React.FC = () => {
     is_fetch: false,
   });
 
-  const { selectedIssueId } = useIssueStore();
-  const { setOverItemId } = useOverItem();
   const [_, startTransition] = useTransition();
-  const { sprints, isLoading: isLoadingSprints } = useProjectSprints(projectId);
-  const { issues, isLoading: isLoadingIssues } = useProjectIssues(filters);
-  const { updateIssueAsync } = useUpdateIssue({ projectId });
 
-  const [activeIssue, setActiveIssue] = useState<IIssue | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [sprintIssues, setSprintIssues] = useState<ISprintIssues[]>([]);
-
-  useEffect(() => {
-    if (sprints.length && issues.length) {
-      const issuesNotEpic = getIssuesNotEpic(issues);
-      setSprintIssues(
-        [...sprints, backLogSprint].map((sprint: ISprint) => {
-          return {
-            ...sprint,
-            issues: issuesNotEpic.filter(
-              (issue: IIssue) => issue.sprint_id === sprint.id,
-            ),
-          };
-        }),
-      );
-    }
-  }, [sprints, issues, isLoadingSprints, isLoadingIssues]);
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      if (!sprintIssues.length) return;
-      const { active } = event;
-      const issueId = active.id as string;
-
-      for (const sprint of sprintIssues) {
-        const issue = sprint.issues?.find((i) => i.id === issueId);
-        if (issue) {
-          setActiveIssue(issue);
-          break;
-        }
-      }
-      setIsDragging(true);
-    },
-    [sprintIssues],
-  );
-
-  const handleDragOver = (event: DragOverEvent) => {
-    if (!sprintIssues) return;
-    const { over } = event;
-    setOverItemId(over?.id as string);
-  };
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      if (!sprintIssues.length) {
-        return;
-      }
-      setIsDragging(false);
-      setActiveIssue(null);
-      setOverItemId(null);
-      const { active, over } = event;
-
-      if (!over || active.id === over.id) return;
-
-      if (over?.data?.current?.type === "epic") {
-        updateIssueAsync({
-          id: active.id as string,
-          data: {
-            parent_id: over.id === "no-epic" ? "no-epic" : (over.id as string),
-          },
-        });
-        return;
-      }
-
-      const activeId = active.id as string;
-      const overId = over.id as string;
-
-      const isOverSprint = sprintIssues.find((sprint) =>
-        sprint.issues?.some((issue) => issue.id === overId),
-      )
-        ? false
-        : true;
-
-      // Find the sprint that the issue is being dragged over
-      const targetSprint =
-        over?.data?.current?.type === "Sprint"
-          ? over.data.current.sprint
-          : sprintIssues.find((sprint) =>
-              sprint.issues?.some((issue) => issue.id === overId),
-            ) || sprintIssues.find((sprint) => sprint.id === overId);
-      const activeSprint = sprintIssues.find((sprint) =>
-        sprint.issues?.some((issue) => issue.id === activeId),
-      );
-
-      //Drop into the same sprint
-      if (targetSprint?.id == activeSprint?.id) {
-        if (targetSprint?.id == overId) return;
-        setSprintIssues((prevSprints) => {
-          const newSprints = prevSprints.map((sprint) => ({
-            ...sprint,
-            issues: [...sprint.issues],
-          }));
-          const targetSprintIndex = newSprints.findIndex(
-            (sprint) => sprint.id === targetSprint?.id,
-          );
-
-          const activeIssueIndex = newSprints[
-            targetSprintIndex
-          ].issues.findIndex((issue) => issue.id === activeId);
-          const activeIssue =
-            newSprints[targetSprintIndex].issues[activeIssueIndex];
-          const overIssueIndex = newSprints[targetSprintIndex].issues.findIndex(
-            (issue) => issue.id === overId,
-          );
-
-          newSprints[targetSprintIndex].issues[activeIssueIndex] =
-            newSprints[targetSprintIndex].issues[overIssueIndex];
-          newSprints[targetSprintIndex].issues[overIssueIndex] = activeIssue;
-
-          return newSprints;
-        });
-        return;
-      }
-
-      //Drop into another sprint
-      else {
-        //Drop into an empty sprint
-        setSprintIssues((prevSprints) => {
-          const newSprints = prevSprints.map((sprint) => ({
-            ...sprint,
-            issues: [...sprint.issues],
-          }));
-          const targetSprintIndex = newSprints.findIndex(
-            (sprint) => sprint.id == targetSprint?.id,
-          );
-          const activeSprintIndex = newSprints.findIndex(
-            (sprint) => sprint.id == activeSprint?.id,
-          );
-          const activeIssueIndex = newSprints[
-            activeSprintIndex
-          ].issues.findIndex((issue) => issue.id == activeId);
-
-          //Remove the issue from the active/original sprint
-          newSprints[activeSprintIndex].issues.splice(activeIssueIndex, 1);
-
-          if (!activeIssue) return prevSprints;
-
-          //Drop into the target sprint
-          if (isOverSprint) {
-            newSprints[targetSprintIndex].issues.push(activeIssue);
-          } else {
-            const targetIssueIndex = newSprints[
-              targetSprintIndex
-            ].issues.findIndex((issue) => issue.id == overId);
-
-            newSprints[targetSprintIndex].issues.splice(
-              targetIssueIndex,
-              0,
-              activeIssue,
-            );
-          }
-          return newSprints;
-        });
-
-        if (projectId) {
-          if (targetSprint) {
-            updateIssueAsync({
-              id: activeId,
-              data: {
-                sprint_id: targetSprint.id === "" ? undefined : targetSprint.id,
-              },
-            });
-          }
-        }
-      }
-    },
-    [sprintIssues, updateIssueAsync, projectId],
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 1,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  const {
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+    activeIssue,
+    isDragging,
+    sprintIssues,
+    issues,
+    isCreateSprintModalOpen,
+    setIsCreateSprintModalOpen,
+    selectedIssueId,
+    sensors,
+  } = useBackLogPage(projectId);
 
   return (
     <div ref={containerRef} className="flex h-full flex-col gap-4 p-4 pb-28">
@@ -298,10 +81,7 @@ const BackLogPageContent: React.FC = () => {
           setFilters(filter as GetIssuesParams);
         }}
       />
-      {isLoadingSprints ||
-      isLoadingIssues ||
-      !issues.length ||
-      !sprintIssues.length ? (
+      {!sprintIssues.length ? (
         <BacklogSkeleton />
       ) : (
         <DndContext
@@ -338,14 +118,28 @@ const BackLogPageContent: React.FC = () => {
                   maxSize={100}
                 >
                   <div className="h-full overflow-auto pr-4">
-                    <BackLog
-                      projectId={projectId}
-                      sprintIssues={sprintIssues}
-                      isDragging={isDragging}
-                      setIsCreateSprintModalOpen={(isOpen, sprint) => {
-                        setIsCreateSprintModalOpen({ isOpen, sprint });
-                      }}
-                    />
+                    <ul className="flex min-w-[650px] flex-col gap-2 overflow-x-auto">
+                      {sprintIssues?.map((sprint: ISprintIssues) => (
+                        <div key={sprint.id}>
+                          <ScrumSprint
+                            sprint={sprint}
+                            projectId={projectId}
+                            isDragging={isDragging}
+                            setIsCreateSprintModalOpen={(data: {
+                              isOpen: boolean;
+                              sprint?: ISprintIssues | ISprint | null;
+                            }) => {
+                              setIsCreateSprintModalOpen(
+                                data as {
+                                  isOpen: boolean;
+                                  sprint: ISprint | null;
+                                },
+                              );
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </ul>
                   </div>
                 </Panel>
 
@@ -372,24 +166,21 @@ const BackLogPageContent: React.FC = () => {
                 </Panel>
               </PanelGroup>
             </SortableContext>
-            {activeIssue && (
-              <DragOverlay>
-                <div className="inline-block">
-                  <div className="flex flex-row items-center gap-3 rounded-md bg-white px-4 py-2 opacity-60">
+            <DragOverlay>
+              {activeIssue && (
+                <div className="inline-block rounded-md border border-gray-500 shadow-2xl">
+                  <div className="flex flex-row items-center gap-3 rounded-md bg-white px-2 py-1 opacity-70">
                     <div className="flex flex-row items-center gap-1">
-                      <div className="rounded-sm border-1 border-emerald-500 p-0.5">
-                        <span className="text-xs font-normal text-emerald-500">
-                          ✓
-                        </span>
-                      </div>
+                      <TypeBadge isShowLabel={false} type={activeIssue.type} />
                       <span className="text-xs">{activeIssue.key}</span>
                     </div>
                     <span className="text-xs">{activeIssue.summary}</span>
                   </div>
                 </div>
-              </DragOverlay>
-            )}
+              )}
+            </DragOverlay>
           </div>
+          -+
         </DndContext>
       )}
 
@@ -407,6 +198,7 @@ const BackLogPageContent: React.FC = () => {
             });
           }}
           projectId={projectId}
+          initialSprint={isCreateSprintModalOpen.sprint}
         />
       )}
     </div>
@@ -415,9 +207,9 @@ const BackLogPageContent: React.FC = () => {
 
 const BackLogPage: React.FC = () => {
   return (
-    <OverItemProvider>
+    <BacklogProvider>
       <BackLogPageContent />
-    </OverItemProvider>
+    </BacklogProvider>
   );
 };
 

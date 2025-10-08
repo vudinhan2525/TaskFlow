@@ -11,7 +11,7 @@ import {
   Globe,
   Camera,
 } from "lucide-react";
-import { useMe } from "@libs/hooks/useUser";
+import { useMe } from "@libs/hooks/apis/useUser";
 import UserAvatar from "@libs/app/components/general-components/user/userAvatar";
 import UpdateAvatarModal from "@libs/app/components/projects/modals/updateAvatarModal";
 import ImageCropProvider from "@libs/app/components/cropper/imageCropProvider";

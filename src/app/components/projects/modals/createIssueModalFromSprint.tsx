@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
 import Modal from "@libs/app/components/general-components/modal/modal";
-import { useProjectColumns } from "@libs/hooks/useProject";
+import { useProjectColumns } from "@libs/hooks/apis/useProject";
 import { CreateIssueParams, IssuePriority, IssueType } from "@libs/types/issue";
 
 import { useAuthStore } from "@libs/store/useAuthStore";

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Dropdown, Menu, Table } from "antd";
 import type { TableColumnsType } from "antd";
-import { useDeleteProject, useUserProjects } from "@libs/hooks/useProject";
+import { useDeleteProject, useUserProjects } from "@libs/hooks/apis/useProject";
 import { useNavigate } from "react-router-dom";
 import { IProject } from "@libs/types/project";
 import { LuEllipsisVertical } from "react-icons/lu";
@@ -49,7 +49,6 @@ const ProjectTable: React.FC = () => {
 
   return (
     <Table<IProject>
-
       columns={columns}
       dataSource={projects}
       loading={isLoading}
@@ -106,7 +105,11 @@ const ProjectActions = ({ record }: { record: IProject }) => {
           </div>
         )}
       >
-        <Button type="text" icon={<LuEllipsisVertical />} onClick={(e) => e.stopPropagation()} />
+        <Button
+          type="text"
+          icon={<LuEllipsisVertical />}
+          onClick={(e) => e.stopPropagation()}
+        />
       </Dropdown>
       <ModalPortal>
         <div

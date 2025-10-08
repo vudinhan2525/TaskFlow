@@ -2,10 +2,10 @@ import React, { Suspense, useState } from "react";
 import { Outlet } from "react-router-dom";
 import ProjectNavbar from "@libs/app/components/projects/projectNavBar";
 import { ClockLoader } from "react-spinners";
-import { useUserTeams } from "@libs/hooks/useTeam";
+import { useUserTeams } from "@libs/hooks/apis/useTeam";
 import { useParams } from "react-router-dom";
 import { useAuthStore } from "@libs/store/useAuthStore";
-import { useProjectMembers } from "@libs/hooks/useProjectMember";
+import { useProjectMembers } from "@libs/hooks/apis/useProjectMember";
 
 const ProjectLayout = (): React.ReactElement => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -26,7 +26,7 @@ const ProjectLayout = (): React.ReactElement => {
     !isLoadingMembers, // Only enable when project members are loaded
   );
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   return (
     <div className="flex h-screen w-full flex-1 flex-row overflow-hidden">
       <div

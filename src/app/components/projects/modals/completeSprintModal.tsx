@@ -2,8 +2,8 @@ import React from "react";
 import { Info } from "lucide-react";
 import Modal from "@libs/app/components/general-components/modal/modal";
 import DropdownAntd from "@libs/app/components/general-components/dropdown";
-import { useProjectSprints } from "@libs/hooks/useSprint";
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useProjectSprints } from "@libs/hooks/apis/useSprint";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { ISprint } from "@libs/types/sprint";
 import { IIssue } from "@libs/types/issue";
 

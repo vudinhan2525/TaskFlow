@@ -11,7 +11,7 @@ import { useParams } from "react-router-dom";
 import PageFilter from "@libs/app/components/general-components/pageFilter";
 import RoadmapFilter from "@libs/app/components/projects/roadmap/roadmapFilter";
 import { GetIssuesParams } from "@libs/types/issue";
-import { useProjectIssues } from "@libs/hooks/useIssue";
+import { useProjectIssues } from "@libs/hooks/apis/useIssue";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import { IIssue } from "@libs/types/issue";
 import TaskItem from "@libs/app/components/projects/roadmap/task-item";
@@ -36,7 +36,7 @@ import {
 const UnscheduledWork = lazy(
   () => import("@libs/app/components/projects/roadmap/unscheduledWork"),
 );
-import { useUpdateIssue } from "@libs/hooks/useIssue";
+import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 
 const RoadmapPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
