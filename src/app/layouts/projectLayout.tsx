@@ -37,7 +37,7 @@ const ProjectLayout = (): React.ReactElement => {
           onToggle={() => setIsCollapsed((v) => !v)}
         />
       </div>
-      <div className="h-screen flex-1 overflow-auto">
+      <div className="flex h-screen flex-1 flex-col overflow-auto">
         <Suspense
           fallback={
             <div className="flex h-full w-full items-center justify-center">

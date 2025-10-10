@@ -68,7 +68,7 @@ const PriorityBadge = ({
       <div className="flex-shrink-0">{currentPriority?.icon}</div>
 
       {isShowLabel && (
-        <p className={`text-[13px] font-semibold text-gray-700`}>
+        <p className={`truncate text-[13px] font-semibold text-gray-700`}>
           {priority || "-"}
         </p>
       )}

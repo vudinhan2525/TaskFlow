@@ -7,7 +7,7 @@ const config = {
 
 export const users = {
   list: (keyword: string, projectId?: string) => {
-    const url = `/users/list-users?name=${keyword}${projectId ? `&project_id=${projectId}` : ""}`;
+    const url = `/users/list-users?name=${encodeURIComponent(keyword)}${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`;
     return api.get<ResponseApi<IUser[]>>(url, config);
   },
   getById: (userId: string) =>

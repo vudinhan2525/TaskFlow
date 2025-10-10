@@ -8,10 +8,12 @@ const PriorityDropdown = ({
   projectId,
   issueId,
   priority,
+  isShowLabel,
 }: {
   projectId: string;
   issueId: string;
   priority: IssuePriority;
+  isShowLabel?: boolean;
 }) => {
   const { updateIssueAsync } = useUpdateIssue({ projectId });
 
@@ -56,7 +58,10 @@ const PriorityDropdown = ({
       })}
       currentItem={undefined}
       children={
-        <PriorityBadge priority={currentPriority?.name as IssuePriority} />
+        <PriorityBadge
+          priority={currentPriority?.name as IssuePriority}
+          isShowLabel={isShowLabel}
+        />
       }
     />
   );
