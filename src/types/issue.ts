@@ -18,10 +18,11 @@ export interface IIssue {
   created_at: string;
   updated_at: string;
   completed_at: string;
-  due_date_from: string;
-  due_date_to: string;
+  due_date_from?: string;
+  due_date_to?: string;
   // labels?: string[];
   team_id?: string;
+  children?: IIssue[];
 }
 export type IIssueWithoutCoulumn = Omit<IIssue, "column">;
 
@@ -44,6 +45,8 @@ export interface GetIssuesParams {
   created_at_from?: string;
   created_at_to?: string;
   is_fetch?: boolean;
+  parent_ids?: string[];
+  team_ids?: string[];
 }
 
 export interface CreateIssueParams {

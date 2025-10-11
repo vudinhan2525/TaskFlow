@@ -27,6 +27,7 @@ export function useUserProjects(options?: { enabled?: boolean }) {
   const validMemberships = memberships.filter(
     (membership) => !membership.is_pending,
   );
+
   const projects = validMemberships.map((membership) => membership.project);
 
   return {

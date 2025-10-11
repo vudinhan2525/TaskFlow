@@ -21,6 +21,8 @@ export function useAuth() {
     },
     retry: false,
     enabled: true,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const login = useMutation({

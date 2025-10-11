@@ -1,7 +1,7 @@
 import ColumnDropdown from "./columnDropdown";
 import { ITeam } from "@libs/types/team";
 import { useProjectTeams } from "@libs/hooks/apis/useTeam";
-import TeamBadge from "../badge/teamBade";
+import TeamBadge from "../badge/teamBadge";
 import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { memo, useMemo } from "react";
 import { useAuthStore } from "@libs/store/useAuthStore";

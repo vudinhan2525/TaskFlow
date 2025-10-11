@@ -11,7 +11,10 @@ export const teams = {
     api.get<ResponseApi<ITeam[]>>(`/projects/${projectId}/teams`, config),
   getById: (projectId: string, teamId: string) =>
     api.get<ITeam>(`/projects/${projectId}/teams/${teamId}`, config),
-  create: (data: Partial<CreateTeamParams>) => {
+  create: (data: CreateTeamParams) => {
+    if (!data.project_id) {
+      throw new Error("project_id is required");
+    }
     const url = `/projects/${data.project_id}/teams`;
     return api.post<ResponseApi<ITeam>>(url, data, config);
   },

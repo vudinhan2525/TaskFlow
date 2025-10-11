@@ -19,7 +19,7 @@ import { IoIosPrint } from "react-icons/io";
 import { LuCircleArrowRight } from "react-icons/lu";
 import { CiCircleChevUp } from "react-icons/ci";
 
-export type ITableColumn = keyof Omit<IIssue, "title">;
+export type ITableColumn = keyof Omit<IIssue, "title" | "children">;
 
 export const columnsIcon: Record<ITableColumn, React.ReactNode> = {
   id: <FaPlus color="#626f86" />,

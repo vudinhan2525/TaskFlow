@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import DatePicker from "antd/lib/date-picker";
-import { IIssue } from "@libs/types/issue";
 import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 import { Dayjs } from "dayjs";
 import dayjs from "dayjs";
@@ -9,6 +8,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import { TriangleAlert, Calendar } from "lucide-react";
 import { useRowPermission } from "@libs/app/context/permission.context";
 import { Tooltip } from "antd/lib";
+import { useIssue } from "@libs/hooks/apis/useIssue";
 
 dayjs.extend(utc);
 dayjs.extend(customParseFormat);
@@ -39,13 +39,13 @@ function parseIssueDate(value?: string | null): Dayjs | null {
 }
 
 const CustomDatePicker = ({
-  issue,
+  issueId,
   projectId,
   field,
   isEditable = true,
   className,
 }: {
-  issue: IIssue;
+  issueId: string;
   projectId: string;
   field: IssueDateField;
   isEditable?: boolean;
@@ -53,12 +53,16 @@ const CustomDatePicker = ({
 }) => {
   const { updateIssue } = useUpdateIssue({ projectId });
 
+  const { issue, isLoading } = useIssue(projectId, issueId);
+
   const isExpired = useMemo(() => {
+    if (!issue) return;
     if (field !== "due_date_to" || !issue[field]) return false;
-    return new Date(issue[field]) < new Date();
+    return new Date(issue[field]!) < new Date();
   }, [issue, field]);
 
   const handleChange = (date: Dayjs | null) => {
+    if (!issue) return;
     // nếu là created_at thì không update
     if (field === "created_at") return;
     updateIssue({
@@ -69,12 +73,13 @@ const CustomDatePicker = ({
     });
   };
 
-  const parsedDate = useMemo(
-    () => parseIssueDate(issue[field]),
-    [issue, isEditable, field],
-  );
+  const parsedDate = useMemo(() => {
+    if (!issue) return null;
+    return parseIssueDate(issue[field] || null);
+  }, [issue, isEditable, field]);
 
   const permissionResult = useRowPermission();
+  if (isLoading) return;
   return (
     <button disabled={!permissionResult.isAllow} className={`${className} btn`}>
       <Tooltip title={permissionResult.isAllow ? "" : permissionResult.message}>

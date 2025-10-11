@@ -37,7 +37,10 @@ export const projectMembers = {
     if (params.email) queryParams.append("email", params.email);
     if (params.page) queryParams.append("page", params.page.toString());
     if (params.limit) queryParams.append("limit", params.limit.toString());
-    url += `?${queryParams.toString()}`;
+    const queryString = queryParams.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
 
     return api.get<ResponseApi<IProjectMember[]>>(url, { ...config });
   },

@@ -86,14 +86,14 @@ const StatusBadge = ({
   size?: "small" | "medium" | "large";
   className?: string;
 }) => {
-  if (!column) return <></>;
-
   const index = useMemo(() => {
+    if (!column) return -1;
     if (column.name === "DONE") return 2;
     if (column.name === "IN PROGRESS") return 1;
     if (column.name === "TODO") return 0;
     return 1;
-  }, [column.name]);
+  }, [column]);
+  if (!column) return <></>;
   return (
     <div
       className={`inline-block rounded-sm border ${className} px-1 py-0.5 ${statusColors[index].bgColor} ${statusColors[index].dotColor}`}

@@ -4,7 +4,7 @@ import { FaPlus } from "react-icons/fa";
 // import { TbHexagon3D } from "react-icons/tb";
 import { BsThreeDots } from "react-icons/bs";
 import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
-import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
+import { uploadFileToCloudinary } from "@libs/utils/file";
 import CustomInput from "../../general-components/customInput";
 
 const AttachmentCard = lazy(() => import("./attachmentCard"));

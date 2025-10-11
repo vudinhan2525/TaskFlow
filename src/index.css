@@ -99,3 +99,25 @@
   padding:6px  !important;
   border-radius: 8px !important;
 }
+/* Căn giữa icon expand trong bảng AntD */
+.ant-table-row-expand-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ant-table-row-expand-icon-collapsed{
+  margin-top: 10px!important;
+  margin-left: 8px!important;
+  margin-right: 0px!important;
+}
+
+.ant-table-row-expand-icon-expanded{
+  margin-top: 10px!important;
+  margin-left: 8px!important;
+  margin-right: 0px!important;
+}
+
+.ant-table-footer{
+  padding: 0px 0px !important;
+}

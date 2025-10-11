@@ -208,7 +208,7 @@ export default function SprintInsight({ onClose }: { onClose: () => void }) {
               </div>
             ) : (
               <div className="space-y-2">
-                {overdueIssues.slice(0, 3).map((issue, idx) => (
+                {overdueIssues.slice(0, 3).map((issue) => (
                   <div
                     key={issue.id}
                     className="cursor-pointer border border-gray-300 bg-white p-2.5 hover:bg-gray-50"

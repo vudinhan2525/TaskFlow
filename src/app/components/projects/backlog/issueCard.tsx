@@ -101,7 +101,7 @@ const IssueCard = memo(
               className="flex cursor-pointer items-center gap-4"
             >
               {/* IssueCardLeft */}
-              <div className="group inline-block w-full">
+              <div className="group inline-block w-full flex-1">
                 <div className="flex items-center gap-4">
                   <div className="flex flex-row items-center">
                     <TypeBadge type={issue.type} isShowLabel={false} />
@@ -162,7 +162,7 @@ const IssueCard = memo(
                 {/* due date to */}
                 <div className="col-span-3 flex items-center">
                   <CustomDatePicker
-                    issue={issue}
+                    issueId={issue.id}
                     field="due_date_to"
                     projectId={projectId}
                   />

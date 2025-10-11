@@ -1,7 +1,9 @@
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import React, { lazy, Suspense } from "react";
 import ProtectedRoute from "./ProtectedRoute";
+import GuestRoute from "./GuestRoute";
 import ChatPage from "@libs/app/pages/chat/ChatPage";
+import LandingPage from "@libs/app/pages/auth/landingPage";
 // Lazy load pages
 const ProjectLayout = lazy(() => import("@libs/app/layouts/projectLayout"));
 import DefaultLayout from "@libs/app/layouts/defaultLayout";
@@ -36,6 +38,7 @@ const TeamDetailPage = lazy(
 );
 
 const AdminLayout = lazy(() => import("@libs/app/layouts/adminLayout"));
+const AuthLayout = lazy(() => import("@libs/app/layouts/authLayout"));
 const AdminRoute = lazy(() => import("./AdminRoute"));
 const UsersPage = lazy(() => import("@libs/app/pages/admin/users/UsersPage"));
 const ProjectsPage = lazy(
@@ -73,10 +76,28 @@ const Router = (): React.ReactElement => {
   return (
     <Suspense>
       <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/verify-otp" element={<VerifyPage />} />
+        {/* Public/Guest routes */}
+        <Route
+          path="/"
+          element={
+            <GuestRoute>
+              <LandingPage />
+            </GuestRoute>
+          }
+          index
+        />
+        <Route
+          path="/auth"
+          element={
+            <GuestRoute>
+              <AuthLayout />
+            </GuestRoute>
+          }
+        >
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="verify-otp" element={<VerifyPage />} />
+        </Route>
 
         {/* Admin routes */}
         <Route path="/admin">

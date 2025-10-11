@@ -1,21 +1,25 @@
 import { IIssue } from "@libs/types/issue";
 import { useState, useEffect } from "react";
 import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
+import { useIssue } from "@libs/hooks/apis/useIssue";
 
 const ColumnInputFiled = ({
-  issue,
+  issueId,
+  projectId,
   field,
   inputType = "text",
 }: {
-  issue: IIssue | undefined;
+  issueId: string;
+  projectId: string;
   field: keyof IIssue;
   inputType?: "text" | "number";
 }) => {
+  const { issue } = useIssue(projectId, issueId);
   const [newValue, setNewValue] = useState(
     issue?.[field] || (inputType === "number" ? 0 : ""),
   );
   const { updateIssueAsync } = useUpdateIssue({
-    projectId: issue?.project_id || "",
+    projectId,
   });
   useEffect(() => {
     setNewValue(issue?.[field] || (inputType === "number" ? 0 : ""));

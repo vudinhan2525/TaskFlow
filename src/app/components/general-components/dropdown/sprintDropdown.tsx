@@ -73,16 +73,15 @@ const SprintDropdown = ({
               ?.name
           : "Unassigned"
       }
-      children={
-        <div className="">
-          <div className="flex justify-start rounded-sm border-1 border-gray-200 px-1 py-0.5">
-            <p className={`text-sm font-normal text-gray-800`}>
-              {currentSprint?.name || "Unassigned"}
-            </p>
-          </div>
+    >
+      <div className="">
+        <div className="flex justify-start rounded-sm border-1 border-gray-200 px-1 py-0.5">
+          <p className={`text-sm font-normal text-gray-800`}>
+            {currentSprint?.name || "Unassigned"}
+          </p>
         </div>
-      }
-    />
+      </div>
+    </ColumnDropdown>
   );
 };
 
