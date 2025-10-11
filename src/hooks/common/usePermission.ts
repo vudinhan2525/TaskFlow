@@ -30,6 +30,13 @@ const checkIssuePermissions = (
   issue: { issue: IIssue; teams: ITeam[] },
   action: string,
 ): PermissionResult => {
+  if (!issue.teams) {
+    return {
+      isAllow: false,
+      message: PERMISSION_MESSAGES.NO_PERMISSION,
+    };
+  }
+
   if (!issue.issue) {
     return { isAllow: false, message: PERMISSION_MESSAGES.NO_PERMISSION };
   }

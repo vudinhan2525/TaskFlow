@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { TrendingDown, ChevronDown } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -56,10 +56,10 @@ const SprintBurnDown = ({
     const days =
       Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-    const totalPoints = issues.reduce(
-      (sum, i) => sum + (i.story_point || 0),
-      0,
-    );
+    // const totalPoints = issues.reduce(
+    //   (sum, i) => sum + (i.story_point || 0),
+    //   0,
+    // );
 
     const data: { day: string; remaining: number; guideline: number }[] = [];
 

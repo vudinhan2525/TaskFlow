@@ -65,17 +65,16 @@ export const ParentBadge = ({
   title?: string;
   issueId?: string;
 }) => {
+  if (!title && (!issueId || issueId == "no-epic")) return null;
   const { projectId } = useParams();
   const [titleRender, setTitleRender] = useState(title);
   const { issue } = useIssue(projectId || "", issueId!);
 
   useEffect(() => {
-    if (!title && issue) {
-      setTitleRender(issue.summary);
+    if (!title) {
+      setTitleRender(issue?.summary);
     }
-  }, [issue, title]);
-
-  if (!title && (!issueId || issueId === "no-epic")) return null;
+  }, [issue]);
 
   return (
     <div className="rounded-sm border border-purple-300 bg-purple-200 px-1 py-0.5">

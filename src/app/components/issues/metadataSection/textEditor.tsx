@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Quill, { Delta } from "quill";
 import "quill/dist/quill.snow.css";
-import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
+import { uploadFileToCloudinary } from "@libs/utils/file";
 import { useUpdateIssue } from "@libs/hooks/apis/useIssue";
 
 export default function TextEditor({

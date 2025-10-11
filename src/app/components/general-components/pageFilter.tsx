@@ -47,7 +47,6 @@ const PageFilter = memo(
       limit: params.get("limit") ? parseInt(params.get("limit")!) : 100,
       project_id: projectId,
       is_fetch: true,
-      parent_ids: ["NULL"],
     });
 
     useEffect(() => {

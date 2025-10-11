@@ -78,17 +78,6 @@ export default function KanbanBoard({
       const { over } = event;
       if (!over) return;
       const overId = over.id as string;
-      const overRect = over.rect; // bounding box của issue bị hover
-      const draggingY = event.active.rect.current.translated?.top ?? 0;
-      const middleY = overRect.top + overRect.height / 2;
-
-      if (draggingY < middleY) {
-        console.log("Insert ABOVE", over.id);
-        // => nghĩa là thả vào trên issue này
-      } else {
-        console.log("Insert BELOW", over.id);
-        // => nghĩa là thả vào dưới issue này
-      }
 
       setOverItemId(overId);
     },

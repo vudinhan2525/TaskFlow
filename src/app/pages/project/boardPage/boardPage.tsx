@@ -16,9 +16,9 @@ const SprintInsight = lazy(
 const ViewSettingsTooltip = lazy(
   () => import("@libs/app/components/projects/board/viewSettingsTooltip"),
 );
-const CompleteSprintModal = lazy(
-  () => import("@libs/app/components/projects/modals/completeSprintModal"),
-);
+// const CompleteSprintModal = lazy(
+//   () => import("@libs/app/components/projects/modals/completeSprintModal"),
+// );
 import { useParams } from "react-router-dom";
 
 const IssueDetailModal = lazy(
@@ -27,7 +27,7 @@ const IssueDetailModal = lazy(
 const BoardPage: React.FC = () => {
   const { projectId } = useParams();
   const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
-  const [isInsightOpen, setIsInsightOpen] = useState(true);
+  const [isInsightOpen, setIsInsightOpen] = useState(false);
   const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
   const [filter, setFilter] = useState<ListProjectColumnsParams>({
     project_id: projectId || "",

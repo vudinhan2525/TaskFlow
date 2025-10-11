@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { uploadFileToCloudinary } from "@libs/utils/uploadFileToCloud";
+import { uploadFileToCloudinary } from "@libs/utils/file";
 import { readFile } from "@libs/utils/cropImage";
 import { useImageCropContext } from "../../cropper/imageCropProvider";
 import Button from "../../general-components/button";

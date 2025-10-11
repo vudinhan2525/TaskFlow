@@ -107,7 +107,7 @@ export const useBackLogPage = (projectId: string) => {
         updateIssueAsync({
           id: active.id as string,
           data: {
-            parent_id: over.id === "no-epic" ? "no-epic" : (over.id as string),
+            parent_id: over.id === "no-epic" ? "NULL" : (over.id as string),
           },
         });
         return;

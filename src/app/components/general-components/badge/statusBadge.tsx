@@ -87,11 +87,12 @@ const StatusBadge = ({
   className?: string;
 }) => {
   const index = useMemo(() => {
+    if (!column) return -1;
     if (column.name === "DONE") return 2;
     if (column.name === "IN PROGRESS") return 1;
     if (column.name === "TODO") return 0;
     return 1;
-  }, [column.name]);
+  }, [column]);
   if (!column) return <></>;
   return (
     <div

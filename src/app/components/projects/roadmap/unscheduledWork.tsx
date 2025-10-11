@@ -1,36 +1,17 @@
-import React, { memo } from "react";
+import React, { memo, useMemo } from "react";
 import { Input, ConfigProvider, Popover } from "antd";
 import { ChevronDown, ListFilter, X } from "lucide-react";
-import { IIssue } from "@libs/types/issue";
-import IssueCard from "../board/issueCard";
-import { useDraggable, useDroppable } from "@dnd-kit/core";
+import IssueCard from "./issueCard";
+import { useDroppable } from "@dnd-kit/core";
 import { SortableContext } from "@dnd-kit/sortable";
 import { useProjectIssues } from "@libs/hooks/apis/useIssue";
 
 interface UnscheduledWorkProps {
   handleToggleUnscheduledWork: () => void;
-  // unscheduledIssues: IIssue[];
   isOver?: boolean;
   projectId: string;
 }
-const SortableIssue = ({ issue }: { issue: IIssue }) => {
-  const { attributes, listeners, setNodeRef } = useDraggable({ id: issue.id });
 
-  const isDragging = attributes["aria-pressed"];
-
-  return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      className="cursor-grab"
-    >
-      <div className={`${isDragging && "opacity-40"}`}>
-        <IssueCard issue={issue} />
-      </div>
-    </div>
-  );
-};
 const UnscheduledWork: React.FC<UnscheduledWorkProps> = memo(
   ({ handleToggleUnscheduledWork, isOver = false, projectId }) => {
     const { setNodeRef, isOver: isDroppableOver } = useDroppable({
@@ -38,11 +19,20 @@ const UnscheduledWork: React.FC<UnscheduledWorkProps> = memo(
       data: { type: "unscheduled-work" },
     });
     const [isSort, setIsSort] = React.useState(false);
+
     const { issues, isLoading } = useProjectIssues({
       project_id: projectId,
       due_date_to: "unassigned",
       is_fetch: true,
     });
+
+    const sortedIssues = useMemo(() => {
+      return issues.sort((a, b) => {
+        return (
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        );
+      });
+    }, [issues]);
 
     if (isLoading) {
       return null;
@@ -51,7 +41,7 @@ const UnscheduledWork: React.FC<UnscheduledWorkProps> = memo(
     return (
       <div
         ref={setNodeRef}
-        className={`flex h-full w-full flex-col gap-6 rounded p-6 shadow-2xl`}
+        className={`flex h-full w-full flex-col gap-4 rounded p-6 shadow-2xl`}
       >
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -132,10 +122,10 @@ const UnscheduledWork: React.FC<UnscheduledWorkProps> = memo(
               </button>
             </Popover>
           </div>
-          <SortableContext items={issues.map((issue) => issue.id)}>
-            {issues.length !== 0 ? (
-              <div className="space-y-1 overflow-y-auto pr-2">
-                {issues
+          <SortableContext items={sortedIssues.map((issue) => issue.id)}>
+            {sortedIssues.length !== 0 ? (
+              <div className="space-y-2 overflow-y-auto pr-2">
+                {sortedIssues
                   .sort((a, b) => {
                     if (isSort) {
                       return (
@@ -150,7 +140,7 @@ const UnscheduledWork: React.FC<UnscheduledWorkProps> = memo(
                     }
                   })
                   .map((issue) => (
-                    <SortableIssue key={issue.id} issue={issue} />
+                    <IssueCard key={issue.id} issue={issue} />
                   ))}
               </div>
             ) : (

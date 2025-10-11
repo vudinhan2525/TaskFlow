@@ -13,10 +13,10 @@ const BacklogEpic = lazy(
   () => import("@libs/app/components/projects/backlog/backlogEpic"),
 );
 import IssueDetail from "@libs/app/components/issues/IssueDetail";
+import IssueDetailSkeleton from "@libs/app/components/skeleton/issueDetailSkeleton";
 const CreateSprintModal = lazy(
   () => import("@libs/app/components/projects/modals/createSprintModal"),
 );
-import IssueDetailSkeleton from "@libs/app/components/skeleton/issueDetailSkeleton";
 import TypeBadge from "@libs/app/components/general-components/badge/typeBadge";
 import { useBackLogPage } from "@libs/hooks/pages/useBacklogPage";
 import ScrumSprint from "@libs/app/components/projects/backlog/scrumSprint";
@@ -118,7 +118,7 @@ const BackLogPageContent: React.FC = () => {
                   maxSize={100}
                 >
                   <div className="h-full overflow-auto pr-4">
-                    <ul className="flex min-w-[650px] flex-col gap-2 overflow-x-auto">
+                    <ul className="flex min-w-[550px] flex-col gap-2 overflow-x-auto">
                       {sprintIssues?.map((sprint: ISprintIssues) => (
                         <div key={sprint.id}>
                           <ScrumSprint
@@ -180,7 +180,6 @@ const BackLogPageContent: React.FC = () => {
               )}
             </DragOverlay>
           </div>
-          -+
         </DndContext>
       )}
 
