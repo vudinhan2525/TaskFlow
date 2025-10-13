@@ -21,6 +21,8 @@ export const useRoadmapPage = ({ projectId }: { projectId: string }) => {
   const [overDate, setIsoverDate] = useState("");
   const [filters, setFilters] = useState<GetIssuesParams>({
     project_id: projectId || "",
+    is_fetch: true,
+    limit: 100,
   });
   const { updateIssue } = useUpdateIssue({ projectId: projectId || "" });
 

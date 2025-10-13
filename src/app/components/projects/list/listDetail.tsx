@@ -91,8 +91,7 @@ const ListDetail = ({
       }}
       className="flex h-full items-start overflow-y-auto pb-6"
     >
-      {/* Jira-style List Issues */}
-      <div className="flex h-full w-1/5 flex-col">
+      <div className="flex h-full w-1/6 flex-col">
         <div className="flex h-full flex-col bg-gray-100">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-200 p-2">

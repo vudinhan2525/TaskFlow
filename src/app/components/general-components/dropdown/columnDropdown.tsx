@@ -1,31 +1,33 @@
 import { Dropdown, type MenuProps } from "antd";
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, memo, useMemo } from "react";
 import { useRowPermission } from "@libs/app/context/permission.context";
 import { Tooltip } from "antd/lib";
 
 const ColumnDropdown = memo(
   ({
+    isOpen,
+    setIsOpenDropdown,
     items,
     currentItem,
     children,
-    setIsOpenDropdown,
     disabled,
+    isLoading,
   }: {
-    items: MenuProps["items"];
+    isOpen?: boolean;
+    setIsOpenDropdown?: (isOpen: boolean) => void;
+    items?: MenuProps["items"];
     currentItem?: string;
     children: React.ReactNode;
-    setIsOpenDropdown?: (isFetch: boolean) => void;
     disabled?: boolean;
+    isLoading?: boolean;
   }) => {
     const [searchText, setSearchText] = useState("");
-    const [visible, setVisible] = useState(false);
-    const [filteredItems, setFilteredItems] = useState(items);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [visible, setVisible] = useState(isOpen || false);
 
-    useEffect(() => {
+    // Filter the items
+    const filteredItems = useMemo(() => {
       if (searchText.length == 0) {
-        setFilteredItems(items);
-        return;
+        return items;
       }
       const filteredItems = items?.filter((item) => {
         if (
@@ -38,38 +40,43 @@ const ColumnDropdown = memo(
         }
         return item.value.toLowerCase().includes(searchText.toLowerCase());
       });
-      setFilteredItems(filteredItems);
+      return filteredItems;
     }, [searchText, items]);
+
+    // Get the height of the element
     const [elementHeight, setElementHeight] = useState(0);
     useEffect(() => {
-      const container = document.getElementsByClassName("ant-table-cell");
+      const container = document.getElementsByClassName("ant-table-thead");
       if (container.length > 0) {
         setElementHeight(container[0].clientHeight);
       }
     }, []);
 
-    const permissionResult = useRowPermission() || {
-      isAllow: true,
-      message: "",
-    };
-    // const hasPermission = true;
+    let permissionResult;
+    try {
+      permissionResult = useRowPermission();
+    } catch (error) {
+      // Fallback if PermissionContext is not available
+      permissionResult = {
+        isAllow: true,
+        message: "",
+      };
+    }
 
     return (
       <Tooltip
         placement="top"
         trigger={["click", "hover"]}
-        // open={!permissionResult.isAllow}
         title={permissionResult.isAllow ? "" : permissionResult.message}
       >
         <div
           style={{
-            blockSize: elementHeight,
+            blockSize: elementHeight || 39,
           }}
           onClick={(e) => {
             e.stopPropagation();
           }}
           className={`flex items-center ${!permissionResult.isAllow ? "cursor-not-allowed" : ""}`}
-          ref={dropdownRef}
         >
           <Dropdown
             disabled={!permissionResult.isAllow || disabled}
@@ -78,12 +85,15 @@ const ColumnDropdown = memo(
                 padding: "4px 0px",
                 borderRadius: "0px",
               },
-              items: filteredItems,
+              items: isLoading ? loadingMenuItems : filteredItems,
             }}
             trigger={["click"]}
             onOpenChange={(open) => {
               setVisible(open);
-              if (setIsOpenDropdown) setIsOpenDropdown(open);
+              if (setIsOpenDropdown) {
+                console.log("open", open);
+                setIsOpenDropdown(open);
+              }
             }}
             open={visible}
           >
@@ -109,3 +119,15 @@ const ColumnDropdown = memo(
 );
 
 export default ColumnDropdown;
+const loadingMenuItems: MenuProps["items"] = [
+  {
+    key: "loading",
+    label: (
+      <div className="flex items-center justify-center px-4 py-2 text-xs text-gray-500">
+        <span className="mr-2 h-3 w-3 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent"></span>
+        Loading...
+      </div>
+    ),
+    disabled: true,
+  },
+];

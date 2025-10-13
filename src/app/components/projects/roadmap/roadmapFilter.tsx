@@ -1,16 +1,18 @@
-
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Settings2, CalendarPlus } from "lucide-react";
+import PageFilter from "@libs/app/components/general-components/pageFilter";
+import { GetIssuesParams } from "@libs/types/issue";
+
 const RoadmapFilter = ({
-  SearchRoadmap,
+  initialFilters,
   setSearchParams,
   handleToggleUnscheduledWork,
   currentDate,
   goToToday,
   previousMonth,
-  nextMonth
+  nextMonth,
 }: {
-  SearchRoadmap: React.ElementType;
+  initialFilters: GetIssuesParams;
   setSearchParams: (params: any) => void;
   handleToggleUnscheduledWork: () => void;
   currentDate: Date;
@@ -18,16 +20,16 @@ const RoadmapFilter = ({
   previousMonth: () => void;
   nextMonth: () => void;
 }) => {
-
-const formatMonth = (date: Date): string => {
-  return date.toLocaleString("en-US", { month: "long", year: "numeric" });
-};
+  const formatMonth = (date: Date): string => {
+    return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+  };
   return (
     <div className="flex items-center justify-between py-1">
       {/* Left side - Filters */}
-    <SearchRoadmap
-      onFiltersChange={setSearchParams}
-    />
+      <PageFilter
+        initialFilters={initialFilters}
+        onFiltersChange={setSearchParams}
+      />
       {/* <RoadmapFilter setIssues={setIssues} /> */}
 
       {/* Right side - Calendar Navigation */}

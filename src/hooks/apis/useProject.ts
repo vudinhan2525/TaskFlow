@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "../../types";
 import { projects } from "@libs/apis/project";
 import { useUserMemberships } from "@libs/hooks/apis/useProjectMember";
 import { toast } from "react-toastify";
 import {
+  IProject,
   CreateColumnProjectParams,
   IColumn,
   ListProjectColumnsParams,
@@ -97,7 +97,7 @@ export function useUpdateProject({ onClose }: { onClose?: () => void }) {
     isSuccess,
     error,
   } = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Project> }) =>
+    mutationFn: ({ id, data }: { id: string; data: Partial<IProject> }) =>
       projects.update(id, data),
     onSuccess: () => {
       toast.success("Project updated successfully!");
@@ -146,6 +146,8 @@ export function useDeleteProject({ onClose }: { onClose?: () => void }) {
   };
 }
 export function useProject(projectId: string) {
+  const queryClient = useQueryClient();
+  const { user, setUser } = useAuthStore();
   const {
     data: project,
     isLoading,
@@ -154,6 +156,19 @@ export function useProject(projectId: string) {
     queryKey: ["project", projectId],
     queryFn: async () => {
       const { data } = await projects.getById(projectId);
+      queryClient.setQueryData(
+        ["projectMembers", projectId],
+        data.project_members,
+      );
+      data.project_members.forEach((member) => {
+        if (user?.id === member.user_id) {
+          setUser({
+            ...user,
+            projectRole: member.role,
+          });
+        }
+      });
+
       return data;
     },
     enabled: !!projectId,

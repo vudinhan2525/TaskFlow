@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sprints } from "../../apis/sprint";
 import { toast } from "react-toastify";
-import { ISprint } from "@libs/types/index";
+import { ISprint } from "@libs/types/sprint";
 
-export function useProjectSprints(projectId: string) {
+export function useProjectSprints(projectId: string, enabled?: boolean) {
   const {
     data: sprintsData,
     isLoading,
@@ -15,7 +15,7 @@ export function useProjectSprints(projectId: string) {
       const { data } = await sprints.list(projectId);
       return data;
     },
-    enabled: !!projectId,
+    enabled: !!projectId && (enabled === undefined ? true : enabled),
   });
   return {
     sprints: sprintsData?.data || [],
