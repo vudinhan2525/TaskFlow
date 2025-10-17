@@ -11,10 +11,10 @@ const ReportPage: React.FC = () => {
   const projectId = params?.projectId as string;
 
   const { stats } = useGetUserStats(projectId, false);
-
+  console.log("stats", stats);
   const haveStats = stats?.data;
   return (
-    <div className="w-full space-y-6 p-6">
+    <div className="mb-32 w-full space-y-4 px-56">
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">
@@ -24,24 +24,24 @@ const ReportPage: React.FC = () => {
           Overview of project status and metrics
         </p>
       </div>
-      {!haveStats && <></>}
+
       {haveStats && (
-        <>
+        <div className="flex h-full flex-col gap-4 text-gray-500">
           {/* Section 1: Key Metrics */}
-          <section>
+          <section className="">
             <MetricCards data={stats.data} />
           </section>
 
           {/* Section 2: Status Overview & Activity */}
-          <section>
+          <section className="h-auto">
             <StatusOverview data={stats.data} />
           </section>
 
           {/* Section 3: Issue Analytics */}
-          <section>
+          <section className="h-80">
             <IssueAnalytics data={stats.data} />
           </section>
-        </>
+        </div>
       )}
 
       {/* Section 4: Team Overview */}

@@ -22,7 +22,6 @@ const ActivityIssue = lazy(() => import("./activitySection/activitySection"));
 const MetadataSection = lazy(() => import("./metadataSection/metadataSection"));
 
 const IssueDetail = ({ selectedIssueId }: { selectedIssueId: string }) => {
-  if (!selectedIssueId) return null;
   const ref = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { user } = useAuthStore();

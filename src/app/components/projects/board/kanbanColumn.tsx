@@ -169,7 +169,7 @@ export const KanbanColumn = ({
         strategy={horizontalListSortingStrategy}
         items={column.issues.map((issue) => issue.id)}
       >
-        <div className="flex max-h-[600px] min-h-40 flex-col overflow-auto p-2 px-3 pb-20">
+        <div className="flex h-full flex-col overflow-auto p-2 px-3 pb-32">
           {column.issues.map((issue) => {
             const newColumn: IColumn = { ...column };
             delete (newColumn as any).issues;

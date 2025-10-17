@@ -52,7 +52,7 @@ const BackLogPageContent: React.FC = () => {
   } = useBackLogPage(projectId);
 
   return (
-    <div ref={containerRef} className="flex h-full flex-col gap-4 pb-28">
+    <div ref={containerRef} className="flex h-full flex-col gap-4">
       <Helmet>
         <title>Backlog - Task Flow</title>
       </Helmet>

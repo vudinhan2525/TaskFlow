@@ -14,28 +14,30 @@ import {
 import { UserStats } from "@libs/types/project";
 import HistorySection from "@libs/app/components/issues/activitySection/history";
 import { useParams } from "react-router-dom";
+import SectionContainer from "./sectionHeader";
 interface StatusData {
   label: string;
   value: number;
   color: string;
 }
 
+// Jira-inspired color palette
 const COLOR_PALETTE = [
-  "#3b82f6", // Blue
-  "#10b981", // Emerald
-  "#f59e0b", // Amber
-  "#ef4444", // Red
-  "#8b5cf6", // Violet
-  "#06b6d4", // Cyan
-  "#84cc16", // Lime
-  "#f97316", // Orange
+  "#0052CC", // Jira Blue
+  "#36B37E", // Jira Green
+  "#FFAB00", // Jira Yellow
+  "#DE350B", // Jira Red
+  "#6554C0", // Jira Purple
+  "#006644", // Jira Teal
+  "#FF5630", // Jira Orange
+  "#253858", // Jira Dark Blue
 ];
 
 const StatusOverview = (props: { data: UserStats }) => {
   const { by_status } = props.data;
   const [chartType, setChartType] = useState<"pie" | "bar">("pie");
   const { projectId } = useParams<{ projectId: string }>();
-
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const statusData: StatusData[] = by_status.map((status, idx) => ({
     label: status.name,
     value: status.count,
@@ -46,25 +48,33 @@ const StatusOverview = (props: { data: UserStats }) => {
   const getPercentage = (value: number) =>
     total === 0 ? "0.0" : ((value / total) * 100).toFixed(1);
 
-  // Custom tooltip for charts
+  // Jira-style tooltip for charts
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       return (
-        <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
-          <p className="font-medium text-gray-900">
-            {data.payload.label || label}
-          </p>
-          <p className="text-sm text-gray-600">
-            Issues:{" "}
-            <span className="font-semibold text-gray-900">{data.value}</span>
-          </p>
-          <p className="text-sm text-gray-600">
-            Percentage:{" "}
-            <span className="font-semibold text-gray-900">
-              {getPercentage(data.value)}%
-            </span>
-          </p>
+        <div className="cursor-pointer rounded-md border border-gray-300 bg-white p-3 shadow-lg">
+          <div className="flex items-center space-x-2">
+            <div
+              className="h-3 w-3"
+              style={{ backgroundColor: data.payload.color }}
+            />
+            <p className="font-medium text-gray-900">
+              {data.payload.label || label}
+            </p>
+          </div>
+          <div className="mt-2 space-y-1">
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Issues:</span>{" "}
+              <span className="font-semibold text-gray-900">{data.value}</span>
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Percentage:</span>{" "}
+              <span className="font-semibold text-gray-900">
+                {getPercentage(data.value)}%
+              </span>
+            </p>
+          </div>
         </div>
       );
     }
@@ -102,169 +112,182 @@ const StatusOverview = (props: { data: UserStats }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      {/* Status Distribution Chart */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Status Distribution
-          </h3>
-          <div className="flex rounded-lg border border-gray-200 p-1">
-            <button
-              onClick={() => setChartType("pie")}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-                chartType === "pie"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Pie
-            </button>
-            <button
-              onClick={() => setChartType("bar")}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-                chartType === "bar"
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Bar
-            </button>
-          </div>
-        </div>
-
-        {/* Chart Container */}
-        <div className="mb-6" style={{ height: "280px" }}>
-          <ResponsiveContainer width="100%" height="100%">
-            {chartType === "pie" ? (
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomLabel}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  stroke="#fff"
-                  strokeWidth={2}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            ) : (
-              <BarChart
-                data={statusData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+    <div className="flex flex-col gap-6 lg:flex-row">
+      {/* Status Distribution Chart - Jira Style */}
+      {/* Header with Jira-style styling */}
+      <SectionContainer
+        title="Status overview"
+        description="Get a snapshot of the status of your work items"
+        link="View all work items"
+      >
+        {" "}
+        <div className="p-6">
+          {/* Chart Type Selector - Jira Style */}
+          <div className="flex items-center justify-between">
+            <h4 className="text-base font-medium text-gray-900">
+              Status Distribution
+            </h4>
+            <div className="flex rounded-md border border-gray-300 bg-white p-1">
+              <button
+                onClick={() => setChartType("pie")}
+                className={`cursor-pointer rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
+                  chartType === "pie"
+                    ? "bg-blue-50 text-blue-700 shadow-sm"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 12 }}
-                  stroke="#64748b"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                />
-                <YAxis tick={{ fontSize: 12 }} stroke="#64748b" />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            )}
-          </ResponsiveContainer>
-        </div>
-
-        {/* Legend */}
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-4">
-            {statusData.map((status, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <div
-                  className="h-3 w-3 flex-shrink-0 rounded-full"
-                  style={{ backgroundColor: status.color }}
-                />
-                <span className="text-sm font-medium text-gray-700">
-                  {status.label}
-                </span>
-                <span className="text-sm text-gray-500">{status.value}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Summary Stats */}
-          <div className="border-t border-gray-300 pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-bold text-gray-900">{total}</p>
-                <p className="text-sm text-gray-500">Total Issues</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">
-                  {statusData.length}
-                </p>
-                <p className="text-sm text-gray-500">Status Types</p>
-              </div>
+                Pie
+              </button>
+              <button
+                onClick={() => setChartType("bar")}
+                className={`cursor-pointer rounded-sm px-3 py-1.5 text-sm font-medium transition-colors ${
+                  chartType === "bar"
+                    ? "bg-blue-50 text-blue-700 shadow-sm"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                Bar
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Additional Insights */}
-        {statusData.length > 0 && (
-          <div className="mt-4 border-t border-gray-100 pt-4">
-            <div className="text-sm text-gray-600">
-              <p className="mb-1">
-                <span className="font-medium">Most Common:</span>{" "}
-                {
-                  statusData.reduce((prev, current) =>
-                    prev.value > current.value ? prev : current,
-                  ).label
-                }{" "}
-                (
-                {getPercentage(
-                  statusData.reduce((prev, current) =>
-                    prev.value > current.value ? prev : current,
-                  ).value,
+          {/* Chart Container - Jira Style */}
+          <div className="flex flex-row items-center justify-center">
+            <div className="flex-1">
+              <ResponsiveContainer width="100%" height={260}>
+                {chartType === "pie" ? (
+                  <PieChart>
+                    <Pie
+                      data={statusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={0.5}
+                      dataKey="value"
+                      isAnimationActive={true}
+                      animationBegin={0}
+                      animationDuration={800}
+                      animationEasing="ease-in-out"
+                      stroke="#fff"
+                      strokeWidth={1}
+                      onMouseEnter={(_, index) => setActiveIndex(index)}
+                      onMouseLeave={() => setActiveIndex(null)}
+                    >
+                      {statusData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={entry.color}
+                          transform={
+                            activeIndex === index ? "scale(1.05)" : "scale(1)"
+                          }
+                          style={{
+                            transition:
+                              "transform 0.4s ease-in-out, opacity 0.3s ease",
+                            transformOrigin: "center",
+                            transformBox: "fill-box",
+                            opacity:
+                              activeIndex === null
+                                ? 1
+                                : activeIndex === index
+                                  ? 1
+                                  : 0.3,
+                            cursor: "pointer",
+                          }}
+                        />
+                      ))}
+                    </Pie>
+
+                    {/* Hiển thị tổng số ở giữa biểu đồ (Jira style) */}
+                    <text
+                      x="50%"
+                      y="45%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="fill-gray-900 text-2xl font-semibold"
+                    >
+                      {activeIndex !== null
+                        ? (
+                            (statusData[activeIndex].value / total) *
+                            100
+                          ).toFixed(1)
+                        : total}
+                      %
+                    </text>
+                    <text
+                      x="50%"
+                      y="55%"
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      className="fill-gray-500 text-sm"
+                    >
+                      {activeIndex !== null
+                        ? statusData[activeIndex].label
+                        : "Total work items"}
+                    </text>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                ) : (
+                  <BarChart
+                    data={statusData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="label"
+                      tick={{ fontSize: 12 }}
+                      stroke="#64748b"
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} stroke="#64748b" />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                      {statusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 )}
-                %)
-              </p>
-              {statusData.length > 1 && (
-                <p>
-                  <span className="font-medium">Completion Rate:</span>{" "}
-                  {(() => {
-                    const completedStatuses = statusData.filter(
-                      (s) =>
-                        s.label.toLowerCase().includes("done") ||
-                        s.label.toLowerCase().includes("complete") ||
-                        s.label.toLowerCase().includes("closed"),
-                    );
-                    const completedCount = completedStatuses.reduce(
-                      (sum, s) => sum + s.value,
-                      0,
-                    );
-                    return getPercentage(completedCount);
-                  })()}
-                  %
-                </p>
-              )}
+              </ResponsiveContainer>
+            </div>
+
+            <div className="flex w-auto flex-col gap-3">
+              {statusData.map((status, index) => (
+                <div
+                  onMouseEnter={() => setActiveIndex(index)}
+                  onMouseLeave={() => setActiveIndex(null)}
+                  key={index}
+                  className={`flex cursor-pointer items-center space-x-2 p-2 ${
+                    activeIndex === index ? "bg-gray-100" : ""
+                  }`}
+                >
+                  <div
+                    className="h-3 w-3 flex-shrink-0"
+                    style={{ backgroundColor: status.color }}
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    {status.label.toUpperCase()}: {status.value}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      </SectionContainer>
 
-      {/* Activity Feed */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <HistorySection
-        projectId={projectId!}
-        />
-      </div>
+      {/* Activity Feed - Jira Style */}
+      {/* Header with Jira-style styling */}
+      <SectionContainer
+        title="Recent activity"
+        description="Stay up to date with what's happening across the space."
+        link="View all activity"
+      >
+        <div className="max-h-80 overflow-scroll">
+          <HistorySection projectId={projectId!} />
+        </div>
+      </SectionContainer>
     </div>
   );
 };

@@ -8,11 +8,14 @@ import {
   PriorityDropdown,
   // TypeDropdown,
   SprintDropdown,
+  ParentDropdown,
 } from "../../general-components/dropdown/index";
 import UserAvatar from "../../general-components/user/userAvatar";
 import CustomInput from "../../general-components/customInput";
 import CustomDatePicker from "../../general-components/customDatePicker";
 import UserDropdown from "../../general-components/dropdown/userDropdown";
+import TeamDropdown from "../../general-components/dropdown/teamDropdown";
+import { useIssue } from "@libs/hooks/apis/useIssue";
 
 const DetailRow = ({
   label,
@@ -51,7 +54,7 @@ const Details = ({
   handleUpdateIssue: (key: string, value: any) => void;
 }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
-
+  const { issue } = useIssue(projectId, selectedIssue.id);
   return (
     <div className="flex h-full flex-col gap-4">
       <div className="h-full overflow-y-auto rounded-xs border border-gray-300">
@@ -72,7 +75,7 @@ const Details = ({
           </div>
         </div>
         {isDetailsOpen && (
-          <div className="flex flex-col space-y-6 overflow-auto p-4">
+          <div className="flex flex-col space-y-4 overflow-auto p-4">
             <DetailRow label="Assignee" layout={layout}>
               <UserDropdown
                 projectId={projectId}
@@ -82,7 +85,6 @@ const Details = ({
                 isDisplayname={true}
               />
             </DetailRow>
-
             <DetailRow label="Sprint" layout={layout}>
               <SprintDropdown
                 projectId={projectId}
@@ -90,15 +92,22 @@ const Details = ({
                 sprintId={selectedIssue.sprint_id || ""}
               />
             </DetailRow>
-
+            <DetailRow label="Parent" layout={layout}>
+              <ParentDropdown
+                projectId={projectId}
+                issue={selectedIssue}
+                currentParentId={selectedIssue.parent_id}
+                isShowIcon={true}
+              />
+            </DetailRow>
             <DetailRow label="Priority" layout={layout}>
               <PriorityDropdown
                 projectId={projectId}
                 issueId={selectedIssue.id}
                 priority={selectedIssue.priority}
+                isShowLabel={true}
               />
             </DetailRow>
-
             {/* <DetailRow label="Type" layout={layout}>
               <TypeDropdown
                 projectId={projectId}
@@ -106,23 +115,22 @@ const Details = ({
                 type={selectedIssue.type}
               />
             </DetailRow> */}
-
-            <DetailRow label="Due Date To" layout={layout}>
-              <CustomDatePicker
-                field="due_date_to"
-                issue={selectedIssue}
+            <DetailRow label="Team" layout={layout}>
+              <TeamDropdown
                 projectId={projectId}
+                issueId={selectedIssue.id}
+                selectedTeamId={selectedIssue.team_id || ""}
+                columnField="team_id"
+                isDisplayName={true}
               />
             </DetailRow>
-
             <DetailRow label="Status" layout={layout}>
               <StatusDropdown
                 projectId={projectId}
                 issueId={selectedIssue.id}
-                column={selectedIssue.column}
+                column={issue!.column}
               />
             </DetailRow>
-
             <DetailRow label="Story Points" layout={layout}>
               <CustomInput
                 field="story_point"
@@ -130,21 +138,20 @@ const Details = ({
                 handleUpdateIssue={handleUpdateIssue}
               />
             </DetailRow>
-
             <DetailRow label="Reporter" layout={layout}>
-              <div className="flex items-center gap-2">
-                <UserAvatar
-                  userId={selectedIssue?.reporter_id || ""}
-                  size={24}
-                  isDisplayName={true}
-                />
-              </div>
+              <UserAvatar
+                userId={selectedIssue?.reporter_id || ""}
+                size={24}
+                isDisplayName={true}
+              />
             </DetailRow>
-
-            <DetailRow label="Parent" layout={layout}>
-              <span className="text-sm text-gray-800">
-                {selectedIssue.parent_id || "No parent"}
-              </span>
+            <DetailRow label="Start Date" layout={layout}>
+              <CustomDatePicker
+                field="due_date_from"
+                projectId={projectId}
+                className="px-2"
+                issueId={selectedIssue.id}
+              />
             </DetailRow>
           </div>
         )}

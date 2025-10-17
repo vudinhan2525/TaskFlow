@@ -43,7 +43,7 @@ const BoardPage: React.FC = () => {
         <Helmet>
           <title>Board - Task Flow</title>
         </Helmet>
-        <div className="flex flex-col gap-4">
+        <div className="flex h-full flex-col gap-4">
           <h1 className="p-2 text-2xl font-bold text-gray-700">Kanban Board</h1>
           <div className="flex items-center justify-between">
             <PageFilter

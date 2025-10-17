@@ -91,7 +91,6 @@ const ColumnDropdown = memo(
             onOpenChange={(open) => {
               setVisible(open);
               if (setIsOpenDropdown) {
-                console.log("open", open);
                 setIsOpenDropdown(open);
               }
             }}

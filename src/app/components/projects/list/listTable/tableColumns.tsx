@@ -165,14 +165,13 @@ export const useTableColumns = (issues: IIssue[], projectId: string) => {
       ),
 
       // Parent Issue
-      TableColumn("parent_id", "Parent Issue", (_, { id, parent_id, key }) => (
+      TableColumn("parent_id", "Parent Issue", (_, { id, parent_id }) => (
         <Suspense fallback={<FallBack />}>
           <div className="px-4">
             <ParentDropdown
               projectId={projectId}
               issue={issues.find((issue) => issue.id === id)!}
               currentParentId={parent_id}
-              currentIssueKey={key}
             />
           </div>
         </Suspense>

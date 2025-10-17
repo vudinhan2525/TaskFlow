@@ -24,7 +24,6 @@ const PageFilter = memo(
       return initialFilters || {};
     }, [initialFilters]);
 
-    console.log("initialFilters", initialFilters);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [params] = useSearchParams();
     const [, startTransition] = useTransition();
@@ -59,9 +58,6 @@ const PageFilter = memo(
           onFiltersChange(newFilters);
         }
       }
-      return () => {
-        console.log("unmount");
-      };
     }, []);
 
     const updateURL = (

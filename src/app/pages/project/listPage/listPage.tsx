@@ -46,7 +46,10 @@ const ListPage = () => {
   }, [listTableRef]);
 
   const { issues, pagination, isLoading } = useProjectIssues(filters);
-
+  const handleSetListMode = (mode: "list" | "detail") => {
+    setListMode(mode);
+    localStorage.setItem(LOCAL_STORAGE_KEY, mode);
+  };
   return (
     <div className="flex flex-1 flex-col overflow-y-hidden">
       <Helmet>
@@ -60,7 +63,7 @@ const ListPage = () => {
           setFilter={setFilter}
           issues={issues || []}
           listMode={listMode}
-          setListMode={setListMode}
+          setListMode={handleSetListMode}
         />
 
         <div ref={listTableRef} className="h-full flex-1 flex-col">

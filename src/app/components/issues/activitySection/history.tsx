@@ -135,7 +135,7 @@ export default function History({
       .slice(0, 2);
   };
   return (
-    <div className="max-h-[600px] min-h-[400px] space-y-4 overflow-auto">
+    <div className="max-h-full space-y-4 overflow-auto">
       {activities?.map((activity, activityIndex) => (
         <div
           key={activity.id}
