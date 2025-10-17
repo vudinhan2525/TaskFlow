@@ -1,35 +1,35 @@
 import React, { useMemo, Suspense } from "react";
 import { TableColumnType, Skeleton } from "antd";
 import { IIssue, IssuePriority, IssueType } from "@libs/types/issue";
-import TableColumn from "./listTable/tableColumn";
+import TableColumn from "./tableColumn";
 
 // Lazy imports
-const ColumnInputFiled = React.lazy(
-  () => import("./listTable/ColumnInputFiled"),
-);
+const ColumnInputFiled = React.lazy(() => import("./ColumnInputFiled"));
 const TypeDropdown = React.lazy(() =>
-  import("../../general-components/dropdown/typeDropdown").then((m) => m),
+  import("../../../general-components/dropdown/typeDropdown").then((m) => m),
 );
 const StatusDropdown = React.lazy(() =>
-  import("../../general-components/dropdown/statusDropdown").then((m) => m),
+  import("../../../general-components/dropdown/statusDropdown").then((m) => m),
 );
 const PriorityDropdown = React.lazy(() =>
-  import("../../general-components/dropdown/priorityDropdown").then((m) => m),
+  import("../../../general-components/dropdown/priorityDropdown").then(
+    (m) => m,
+  ),
 );
 const SprintDropdown = React.lazy(() =>
-  import("../../general-components/dropdown/sprintDropdown").then((m) => m),
+  import("../../../general-components/dropdown/sprintDropdown").then((m) => m),
 );
 const UserDropdown = React.lazy(
-  () => import("../../general-components/dropdown/userDropdown"),
+  () => import("../../../general-components/dropdown/userDropdown"),
 );
 const CustomDatePicker = React.lazy(
-  () => import("../../general-components/customDatePicker"),
+  () => import("../../../general-components/customDatePicker"),
 );
 const TeamDropdown = React.lazy(
-  () => import("../../general-components/dropdown/teamDropdown"),
+  () => import("../../../general-components/dropdown/teamDropdown"),
 );
 const ParentDropdown = React.lazy(
-  () => import("../../general-components/dropdown/parentDropdown"),
+  () => import("../../../general-components/dropdown/parentDropdown"),
 );
 
 const FallBack = () => {
@@ -165,14 +165,13 @@ export const useTableColumns = (issues: IIssue[], projectId: string) => {
       ),
 
       // Parent Issue
-      TableColumn("parent_id", "Parent Issue", (_, { id, parent_id, key }) => (
+      TableColumn("parent_id", "Parent Issue", (_, { id, parent_id }) => (
         <Suspense fallback={<FallBack />}>
           <div className="px-4">
             <ParentDropdown
               projectId={projectId}
               issue={issues.find((issue) => issue.id === id)!}
               currentParentId={parent_id}
-              currentIssueKey={key}
             />
           </div>
         </Suspense>

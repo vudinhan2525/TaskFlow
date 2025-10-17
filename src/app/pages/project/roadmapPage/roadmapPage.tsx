@@ -1,7 +1,6 @@
 import React, { lazy } from "react";
 import Roadmap from "@libs/app/components/projects/roadmap/roadmap";
 import { useParams } from "react-router-dom";
-import PageFilter from "@libs/app/components/general-components/pageFilter";
 import RoadmapFilter from "@libs/app/components/projects/roadmap/roadmapFilter";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -22,6 +21,7 @@ const RoadmapPage: React.FC = () => {
     isOpenUnscheduledWork,
     activeIssue,
     overDate,
+    filters,
     setFilters,
     sensors,
     handleDragStart,
@@ -36,7 +36,7 @@ const RoadmapPage: React.FC = () => {
   } = useRoadmapPage({ projectId: projectId || "" });
 
   return (
-    <div className="flex h-full w-full flex-col gap-6 bg-white p-6 pb-32">
+    <div className="flex h-full w-full flex-col gap-6 bg-white pb-32">
       <Helmet>
         <title>Roadmap - Task Flow</title>
       </Helmet>
@@ -69,7 +69,7 @@ const RoadmapPage: React.FC = () => {
               >
                 <div className="flex h-full flex-col gap-6 pr-4">
                   <RoadmapFilter
-                    SearchRoadmap={PageFilter}
+                    initialFilters={filters}
                     setSearchParams={setFilters}
                     goToToday={goToToday}
                     previousMonth={previousMonth}

@@ -1,5 +1,5 @@
 import { IIssueWithoutCoulumn } from "@libs/types/issue";
-
+import { IProjectMember } from "@libs/types/projectMember";
 export interface IProject {
   id: string;
   name: string;
@@ -9,6 +9,7 @@ export interface IProject {
   owner_id: string;
   created_at: string;
   updated_at: string;
+  project_members: IProjectMember[];
 }
 export interface IColumn {
   id: string;

@@ -135,7 +135,6 @@ const IssueCard = memo(
                 className="grid w-[35%] max-w-[50%] min-w-[400px] grid-cols-12 gap-1"
                 onPointerDown={stopPropagation}
                 onClick={(e) => {
-                  console.log("clicked");
                   e.stopPropagation();
                 }}
               >
@@ -145,7 +144,6 @@ const IssueCard = memo(
                     projectId={projectId}
                     issue={issue}
                     currentParentId={issue.parent_id}
-                    currentIssueKey={issue.key}
                   />
                 </div>
                 {/* status dropdown */}

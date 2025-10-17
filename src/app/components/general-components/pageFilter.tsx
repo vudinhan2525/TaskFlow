@@ -1,11 +1,11 @@
-import { memo, lazy, useTransition, useEffect } from "react";
+import { memo, lazy, useTransition, useEffect, useMemo } from "react";
 import Button from "@libs/app/components/general-components/button";
 import Popover from "antd/lib/popover";
 import Search from "antd/es/input/Search";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { useParams, useSearchParams } from "react-router-dom";
-import { GetIssuesParams, IssuePriority, IssueType } from "@libs/types/issue";
+import { useSearchParams } from "react-router-dom";
+import { GetIssuesParams } from "@libs/types/issue";
 import { ListProjectColumnsParams } from "@libs/types/project";
 import { get } from "lodash";
 
@@ -17,47 +17,49 @@ interface PageFilterProps {
     filters: GetIssuesParams | ListProjectColumnsParams,
   ) => void;
 }
+
 const PageFilter = memo(
   ({ onFiltersChange, initialFilters }: PageFilterProps) => {
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const { projectId } = useParams<{ projectId: string }>();
-    const [params] = useSearchParams();
-    const getSearchParams = () => new URLSearchParams(window.location.search);
-    const [, startTransition] = useTransition();
+    const initFilters = useMemo(() => {
+      return initialFilters || {};
+    }, [initialFilters]);
 
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [params] = useSearchParams();
+    const [, startTransition] = useTransition();
     const [filters, setFilters] = useState<
       GetIssuesParams | ListProjectColumnsParams
-    >({
-      keyword: params.get("keyword") || "",
-      due_date_from: params.get("due_date_from") || undefined,
-      due_date_to: params.get("due_date_to") || undefined,
-      column_ids: params.get("column_ids")?.split(",").filter(Boolean) || [],
-      created_at_from: params.get("created_at_from") || undefined,
-      created_at_to: params.get("created_at_to") || undefined,
-      assignee_ids:
-        params.get("assignee_ids")?.split(",").filter(Boolean) || [],
-      types:
-        (params.get("types")?.split(",").filter(Boolean) as IssueType[]) || [],
-      priorities:
-        (params
-          .get("priorities")
-          ?.split(",")
-          .filter(Boolean) as IssuePriority[]) || [],
-      page: params.get("page") ? parseInt(params.get("page")!) : 1,
-      limit: params.get("limit") ? parseInt(params.get("limit")!) : 100,
-      project_id: projectId,
-      is_fetch: true,
-    });
+    >(() => initialFilters || {});
 
     useEffect(() => {
-      if (onFiltersChange) {
-        onFiltersChange({
-          ...initialFilters,
-          ...filters,
-        });
+      const urlParams: Record<string, any> = {};
+
+      for (const [key, value] of params.entries()) {
+        if (value.includes(",")) {
+          urlParams[key] = value.split(",").map((v) => v.trim());
+        } else if (value === "true" || value === "false") {
+          urlParams[key] = value === "true";
+        } else if (!isNaN(Number(value))) {
+          urlParams[key] = Number(value);
+        } else {
+          urlParams[key] = value;
+        }
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+
+      if (Object.keys(urlParams).length > 0) {
+        const newFilters = {
+          ...initialFilters,
+          ...urlParams,
+        };
+
+        setFilters(newFilters);
+
+        if (onFiltersChange) {
+          onFiltersChange(newFilters);
+        }
+      }
     }, []);
+
     const updateURL = (
       newFilters: GetIssuesParams | ListProjectColumnsParams,
     ) => {
@@ -76,18 +78,12 @@ const PageFilter = memo(
           }
         }
       });
-
-      const currentParams = getSearchParams();
-      const preserveParams = ["projectId", "page", "limit"];
-      preserveParams.forEach((param) => {
-        const value = currentParams.get(param);
-        if (value && !params.has(param)) {
-          params.set(param, value);
-        }
-      });
-
-      const newUrl = `${window.location.pathname}?${params.toString()}`;
-      window.history.pushState({}, "", newUrl);
+      if (params.size > 0 && filters !== initFilters) {
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({}, "", newUrl);
+      } else {
+        window.history.pushState({}, "", window.location.pathname);
+      }
     };
 
     const handleSaveFilters = () => {
@@ -97,21 +93,9 @@ const PageFilter = memo(
     };
 
     const handleClearFilters = () => {
-      const clearedFilters: GetIssuesParams = {
-        keyword: "",
-        due_date_from: undefined,
-        due_date_to: undefined,
-        column_ids: [],
-        priorities: [],
-        types: [],
-        created_at_from: undefined,
-        created_at_to: undefined,
-        assignee_ids: [],
-        project_id: projectId,
-      };
-      setFilters(clearedFilters);
+      const clearedFilters: GetIssuesParams = {};
+      setFilters(initFilters);
       updateURL(clearedFilters);
-      onFiltersChange?.(clearedFilters);
     };
 
     const handleKeywordSearch = (value: string) => {
@@ -119,6 +103,7 @@ const PageFilter = memo(
       updateURL(newFilters);
       onFiltersChange?.(newFilters);
     };
+
     const getActiveFilterCount = () => {
       let count = 0;
       if (filters.keyword) count++;
@@ -140,7 +125,11 @@ const PageFilter = memo(
             placeholder="Search issues..."
             value={filters.keyword}
             onChange={(e) =>
-              setFilters({ ...filters, keyword: e.target.value })
+              setFilters({
+                ...filters,
+                ...initialFilters,
+                keyword: e.target.value,
+              })
             }
             onSearch={handleKeywordSearch}
             allowClear
@@ -153,7 +142,9 @@ const PageFilter = memo(
                 handleSaveFilters={handleSaveFilters}
                 setIsPopoverOpen={setIsPopoverOpen}
                 filters={filters}
-                setFilters={setFilters}
+                setFilters={(filters) => {
+                  setFilters({ ...initialFilters, ...filters });
+                }}
               />
             }
             placement="bottomLeft"

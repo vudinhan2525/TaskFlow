@@ -10,8 +10,8 @@ import { PERMISSIONS_CONFIG } from "@libs/config/permissons.config";
 import { issues as issuesApi } from "@libs/apis/issue";
 import { useQueryClient } from "@tanstack/react-query";
 import { TableRowSelection } from "antd/es/table/interface";
-import { useTableColumns } from "./tableColumns";
-import TableFooter from "./tableFooter";
+import { useTableColumns } from "./listTable/tableColumns";
+import TableFooter from "./listTable/tableFooter";
 
 const CreateIssueModal = lazy(
   () => import("@libs/app/components/projects/modals/createIssueModal"),
@@ -105,12 +105,13 @@ const ListTable = ({
       {isFetching || !user || !userTeams ? (
         //  TABLE SKELETON
         <Table
+          loading={isFetching}
           rowKey="key"
           pagination={false}
           bordered={true}
           scroll={{ y: maxHeightListTable || 700, x: 1000 }}
           dataSource={
-            [...Array(6)].map((_, index) => ({
+            [...Array(8)].map((_, index) => ({
               key: `key${index}`,
             })) as DataTypeWithKey[]
           }
@@ -127,8 +128,9 @@ const ListTable = ({
           }))}
         />
       ) : (
-        //  TABLE SKELETON
+        //  TABLE
         <Table
+          loading={isFetching}
           columns={tableColumns}
           dataSource={dataSource}
           bordered={true}

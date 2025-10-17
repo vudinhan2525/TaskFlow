@@ -1,22 +1,33 @@
+import { lazy } from "react";
 import { useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect, useRef } from "react";
 import { useProjectIssues } from "@libs/hooks/apis/useIssue";
 import { GetIssuesParams } from "@libs/types/issue";
-import ListTable from "@libs/app/components/projects/list/listTable";
-import ListDetail from "@libs/app/components/projects/list/listDetail";
 import ListPageHeader from "@libs/app/components/projects/list/listPageHeader";
+
+const ListTable = lazy(
+  () => import("@libs/app/components/projects/list/listTable"),
+);
+const ListDetail = lazy(
+  () => import("@libs/app/components/projects/list/listDetail"),
+);
 
 const ListPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const listTableRef = useRef<HTMLDivElement>(null);
   const [maxHeightListTable, setMaxHeightListTable] = useState(0);
-  const [listMode, setListMode] = useState<"list" | "detail">("list");
+  const LOCAL_STORAGE_KEY = `listMode_${projectId}`;
+  const [listMode, setListMode] = useState<"list" | "detail">(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return saved === "detail" ? "detail" : "list";
+  });
+
+  // Cập nhật filters khi listMode thay đổi
   const [filters, setFilter] = useState<GetIssuesParams>({
     project_id: projectId,
-    limit: 8,
-    page: 0,
     is_fetch: true,
+    limit: 100,
     parent_ids: listMode === "detail" ? [] : ["NULL"],
   });
 
@@ -34,39 +45,40 @@ const ListPage = () => {
     };
   }, [listTableRef]);
 
-  const {
-    issues,
-    pagination,
-    isLoading: isFetching,
-  } = useProjectIssues(filters);
+  const { issues, pagination, isLoading } = useProjectIssues(filters);
+  const handleSetListMode = (mode: "list" | "detail") => {
+    setListMode(mode);
+    localStorage.setItem(LOCAL_STORAGE_KEY, mode);
+  };
   return (
     <div className="flex flex-1 flex-col overflow-y-hidden">
       <Helmet>
         <title>List - Task Flow</title>
       </Helmet>
 
-      <div className="flex flex-1 flex-col gap-2 overflow-y-hidden p-4">
+      <div className="flex flex-1 flex-col gap-2 overflow-y-hidden">
         <h1 className="p-2 text-2xl font-bold text-gray-700">List Issues</h1>
         <ListPageHeader
           filters={filters}
           setFilter={setFilter}
           issues={issues || []}
           listMode={listMode}
-          setListMode={setListMode}
+          setListMode={handleSetListMode}
         />
+
         <div ref={listTableRef} className="h-full flex-1 flex-col">
           {listMode === "list" ? (
             <ListTable
               maxHeightListTable={Math.max(maxHeightListTable - 100, 200)}
               issues={issues || []}
-              isFetching={isFetching}
+              isFetching={isLoading}
               pagination={pagination}
               projectId={projectId || ""}
             />
           ) : (
             <ListDetail
-              issues={issues}
-              isFetching={isFetching}
+              issues={issues || []}
+              isFetching={isLoading}
               maxHeightListTable={maxHeightListTable}
             />
           )}

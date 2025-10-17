@@ -232,7 +232,7 @@ export default function KanbanBoard({
   });
 
   return (
-    <div className="flex">
+    <div className="flex h-full overflow-hidden">
       <DndContext
         sensors={sensors}
         // collisionDetection={closestCorners}

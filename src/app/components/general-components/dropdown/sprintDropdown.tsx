@@ -60,7 +60,7 @@ const SprintDropdown = ({
             <div
               className={`flex items-center gap-1 border-l-2 border-transparent p-2 hover:border-emerald-600 hover:bg-gray-200`}
             >
-              <p className="text-sm font-medium">Unassigned</p>
+              <p className="truncate text-sm font-medium">Unassigned</p>
             </div>
           ),
           onClick: () => {
@@ -76,7 +76,7 @@ const SprintDropdown = ({
     >
       <div className="">
         <div className="flex justify-start rounded-sm border-1 border-gray-200 px-1 py-0.5">
-          <p className={`text-sm font-normal text-gray-800`}>
+          <p className={`truncate text-sm font-normal text-gray-800`}>
             {currentSprint?.name || "Unassigned"}
           </p>
         </div>

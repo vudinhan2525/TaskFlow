@@ -6,11 +6,12 @@ import {
   ListProjectMemberParams,
 } from "@libs/types/projectMember";
 import { toast } from "react-toastify";
-import { useAuthStore } from "@libs/store/useAuthStore";
 
-export function useProjectMembers(params: ListProjectMemberParams) {
+export function useProjectMembers(
+  params: ListProjectMemberParams,
+  enabled?: boolean,
+) {
   const queryClient = useQueryClient();
-  const { user, setUser } = useAuthStore();
   const { data, isLoading, error } = useQuery({
     queryKey: ["projectMembers", params.project_id, params.name, params.email],
     queryFn: async () => {
@@ -18,21 +19,11 @@ export function useProjectMembers(params: ListProjectMemberParams) {
       // put each user into the user cache
       res.data.data.forEach((u) => {
         queryClient.setQueryData(["user", u.id], u);
-        if (user?.id === u.user_id) {
-          queryClient.setQueryData(["currentUser"], {
-            ...user,
-            projectRole: u.role,
-          });
-          setUser({
-            ...user,
-            projectRole: u.role,
-          });
-        }
       });
 
       return res;
     },
-    enabled: !!params.project_id,
+    enabled: !!params.project_id && (enabled === undefined ? true : enabled),
   });
   return {
     projectMembers: data?.data.data,

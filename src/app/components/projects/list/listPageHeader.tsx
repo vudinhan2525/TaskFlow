@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Upload } from "lucide-react";
 import { Popover, Tooltip } from "antd";
 import { LuTableProperties, LuTable } from "react-icons/lu";
@@ -28,7 +28,7 @@ const ListPageHeader = ({
   setListMode,
 }: ListPageHeaderProps) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
+  const [, startTransition] = useTransition();
   const handleExport = (key: string) => {
     switch (key) {
       case "export_csv":
@@ -92,10 +92,12 @@ const ListPageHeader = ({
                 listMode === "list" ? "border-green-500 bg-green-100" : ""
               }`}
               onClick={() => {
-                setListMode("list");
-                setFilter({
-                  ...filters,
-                  parent_ids: ["NULL"],
+                startTransition(() => {
+                  setListMode("list");
+                  setFilter({
+                    ...filters,
+                    parent_ids: ["NULL"],
+                  });
                 });
               }}
             >
@@ -114,10 +116,12 @@ const ListPageHeader = ({
                 listMode === "detail" ? "border-green-500 bg-green-100" : ""
               }`}
               onClick={() => {
-                setListMode("detail");
-                setFilter({
-                  ...filters,
-                  parent_ids: [],
+                startTransition(() => {
+                  setListMode("detail");
+                  setFilter({
+                    ...filters,
+                    parent_ids: [],
+                  });
                 });
               }}
             >
