@@ -6,6 +6,7 @@ export interface IIssue {
   project_id: string;
   sprint_id?: string;
   assignee_id: string;
+  column_id?: string;
   parent_id?: string;
   reporter_id?: string;
   type: IssueType;
