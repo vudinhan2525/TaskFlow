@@ -31,7 +31,7 @@ export const ChatBox: React.FC<ChatBoxProps> = ({
   loadingHistory,
   typingUsers,
   startTyping,
-  // user,
+  user,
 }) => {
   const [input, setInput] = useState("");
   const [replyTo, setReplyTo] = useState<MessageResponse | null>(null);

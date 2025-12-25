@@ -34,8 +34,13 @@ interface CreateProjectModalProps {
   iniProject?: IProject;
 }
 
-const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreateProjectModalProps) => {
-  const { user } =useAuth()
+const CreateProjectModal = ({
+  isOpen,
+  onClose,
+  isEditing,
+  iniProject,
+}: CreateProjectModalProps) => {
+  const { user } = useAuth();
   const { updateProject, isLoading: isUpdating } = useUpdateProject({
     onClose: () => {
       onClose();
@@ -99,43 +104,56 @@ const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreatePr
   if (!isOpen) return null;
   return (
     <Modal
-      title="Create Project"
+      title={title}
       onClose={onClose}
       buttonContent={isLoading ? "Loading..." : title}
       onSubmit={handleSubmit(onSubmit)}
       className="w-[500px]"
       isLoadingButton={isLoading}
     >
-      <div className="p-4 space-y-4">
+      <div className="space-y-4 p-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="name"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             Project Name <span className="text-red-500">*</span>
           </label>
           <input
             id="name"
             {...register("name")}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
             placeholder="Enter project name"
           />
-          {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
+          {errors.name && (
+            <p className="mt-1 text-sm text-red-500">{errors.name.message}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="key" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="key"
+            className="mb-1 block text-sm font-medium text-gray-700"
+          >
             Project Key <span className="text-red-500">*</span>
           </label>
           <input
             id="key"
             {...register("key")}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none"
             placeholder="e.g. PRJ, TASK (max 10 chars)"
           />
-          {errors.key && <p className="text-sm text-red-500 mt-1">{errors.key.message}</p>}
+          {errors.key && (
+            <p className="mt-1 text-sm text-red-500">{errors.key.message}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="type"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Project Type <span className="text-red-500">*</span>
             </label>
             <DropdownAntd
@@ -147,13 +165,20 @@ const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreatePr
               rowClassName="w-full text-[15px]"
               menuClassName="w-[180px]"
               parent={<div className="w-full font-medium">{type}</div>}
-              onClickItem={(option) => setValue("type", option.value as "Kanban" | "Scrum")}
+              onClickItem={(option) =>
+                setValue("type", option.value as "Kanban" | "Scrum")
+              }
             />
-            {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type.message}</p>}
+            {errors.type && (
+              <p className="mt-1 text-sm text-red-500">{errors.type.message}</p>
+            )}
           </div>
 
           <div>
-            <label htmlFor="access" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="access"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Access <span className="text-red-500">*</span>
             </label>
             <DropdownAntd
@@ -167,7 +192,11 @@ const CreateProjectModal = ({ isOpen, onClose, isEditing, iniProject }: CreatePr
               parent={<div className="w-full font-medium">{access}</div>}
               onClickItem={(option) => setValue("access", option.value)}
             />
-            {errors.access && <p className="text-sm text-red-500 mt-1">{errors.access.message}</p>}
+            {errors.access && (
+              <p className="mt-1 text-sm text-red-500">
+                {errors.access.message}
+              </p>
+            )}
           </div>
         </div>
       </div>

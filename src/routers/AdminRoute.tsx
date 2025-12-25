@@ -13,19 +13,22 @@ const AdminRoute = (): React.ReactElement => {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        Loading...
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  // Always redirect back to admin dashboard when path is just /admin
-  if (location.pathname === "/admin") {
-    return <Navigate to="/admin/dashboard" replace />;
+  // Check for admin role first
+  if (!user || user.role !== "Admin") {
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
-  // Check for admin role after loading is complete
-  if (!user || user.role !== "Admin") {
-    return <Navigate to="/admin/login" replace />;
+  // Redirect /admin to /admin/dashboard
+  if (location.pathname === "/admin" || location.pathname === "/admin/") {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return <Outlet />;

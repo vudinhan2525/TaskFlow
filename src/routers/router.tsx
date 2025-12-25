@@ -6,6 +6,7 @@ import ChatPage from "@libs/app/pages/chat/ChatPage";
 // Lazy load pages
 const ProjectLayout = lazy(() => import("@libs/app/layouts/projectLayout"));
 import DefaultLayout from "@libs/app/layouts/defaultLayout";
+import AdminDashboard from "@libs/app/pages/admin/AdminDashboard";
 const BacklogPage = lazy(
   () => import("@libs/app/pages/project/backLogPage/backLogPage"),
 );
@@ -79,7 +80,7 @@ const Router = (): React.ReactElement => {
           <Route path="login" element={<AdminLoginPage />} />
           <Route element={<AdminRoute />}>
             <Route path="dashboard" element={<AdminLayout />}>
-              <Route index element={<UsersPage />} />
+              <Route index element={<AdminDashboard />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="projects" element={<ProjectsPage />} />
             </Route>

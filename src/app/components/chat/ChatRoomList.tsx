@@ -23,7 +23,7 @@ export const ChatRoomList: React.FC<ChatRoomListProps> = ({
   const filteredRooms = rooms.filter((room) =>
     room.name?.toLowerCase().includes(debouncedSearch.toLowerCase()),
   );
-
+  console.log("ChatRoomList received rooms:", rooms);
   return (
     <div className="flex h-full flex-col border-r border-green-200 bg-white">
       {/* Header */}
